@@ -91,5 +91,5 @@ v1.0.0
 
 Thats it folks! Thank you...
 
-✎ [@_tID](https://www.twitter.com/infecteddrake)
+© [@_tID](https://www.twitter.com/infecteddrake)
 
