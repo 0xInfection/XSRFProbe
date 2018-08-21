@@ -2,7 +2,7 @@
 
 # XSRF Probe [![python](https://img.shields.io/badge/Python-2.7-green.svg?style=style=flat-square)](https://www.python.org/downloads/)  [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/license) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/README.md#Version)
 
-XSRF Probe is a advanced scanner for hunting down Cross Site Request Forgery bugs in web applications.
+XSRF Probe is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling and Intelligent Token Generation Capabilities.
 
 <img src="https://i.imgur.com/HTz6EDY.png" />
 
