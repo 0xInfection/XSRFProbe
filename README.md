@@ -94,5 +94,5 @@ Usage of XSRFProbe for testing websites without prior mutual consistency can be 
 
 Thats it folks! Thank you...
 
-> © [@_tID](https://www.twitter.com/infecteddrake)
+> Copyright [@_tID](https://www.twitter.com/infecteddrake)
 
