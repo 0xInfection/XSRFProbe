@@ -12,7 +12,7 @@ XSRF Probe is an advanced Cross Site Request Forgery Audit Toolkit equipped with
 - [x] XSRFProbe has absolute support for both GET and POST requests.
 - [x] Out of the box support for custom cookie values and generic headers.
 - [x] Can intelligently generate crafted tokens for different types of parameters.
-- [x] Can effectively crawl and hunt out hidden parameters `(no bruteforce)`.
+- [x] Can effectively crawl and hunt out hidden parameters `(without bruteforce)`.
 - [x] Submits forms in the normal values as well as with crafted token.
 - [x] Rare chances of false positives occuring during scan.
 - [x] Follows a redirect when there is a 302 response.
