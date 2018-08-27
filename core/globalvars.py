@@ -19,4 +19,5 @@ global form
 global init1
 global request
 global Form_Debugger
-
+global Uri_Checker
+global Crawler_Handler
