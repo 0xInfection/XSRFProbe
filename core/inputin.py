@@ -9,6 +9,7 @@
 #This module requires XSRF-Probe
 #https://github.com/the-Infected-Drake/XSRF-Probe
 
+from __future__ import print_function
 import sys
 import socket
 from colors import *
@@ -22,12 +23,12 @@ def inputin():
 
 	web0 = web.split('//')[1]
 	try:
-		print O+'Testing site status...'
+		print(O+'Testing site status...')
 		socket.gethostbyname(web0) # test whether site is up or not
-		print color.GREEN+' [+] Site seems to be up!'+color.END
+		print(color.GREEN+' [+] Site seems to be up!'+color.END)
 
 	except socket.gaierror: # if site is down
-		print R+'Site seems to be down...'
+		print(R+'Site seems to be down...')
 		sys.exit(0)
 
 	cook = raw_input(color.RED+' [$] Got any cookies? '+color.ORANGE+'[Enter for None]'+color.RED+' :> '+color.END)

@@ -10,6 +10,7 @@
 #https://github.com/theInfectedDrake/XSRFProbe
 
 
+from __future__ import print_function
 import re
 import urllib2
 import Uri_Checker
@@ -53,8 +54,8 @@ class Crawler_Handler(): # main crawler handler
 		try:
 			query = self.opener.open(url) # open it
 
-		except urllib2.HTTPError, msg:
-			print R+'Request Error: '+msg.__str__() # error!
+		except urllib2.HTTPError as msg:
+			print(R+'Request Error: '+msg.__str__()) # error!
 			if url in self.toVisit:
 				self.toVisit.remove(url) # remove non-existent
 			return
@@ -62,18 +63,18 @@ class Crawler_Handler(): # main crawler handler
 		if not re.search('html',query.info()['Content-Type']): # if content-type mentioned
 			return
 
-		print GR+'Making request to new location...'
+		print(GR+'Making request to new location...')
 		if hasattr(query.info(),'Location'): # get query for new loc
 			url=query.info()['Location']
-		print O+'Reading response...' # read it
+		print(O+'Reading response...') # read it
 		response = query.read()
 
 		try:
-			print O+'Trying to parse response...'
+			print(O+'Trying to parse response...')
 			soup = BeautifulSoup(response) # parser init
 
 		except HTMLParser.HTMLParseError:
-			print R+'BeautifulSoup Error: '+url # shit, error!
+			print(R+'BeautifulSoup Error: '+url) # shit, error!
 			self.visited.append(url)
 
 			if url in self.toVisit: # nah ;-;
@@ -95,7 +96,7 @@ class Crawler_Handler(): # main crawler handler
 
 				uriPattern=removeIDs(app) # remove IDs
 				if self.notExist(uriPattern) and app!=url:
-					print G+'Added :> ' +color.BOLD+ app # display what we have got!
+					print(G+'Added :> ' +color.BOLD+ app) # display what we have got!
 					self.toVisit.append(app) # add up urls to visit
 					self.uriPatterns.append(uriPattern)
 
@@ -123,4 +124,3 @@ def removeIDs(Uri_Checker):
 	p = re.compile('(title=)[^&]*') # whats the title u told?
 	Uri_Checker = p.sub('\\1',Uri_Checker)
 	return Uri_Checker
-
