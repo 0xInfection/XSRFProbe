@@ -9,6 +9,7 @@
 #This module requires XSRFProbe
 #https://github.com/theInfectedDrake/XSRFProbe
 
+from __future__ import print_function
 import urllib
 from impo import *
 from core.colors import * # import ends
@@ -31,11 +32,11 @@ def request(referer,action,form,opener,cookie):
 		return opener.open(action,data).read() # read data content
 
 	except urllib2.HTTPError: # if error
-		print R+"HTTP Error 1 : "+action # ah shit -_-
+		print(R+"HTTP Error 1 : "+action) # ah shit -_-
 		return
 
 	except ValueError: # again if valuerror
-		print R+"Value Error : "+action # another one -_-
+		print(R+"Value Error : "+action) # another one -_-
 		return
 
 	except:

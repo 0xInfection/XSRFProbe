@@ -9,6 +9,7 @@
 #This module requires XSRFProbe
 #https://github.com/theInfectedDrake/XSRFProbe
 
+from __future__ import print_function
 import urlparse
 import re
 from colors import * # import ends
@@ -44,7 +45,7 @@ def buildUrl(url, href): # receive form input type / url
 
 def buildAction(url, action):
 
-	print O+'Parsing URL parameters...'
+	print(O+'Parsing URL parameters...')
 	if action!='' and not re.match('#',action): # ;-; lets hope this stuff get what intended 
 		return buildUrl(url,action) # get the url and reutrn it!
 	else:
