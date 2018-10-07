@@ -14,7 +14,7 @@ from __future__ import print_function
 import re
 import urllib2
 import Uri_Checker
-from colors import *
+from core.colors import *
 from BeautifulSoup import BeautifulSoup # imports done
 
 class Crawler_Handler(): # main crawler handler

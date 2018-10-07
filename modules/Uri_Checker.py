@@ -12,7 +12,7 @@
 from __future__ import print_function
 import urlparse
 import re
-from colors import * # import ends
+from core.colors import * # import ends
 
 def buildUrl(url, href): # receive form input type / url
 
