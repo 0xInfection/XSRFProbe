@@ -10,7 +10,7 @@
 #https://github.com/theInfectedDrake/XSRFProbe
 
 from __future__ import print_function
-from colors import *
+from core.colors import *
 import time
 
 def banabout(): # some fancy banner stuff

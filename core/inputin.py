@@ -12,7 +12,7 @@
 from __future__ import print_function
 import sys
 import socket
-from colors import *
+from core.colors import *
 
 def inputin():
 

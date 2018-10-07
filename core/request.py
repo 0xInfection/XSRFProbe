@@ -11,7 +11,7 @@
 
 from __future__ import print_function
 import urllib
-from impo import *
+from core.impo import *
 from core.colors import * # import ends
 
 def request(referer,action,form,opener,cookie):
