@@ -1,6 +1,6 @@
 <p align="middle"><img src='https://i.imgur.com/b7SnRvX.png' /></p>  
 
-# XSRF Probe [![python](https://img.shields.io/badge/Python-2.7-green.svg?style=style=flat-square)](https://www.python.org/downloads/)  [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/LICENSE) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/README.md#version) [![Build Status](https://travis-ci.com/theInfectedDrake/XSRFProbe.svg?branch=master)](https://travis-ci.com/theInfectedDrake/XSRFProbe)
+# XSRF Probe [![python](https://img.shields.io/badge/Python-2.7-green.svg?style=style=flat-square)](https://www.python.org/downloads/)  [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/LICENSE) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/README.md#version) [![Build Status](https://travis-ci.org/theInfectedDrake/XSRFProbe.svg?branch=master)](https://travis-ci.org/theInfectedDrake/XSRFProbe)
 
 XSRF Probe is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling and Intelligent Token Generation Capabilities.
 
@@ -9,7 +9,7 @@ XSRF Probe is an advanced Cross Site Request Forgery Audit Toolkit equipped with
 ### Some Features:
 
 - [x] Has a powerful crawler which features continuous crawling and scanning.
-- [x] XSRFProbe has absolute support for both GET and POST requests.
+- [x] XSRFProbe has absolute support for POST based CSRF Vulnerabilities.
 - [x] Out of the box support for custom cookie values and generic headers.
 - [x] Can intelligently generate crafted tokens for different types of parameters.
 - [x] Can effectively crawl and hunt out hidden parameters `(without bruteforce)`.
@@ -27,11 +27,12 @@ The typical workflow of this scanner is :-
 - Spiders the target website to find all pages.
 - Finds all types of forms present on the each page.
 - Hunts out hidden as well as visible parameter values.
+- Identifies every parameter type by identifying a normal request.
 - Submits each form with normal tokens & parameter values.
-- Generates random token strings and sets parameter values.
+- Generates random token strings and sets parameter values accordingly.
 - Submits each form with the crafted tokens.
 - Finds out if the tokens are sufficiently protected.
-- Generates custom proof of concepts after each successful bug hunt.
+- Generates custom proof of concepts after each successful request and subsequent discovery.
 
 <img src="https://i.imgur.com/a2va9wh.gif" />
 
