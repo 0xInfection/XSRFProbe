@@ -71,7 +71,7 @@ pip install -r requirements
 ```
 ➲ Launch the script.
 ```
-python csrfprobe.py
+python2 xsrfprobe.py
 ```
 ➲ Enter the website target.
 ```
@@ -95,5 +95,5 @@ Usage of XSRFProbe for testing websites without prior mutual consistency can be 
 
 Thats it folks! Thank you...
 
-> Copyright [@_tID](https://www.twitter.com/infecteddrake)
+> Copyright © [The Infected Drake](https://www.twitter.com/infecteddrake)
 
