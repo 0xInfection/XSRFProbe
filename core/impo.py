@@ -16,6 +16,7 @@ import re
 import time
 import warnings
 import difflib
+import cookielib
 try:
 	import urlparse
 except ImportError:
