@@ -1,6 +1,6 @@
 <p align="middle"><img src='https://i.imgur.com/b7SnRvX.png' /></p>  
 
-# XSRF Probe [![python](https://img.shields.io/badge/Python-2.7-green.svg?style=style=flat-square)](https://www.python.org/downloads/)  [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/LICENSE) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/README.md#version) [![Build Status](https://travis-ci.org/theInfectedDrake/XSRFProbe.svg?branch=master)](https://travis-ci.org/theInfectedDrake/XSRFProbe)
+# XSRF Probe [![python](https://img.shields.io/badge/Python-3.x-green.svg?style=style=flat-square)](https://docs.python.org/3/download.html) [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/LICENSE) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/README.md#version) [![Build Status](https://travis-ci.org/theInfectedDrake/XSRFProbe.svg?branch=master)](https://travis-ci.org/theInfectedDrake/XSRFProbe)
 
 XSRF Probe is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling and Intelligent Token Generation Capabilities.
 
@@ -53,7 +53,6 @@ The scanner has the following drawbacks presently:
 
 ### Requirements:
 
-- urllib2
 - requests
 - bs4
 - lxml
@@ -67,11 +66,11 @@ cd XSRFProbe
 ```
 ➲ Install the dependencies.
 ```
-pip install -r requirements
+pip3 install -r requirements.txt
 ```
 ➲ Launch the script.
 ```
-python2 xsrfprobe.py
+python3 xsrfprobe.py
 ```
 ➲ Enter the website target.
 ```
@@ -83,8 +82,9 @@ http://examplesite.com
 
 ### Version:
 ```
-v1.0.0
+v1.1.0
 ```
+> The latest release includes support for only Python 3.x and removes support for Python 2.x versions ([you know why](https://pythonclock.org/)).
 
 ### Disclaimer:
 Usage of XSRFProbe for testing websites without prior mutual consistency can be considered as an illegal activity. It is the final user's responsibility to obey all applicable local, state and federal laws. The author assumes no liability and is not exclusively responsible for any misuse or damage caused by this program.
