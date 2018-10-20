@@ -17,11 +17,12 @@ import time
 import warnings
 import difflib
 try:
-	import urlparse
+    import urllib.parse
 except ImportError:
-	import urllib.parse as urlparse
+    import urllib.parse as urlparse
 import requests
-import urllib
+import http.cookiejar
+import urllib.request, urllib.parse, urllib.error
 from bs4 import BeautifulSoup
 warnings.filterwarnings('ignore')
 from core.formtype01 import *
