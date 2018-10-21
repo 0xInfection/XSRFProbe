@@ -17,7 +17,7 @@ from core.colors import O # import ends
 def buildUrl(url, href): # receive form input type / url
 
     exclusions = 'logout action=out action=logoff action=delete UserLogout osCsid file_manager.php'
-    if href == "http://localhost" or any(s in href for s in exclusions.split()):
+    if href == "http://localhost" or any((re.search(s,href)) for s in exclusions.split()):
         return '' # csrf stuff :o
 
     url_parts = urlsplit(url) # --> SplitResult(scheme, netloc, path, query, fragment)
