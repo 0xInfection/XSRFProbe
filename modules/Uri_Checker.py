@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
 #-:-:-:-:-:-:-:-:-:#
@@ -10,43 +10,43 @@
 #https://github.com/theInfectedDrake/XSRFProbe
 
 
-import urllib.parse
 import re
-from core.colors import * # import ends
+from urllib.parse import urlsplit
+from core.colors import O # import ends
 
 def buildUrl(url, href): # receive form input type / url
 
-    if re.search('logout',href) or re.search('action=out',href) or re.search('action=logoff', href) or re.search('action=delete',href) or re.search('UserLogout',href) or re.search('osCsid', href) or re.search('file_manager.php',href) or href=="http://localhost": # make exclusion list
+    exclusions = 'logout action=out action=logoff action=delete UserLogout osCsid file_manager.php'
+    if href == "http://localhost" or any((re.search(s,href)) for s in exclusions.split()):
         return '' # csrf stuff :o
 
-    parsed = urllib.parse.urlsplit(href) # :D
+    url_parts = urlsplit(url) # --> SplitResult(scheme, netloc, path, query, fragment)
+    href_parts = urlsplit(href)
     app = '' # init to url storage
 
-    if parsed[1] == urllib.parse.urlsplit(url)[1]:
+    if href_parts.netloc == url_parts.netloc:
         app = href # assuming this url is built
 
     else:
-        if len(parsed[1]) == 0 and (len(parsed[2]) != 0 or len(parsed[3])!=0): # parse result
-            domain = urllib.parse.urlsplit(url)[1] # done!
-            if re.match('/', parsed[2]):
-                app = 'http://' + domain + parsed[2] # startpage dom
-                if parsed[3] != '':
-                    app += '?'+parsed[3] # parameters
+        if len(href_parts.netloc) == 0 and (len(href_parts.path) != 0 or len(href_parts.query) != 0): # parse result
+            domain = url_parts.netloc # done!
+            if href_parts.path.startswith('/'):
+                app = 'http://' + domain + href_parts.path # startpage dom
             else:
                 try:
-                    app = 'http://' + domain + re.findall('(.*\/)[^\/]*', urllib.parse.urlsplit(url)[2])[0] + parsed[2]
+                    app = 'http://' + domain + re.findall('(.*\/)[^\/]*', url_parts.path)[0] + href_parts.path
                     # get real protocol urls
-                except IndexError: # shit, indexerror
-                    app = 'http://' + domain + parsed[2]
-                if parsed[3]!='':
-                    app += '?'+parsed[3] # parameters :D
+                except IndexError:
+                    app = 'http://' + domain + href_parts.path
+            if href_parts.query:
+                app += '?' + href_parts.query # parameters :D
 
     return app
 
 def buildAction(url, action):
 
     print(O+'Parsing URL parameters...')
-    if action!='' and not re.match('#',action): # ;-; lets hope this stuff get what intended
-        return buildUrl(url,action) # get the url and reutrn it!
+    if action and not re.match('#', action): # ;-; lets hope this stuff get what intended
+        return buildUrl(url, action) # get the url and reutrn it!
     else:
         return url # return it!
