@@ -59,12 +59,13 @@ The scanner has the following drawbacks presently:
 
 ### Usage:
 
-➲ Clone the script and launch it.
+➲ Clone the repo locally and navigate to the directory.
 ```
 git clone https://github.com/theInfectedDrake/XSRFProbe.git
 cd XSRFProbe
 ```
 ➲ Install the dependencies.
+> __NOTE:__ You will need to default your Python version to 3.x for running this tool.
 ```
 pip3 install -r requirements.txt
 ```
