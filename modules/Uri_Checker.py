@@ -46,7 +46,7 @@ def buildUrl(url, href): # receive form input type / url
 def buildAction(url, action):
 
     print(O+'Parsing URL parameters...')
-    if action and not action.startswith('#'): # ;-; lets hope this stuff get what intended
+    if action and not re.match('#', action): # ;-; lets hope this stuff get what intended
         return buildUrl(url, action) # get the url and reutrn it!
     else:
         return url # return it!
