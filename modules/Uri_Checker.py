@@ -11,7 +11,8 @@
 
 
 import re
-from urllib.parse import urlsplit # import ends
+from urllib.parse import urlsplit
+from core.colors import O # import ends
 
 def buildUrl(url, href): # receive form input type / url
 
