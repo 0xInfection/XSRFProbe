@@ -85,7 +85,7 @@ http://examplesite.com
 ```
 v1.1.0
 ```
-> The latest release includes support for only Python 3.x and removes support for Python 2.x versions ([you know why](https://pythonclock.org/)).
+> The latest release includes support for only Python 3.x and removes support for Python 2.x versions ([you know why](https://pythonclock.org/)). Some new methods for detecting CSRF are under development.
 
 ### Disclaimer:
 Usage of XSRFProbe for testing websites without prior mutual consistency can be considered as an illegal activity. It is the final user's responsibility to obey all applicable local, state and federal laws. The author assumes no liability and is not exclusively responsible for any misuse or damage caused by this program.
