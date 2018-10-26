@@ -16,15 +16,13 @@ import re
 import time
 import warnings
 import difflib
-try:
-    import urllib.parse
-except ImportError:
-    import urllib.parse as urlparse
+import urllib.parse
 import requests
 import http.cookiejar
 import urllib.request, urllib.parse, urllib.error
 from bs4 import BeautifulSoup
 warnings.filterwarnings('ignore')
+from core.verbout import *
 from core.formtype01 import *
 from core.formtype02 import *
 from core.inputin import *
@@ -34,6 +32,9 @@ from core.request import *
 from core.colors import *
 from core.globalvars import *
 from core.xsrf_main import *
-from modules.Crawler_Handler import *
-from modules.Form_Debugger import *
-from modules.Uri_Checker import *
+from files.config import *
+from modules.Token import *
+from modules.Referer import *
+from modules.Crawler import *
+from modules.Debugger import *
+from modules.Parser import *
