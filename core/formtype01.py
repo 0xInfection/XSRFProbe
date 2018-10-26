@@ -11,7 +11,7 @@
 
 def form10(): # an example form to make sure the stuff works properly ;)
 
-    form10 = """<form action="/drupal/?q=node&amp;destination=node"  accept-charset="UTF-8" method="post" id="user-login-form">
+    form0x01 = """<form action="/drupal/?q=node&amp;destination=node"  accept-charset="UTF-8" method="post" id="user-login-form">
     <div><div class="form-item" id="edit-name-wrapper">
      <label for="edit-name">Username: <span class="form-required" title="This field is required.">*</span></label>
      <input type="text" maxlength="60" name="name" id="edit-name" size="15" value="test1" class="form-text required" />
@@ -27,4 +27,4 @@ def form10(): # an example form to make sure the stuff works properly ;)
     <input type="hidden" name="form_id" id="edit-user-login-block" value="user_login_block"  />
     </div></form> """
 
-    return form10
+    return form0x01
