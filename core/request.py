@@ -9,7 +9,6 @@
 #This module requires XSRFProbe
 #https://github.com/theInfectedDrake/XSRFProbe
 
-
 import urllib.request, urllib.parse, urllib.error
 from core.impo import *
 from core.colors import * # import ends
@@ -20,10 +19,10 @@ def request(referer,action,form,opener,cookie):
     if cookie != '': # if user input has cookie
         headers = {
                 'User-Agent' : 'Mozilla/5.0 (Windows NT 5.2; en-US; rv:1.9.1.3) Gecko/20090824 Firefox/3.5.3 (.NET CLR 3.5.30729)',
-                'Set-Cookie' : cookie,
+                'Cookie' : cookie,
                 'Referer' : referer
                 } # headers set
-    else: # if not
+    else: # if cookie value not set
         headers = {
                 'User-Agent' : 'Mozilla/5.0 (Windows NT 5.2; en-US; rv:1.9.1.3) Gecko/20090824 Firefox/3.5.3 (.NET CLR 3.5.30729)',
                 'Referer' : referer
@@ -40,4 +39,4 @@ def request(referer,action,form,opener,cookie):
         return
 
     except:
-        return '' # if at all nothing happens
+        return '' # if at all nothing happens :(
