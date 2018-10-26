@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 #-:-:-:-:-:-:-:-:-:#
 #    XSRFProbe     #
 #-:-:-:-:-:-:-:-:-:#
 
-#Author: @_tID
-#This module requires XSRFProbe
-#https://github.com/theInfectedDrake/XSRFProbe
+# Author: @_tID
+# This module requires XSRFProbe
+# https://github.com/theInfectedDrake/XSRFProbe
 
 from core.impo import *
+from files.config import *
+from core.verbout import *
 from core.globalvars import *
-from modules.Crawler_Handler import *
-from modules.Form_Debugger import *
-from modules.Uri_Checker import * # get imports
+from modules.Crawler import *
+from modules.Debugger import *
+from modules.Parser import * # get imports
+from modules.Entropy import *
+from modules.Referer import *
 
 def xsrf_main(): # lets begin it!
 
@@ -31,9 +35,9 @@ def xsrf_main(): # lets begin it!
 
     actionDone = [] # init to the done stuff
 
-    csrf='' # no token initialise
+    csrf='' # no token initialise / invalid token
     init1 = web # get the starting page
-    form = Form_Debugger() # get the parser
+    form = Form_Debugger() # init to the form parser+token generator
 
     bs1=BeautifulSoup(form1).findAll('form',action=True)[0] # make sure the stuff works properly
     bs2=BeautifulSoup(form2).findAll('form',action=True)[0] # same as above
@@ -43,136 +47,151 @@ def xsrf_main(): # lets begin it!
     resp1.open(action) # make thre req ;)
     resp2.open(action) # go for the second one
 
+    verbout(GR, "Initializing crawling and scanning...")
     crawler = Crawler_Handler(init1,resp1) # pass onto the crawler
-    print(GR+"Initializing crawling and scanning...")
 
     try:
 
-        while crawler.noinit(): # if 0 init
+        while crawler.noinit(): # until 0 urls left
             url = next(crawler) # go for next!
 
-            print(C+'Crawling :> ' +color.BOLD+ url) # display what url its crawling
+            verbout(C, 'Crawling :> ' +color.CYAN+ url) # display what url its crawling
 
             try:
-                soup=crawler.process(web) # start the parser
+                soup = crawler.process(web) # start the parser
                 if not soup:
-                    continue; # don't end the program yet...
-                i=0 # count = 0
-                print(O+'Retrieving all forms on ' +color.BOLD+ url+color.END+'...')
-                for m in getAllForms(soup): # iterating over all forms got
-                    action = Uri_Checker.buildAction(url,m['action']) # see what it takes
-                    if not action in actionDone and action!='': # not a null value / neither duplicate...
-                        try:
-                            result = form.prepareFormInputs(m) # prepare inputs
-                            r1 = request(url, action, result, resp1, cookie) # comparable request
-                            result = form.prepareFormInputs(m) # prepare the input types
-                            r2 = request(url, action, result, resp2, cookie) # request the form
+                    continue; # making sure not to end the program yet...
+                i = 0 # set count = 0
+                if Referer(url):
+                    print(color.RED+' [+] '+color.ORANGE+'Referer Validation'+color.RED+' Present!')
+                    print(color.ORANGE+' [-] Heuristics reveal endpoint might NOT be vulnerable...')
+                else:
+                    print(color.GREEN+' [+] '+color.ORANGE+'Referer Validation'+color.GREEN+' Not Present!')
+                    print(color.GREEN+' [-] Heuristics reveal endpoint might be VULNERABLE...')
+                
+                verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
+                for m in getAllForms(soup): # iterating over all forms extracted
+                    action = Parser.buildAction(url,m['action']) # get all forms which have 'action' attribute
+                    if not action in actionDone and action!='': # if url returned is not a null value nor duplicate...
+                        if FORM_SUBMISSION:
+                            try:
+                                result = form.prepareFormInputs(m) # prepare inputs
+                                r1 = request(url, action, result, resp1, cookie) # make request with token values generated as user1
+                                result = form.prepareFormInputs(m) # prepare the input types
+                                r2 = request(url, action, result, resp2, cookie) # again make request with token values generated as user2
 
-                            if(len(csrf)>0):
-                                if not re.search(csrf, r2): # yep we got the vuln!
-                                    print(color.GREEN+ ' [+] CSRF vulnerability Detected : '+color.ORANGE+url+'!\n')
-                                    try:
-                                        if m['name']: # print it out fancy:p
+                                if Entropy(result): #  yep we got the vuln for sure!
+                                    if re.search(csrf, r2): 
+                                        print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
+                                        print(color.ORANGE+' [!] Vulnerability Type: '+color.CYAN+'No/Very Weak Anti-CSRF Token...')
+                                        try:
+                                            if m['name']: # print it out fancy:p
+                                                print(color.RED+'\n +---------+')
+                                                print(color.RED+' |   PoC   |')
+                                                print(color.RED+' +---------+\n')
+                                                print(color.BLUE+' [+] URL : ' +color.CYAN+url)
+                                                print(color.CYAN+' [+] Name : ' +color.ORANGE+m['name'])
+                                                print(color.GREEN+' [+] Action : ' +color.ORANGE+m['action'])
+
+                                        except KeyError: # if value m['name'] not there :(
+
                                             print(color.RED+'\n +---------+')
                                             print(color.RED+' |   PoC   |')
                                             print(color.RED+' +---------+\n')
                                             print(color.BLUE+' [+] URL : ' +color.CYAN+url)
-                                            print(color.CYAN+' [+] Name : ' +color.ORANGE+m['name'])
                                             print(color.GREEN+' [+] Action : ' +color.ORANGE+m['action'])
 
-                                    except KeyError: # if value m['name'] not there :(
+                                        print(color.ORANGE+' [+] Query : '+color.GREY+urllib.parse.urlencode(result))
+                                        print('')                               # print out the params + url
 
-                                        print(color.RED+'\n +---------+')
-                                        print(color.RED+' |   PoC   |')
-                                        print(color.RED+' +---------+\n')
-                                        print(color.BLUE+' [+] URL : ' +color.CYAN+url)
-                                        print(color.GREEN+' [+] Action : ' +color.ORANGE+m['action'])
+                                    continue;
 
-                                    print(color.ORANGE+' [+] Code : '+color.END+urllib.parse.urlencode(result))
-                                    print('')                               # print out the params + url
+                                o2 = resp2.open(url).read() # make request as user2
 
-                                continue;
+                                try:
+                                    form2 = getAllForms(BeautifulSoup(o2))[i] # user2 gets his form
 
-                            o2 = resp2.open(url).read() # open and read the response
+                                except IndexError:
+                                    verbout(R, 'Form Error') 
+                                    continue; # making sure program won't end here (dirty fix :( )
 
-                            try:
-                                form2 = getAllForms(BeautifulSoup(o2))[i] # com'on lets get it
+                                verbout(GR, 'Preparing form inputs...')
+                                contents2 = form.prepareFormInputs(form2) # prepare for form 2
+                                r3 = request(url,action,contents2,resp2, cookie) # make request as user3
 
-                            except IndexError:
-                                print(R+'Form Error') # ah shit -_-
-                                continue; # program won't end here
+                                try:
+                                    checkdiff = difflib.ndiff(r1.splitlines(1),r2.splitlines(1)) # check the diff noted
+                                    checkdiff0 = difflib.ndiff(r1.splitlines(1),r3.splitlines(1)) # check the diff noted
 
-                            print(GR+'Preparing form inputs...')
-                            contents2 = form.prepareFormInputs(form2) # prepare for form 2
-                            r3 = request(url,action,contents2,resp2, cookie) # make request
+                                    result12 = [] # an init
+                                    for n in checkdiff:
+                                        if re.match('\+|-',n): # get regex matching stuff
+                                            result12.append(n) # append to existing list
 
-                            try:
-                                checkdiff = difflib.ndiff(r1.splitlines(1),r2.splitlines(1)) # check the diff noted
-                                checkdiff0 = difflib.ndiff(r1.splitlines(1),r3.splitlines(1)) # check the diff noted
+                                    result13 = [] # an init
+                                    for n in checkdiff0:
+                                        if re.match('\+|-',n): # get regex matching stuff
+                                            result13.append(n) # append to existing list
+                                    
+                                    # This logic is based purely on the assumption on the difference of requests and
+                                    # response body (thats why we're using difflib).
+                                    #
+                                    # If the number of differences of result12 are less than the number of differences
+                                    # than result13
+                                    if len(result12)<=len(result13):
+                                        print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
+                                        print(color.ORANGE+' [!] Vulnerability Type: '+color.CYAN+' POST-Based Request Forgery...')
+                                        time.sleep(0.3)
+                                        print(O+'PoC of response and request...')
+                                        try: # yet we give out what we found
+                                            if m['name']: 
+                                                print(color.RED+'\n +---------+')
+                                                print(color.RED+' |   PoC   |')
+                                                print(color.RED+' +---------+\n')
+                                                print(color.BLUE+' [+] URL : ' +color.CYAN+url) # url part
+                                                print(color.CYAN+' [+] Name : ' +color.ORANGE+m['name']) # name
+                                                print(color.GREEN+' [+] Action : ' +color.END+m['action']) # action
 
-                                result12 = [] # an init
-                                for n in checkdiff:
-                                    if re.match('\+|-',n): # get regex matching stuff
-                                        result12.append(n) # append to existing list
+                                        except KeyError:# if value m['name'] not there :(
 
-                                result13 = [] # an init
-                                for n in checkdiff0:
-                                    if re.match('\+|-',n): # get regex matching stuff
-                                        result13.append(n) # append to existing list
-
-                                if len(result12)<=len(result13): # incase we dont have a csrf
-                                    print(R+ 'No CSRF Detected At : '+color.BOLD+url+'...')
-                                    time.sleep(0.3)
-                                    print(O+'PoC of response and request...')
-                                    try: # yet we give out what we found
-                                        if m['name']: # print it out
                                             print(color.RED+'\n +---------+')
                                             print(color.RED+' |   PoC   |')
                                             print(color.RED+' +---------+\n')
-                                            print(color.BLUE+' [+] URL : ' +color.CYAN+url) # url part
-                                            print(color.CYAN+' [+] Name : ' +color.ORANGE+m['name']) # name
-                                            print(color.GREEN+' [+] Action : ' +color.END+m['action']) # action
+                                            print(color.BLUE+' [+] URL : ' +color.CYAN+url) # the url
+                                            print(color.GREEN+' [+] Action : ' +color.END+ m['action']) # action
 
-                                    except KeyError:# if value m['name'] not there :(
+                                        print(color.ORANGE+' [+] Query : '+color.GREY+ urllib.parse.urlencode(result).strip())
+                                        print('')                                       # print out the params + url
 
-                                        print(color.RED+'\n +---------+')
-                                        print(color.RED+' |   PoC   |')
-                                        print(color.RED+' +---------+\n')
-                                        print(color.BLUE+' [+] URL : ' +color.CYAN+url) # the url
-                                        print(color.GREEN+' [+] Action : ' +color.END+ m['action']) # action
+                                except KeyboardInterrupt: # incase user wants to exit (while form processing)
+                                    verbout(R, 'User Interrupt!')
+                                    print(R+'Aborted!') # say goodbye
+                                    sys.exit(1)
 
-                                    print(color.ORANGE+' [+] Code : '+color.END+ urllib.parse.urlencode(result).strip())
-                                    print('')                                       # print out the params + url
+                                except KeyboardInterrupt: # other exceptions ;-; can be ignored
+                                    pass
 
-                            except KeyboardInterrupt: # incase user wants to exit (while form processing)
-                                print(R+'User Interrupt!')
-                                print(R+'Aborted!') # say goodbye
-                                sys.exit(1)
-
-                            except: # other exceptions ;-; can be ignored
-                                pass
-
-                        except urllib.error.HTTPError as msg: # if runtime exception...
-                            print(R+'Exception : '+msg.__str__()) # again exception :(
+                            except urllib.error.HTTPError as msg: # if runtime exception...
+                                verbout(R, 'Exception : '+msg.__str__()) # again exception :(
 
                     actionDone.append(action) # add the stuff done
                     i+=1 # ctr++
 
             except urllib.error.URLError: # if again...
-                print(R+'Exception at : '+url) # again exception -_-
+                verbout(R, 'Exception at : '+url) # again exception -_-
                 time.sleep(0.4)
-                print(O+'Moving on...')
+                verbout(O, 'Moving on...')
                 continue; # make sure it doesn't stop
 
-        print('\n'+G+"Scan completed!"+'\n')
+        verbout('\n'+G+"Scan completed!"+'\n')
 
     except urllib.error.HTTPError as e: # 403 not authenticated
         if str(e.code) == '403':
-            print(R+'HTTP Authentication Error!')
-            print(R+'Error Code : ' +O+ str(e.code))
+            verbout(R, 'HTTP Authentication Error!')
+            verbout(R, 'Error Code : ' +O+ str(e.code))
             pass
 
     except KeyboardInterrupt: # incase user wants to exit ;-; (while crawling)
-        print(R+'User Interrupt!')
+        verbout(R, 'User Interrupt!')
         print(R+'Aborted!') # say goodbye
         sys.exit(1)
