@@ -10,91 +10,103 @@
 #https://github.com/theInfectedDrake/XSRFProbe
 
 import re
-import urllib.request, urllib.error, urllib.parse
 from . import Parser
 from core.colors import *
-from bs4 import BeautifulSoup # imports done
+from bs4 import BeautifulSoup 
+from core.verbout import verbout
+import urllib.request, urllib.error, urllib.parse
 
-class Crawler_Handler(): # main crawler handler
-
+class Crawler_Handler(): # Main Crawler Handler
+    '''
+    This is a crawler that is used to fetch all the Urls
+        associated to the HTML page, and susequently
+            crawl them and build checks for CSRFs.
+    '''
     def __init__(self, start,opener):
-
-        self.visited = [] # init to visited stuff
-        self.toVisit = [] # to visit
-        self.uriPatterns = [] # patterns to follow
-        self.currentURI = ''; # what is it now?
-        self.opener = opener; # init opener
-        self.toVisit.append(start) # lets add up urls
+        self.visited = [] # Visited stuff
+        self.toVisit = [] # To visit
+        self.uriPatterns = [] # Patterns to follow
+        self.currentURI = ''; # What is it now?
+        self.opener = opener; # Init build_opener
+        self.toVisit.append(start) # Lets add up urls
 
     def __next__(self):
-        self.currentURI = self.toVisit[0] # to visit
-        self.toVisit.remove(self.currentURI) # after its done
+        self.currentURI = self.toVisit[0] # To visit
+        self.toVisit.remove(self.currentURI) # After its done
         return self.currentURI
 
     def getVisited(self):
-        return self.visited # get it back
+        return self.visited
 
     def getToVisit(self):
-        return self.toVisit # get it back again
+        return self.toVisit
 
     def noinit(self):
-        if len(self.toVisit) > 0: # incase there are urls left
+        if len(self.toVisit) > 0: # Incase there are urls left
             return True # +1
         else:
             return False # -1
 
     def addToVisit(self,Parser):
-        self.toVisit.append(Parser) # add what we have got
+        self.toVisit.append(Parser) # Add what we have got
 
     def process(self, root):
-        url = self.currentURI # whats up?
+        url = self.currentURI # Whats up?
 
         try:
             query = self.opener.open(url) # open it (to check if it exists)
 
         except urllib.error.HTTPError as msg:
-            print(R+'Request Error: '+msg.__str__()) # display the errored url
+            verbout(R,'Request Error: '+msg.__str__())
             if url in self.toVisit:
-                self.toVisit.remove(url) # remove non-existent / errored urls
+                self.toVisit.remove(url) # Remove non-existent / errored urls
             return
 
-        if not re.search('html',query.info()['Content-Type']): # if content-type mentioned
+        # making sure the content type is in HTML format, so that BeautifulSoup 
+        # can parse it...
+        if not re.search('html',query.info()['Content-Type']):
             return
 
-        print(GR+'Making request to new location...')
-        if hasattr(query.info(),'Location'): # get query for new loc
+        # Just in case there is a redirection, we are supposed to follow it :D
+        verbout(GR,'Making request to new location...')
+        if hasattr(query.info(),'Location'):
             url=query.info()['Location']
-        print(O+'Reading response...') # read it
-        response = query.read()
+        verbout(O,'Reading response...')
+        response = query.read() # Read the response contents
 
         try:
-            print(O+'Trying to parse response...')
-            soup = BeautifulSoup(response) # parser init
+            verbout(O,'Trying to parse response...')
+            soup = BeautifulSoup(response) # Parser init
 
         except HTMLParser.HTMLParseError:
-            print(R+'BeautifulSoup Error: '+url) # shit, error!
+            verbout(R,'BeautifulSoup Error: '+url)
             self.visited.append(url)
 
-            if url in self.toVisit: # nah ;-;
+            if url in self.toVisit:
                 self.toVisit.remove(url)
             return
 
         for m in soup.findAll('a',href=True): # find out all href^?://*
 
             app = ''
-            if not re.match(r'javascript:',m['href']) or re.match('http://',m['href']): # crawl for stuff
+            # Making sure that href is not a function or doesn't begin with http://
+            if not re.match(r'javascript:',m['href']) or re.match('http://',m['href']):
                 app = Parser.buildUrl(url,m['href'])
 
+            # If we get a valid link
             if app!='' and re.search(root, app):
-                while re.search(r'/\.\./',app): # untill all stuffs found...
+                # Getting rid of Urls starting with '../../../..'
+                while re.search(r'/\.\./',app):
                     p = re.compile('/[^/]*/../')
                     app = p.sub('/',app)
-                p = re.compile('\./') # regex stuff to load
+                # Getting rid of Urls starting with './'
+                p = re.compile('\./') # 
                 app = p.sub('',app)
 
+                # Add new link to the queue only if its pattern has not been added yet
                 uriPattern=removeIDs(app) # remove IDs
                 if self.notExist(uriPattern) and app!=url:
-                    print(G+'Added :> ' +color.BOLD+ app) # display what we have got!
+                    verbout(G,'Added :> ' +color.BLUE+ app) # display what we have got!
                     self.toVisit.append(app) # add up urls to visit
                     self.uriPatterns.append(uriPattern)
 
@@ -116,9 +128,12 @@ class Crawler_Handler(): # main crawler handler
         self.visited.append(Parser)
 
 def removeIDs(Parser):
-
-    p = re.compile('=[0-9]+') # regex stuff
-    Parser = p.sub('=',Parser) # get stuff done
-    p = re.compile('(title=)[^&]*') # whats the title u told?
+    '''
+    This function removes the Numbers from the Urls 
+                    which are built.
+    '''
+    p = re.compile('=[0-9]+')
+    Parser = p.sub('=',Parser)
+    p = re.compile('(title=)[^&]*')
     Parser = p.sub('\\1',Parser)
     return Parser
