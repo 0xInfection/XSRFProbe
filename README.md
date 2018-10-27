@@ -1,8 +1,10 @@
 <p align="middle"><img src='https://i.imgur.com/b7SnRvX.png' /></p>  
 
-# XSRF Probe [![python](https://img.shields.io/badge/Python-3.x-green.svg?style=style=flat-square)](https://docs.python.org/3/download.html) [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/LICENSE) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/README.md#version) [![Build Status](https://travis-ci.org/theInfectedDrake/XSRFProbe.svg?branch=master)](https://travis-ci.org/theInfectedDrake/XSRFProbe)
+# XSRF Probe [![python](https://img.shields.io/badge/Python-3.x-green.svg?style=style=flat-square)](https://docs.python.org/3/download.html) [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/0xinfection/XSRFProbe/blob/master/LICENSE) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/0xinfection/XSRFProbe/blob/master/README.md#version) [![Build Status](https://travis-ci.org/0xInfection/XSRFProbe.svg?branch=master)](https://travis-ci.org/0xInfection/XSRFProbe)
 
 XSRF Probe is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling and Intelligent Token Generation Capabilities.
+
+> XSRFProbe is undergoing [major code changes and core refactors](https://github.com/0xinfection/XSRFProbe/projects/1) at present. So please consider avoiding making pull requests and raising issues temporarily until I publish the next release. If interested, have a look at [this one](https://github.com/0xInfection/XSRFProbe/projects/1).
 
 <img src="https://i.imgur.com/HTz6EDY.png" />
 
@@ -61,7 +63,7 @@ The scanner has the following drawbacks presently:
 
 ➲ Clone the repo locally and navigate to the directory.
 ```
-git clone https://github.com/theInfectedDrake/XSRFProbe.git
+git clone https://github.com/0xinfection/XSRFProbe.git
 cd XSRFProbe
 ```
 ➲ Install the dependencies.
@@ -96,5 +98,6 @@ Usage of XSRFProbe for testing websites without prior mutual consistency can be 
 
 Thats it folks! Thank you...
 
-> Copyright © [The Infected Drake](https://www.twitter.com/infecteddrake)
+> Copyright © [The Infected Drake](https://www.twitter.com/0xinfection)
+
 
