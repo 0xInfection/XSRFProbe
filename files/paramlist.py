@@ -32,7 +32,6 @@ COMMON_CSRF_NAMES = (
         'auth_token',
         'authenticity_token',
         'auth',
-        'anticsrf',
         'anti_csrf',
         'auth_value',
         'csrf_value',
@@ -46,5 +45,6 @@ COMMON_CSRF_NAMES = (
         'timestamp_id',
         'auth_id',
         'timestamp_secret',
-        'csrf_id'
+        'csrf_id',
+        '__csrf'
     )
