@@ -7,7 +7,7 @@
 
 # Author: @_tID
 # This module requires XSRFProbe
-# https://github.com/theInfectedDrake/XSRFProbe
+# https://github.com/0xInfection/XSRFProbe
 
 from re import search, I
 from time import sleep
@@ -48,6 +48,6 @@ def Token(req):
         if param != '':
             return param
         else:
-            print(color.RED+' [-] The form was requested without a '+color.GREY+'Anti-CSRF token'+color.RED+'...')
-            print(color.ORANGE+' [-] Endpoint seems vulnerable to CSRF POST-Based Attacks...')
+            print(color.RED+' [-] The form was requested without a '+color.ORANGE+'Anti-CSRF token'+color.RED+'...')
+            print(color.RED+' [-] Endpoint seems vulnerable to CSRF POST-Based Attacks...')
             return ''
