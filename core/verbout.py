@@ -7,7 +7,7 @@
 
 # Author: @_tID
 # This module requires XSRFProbe
-# https://github.com/theInfectedDrake/XSRFProbe
+# https://github.com/0xInfection/XSRFProbe
 
 from core.colors import *
 from files.config import DEBUG as verbose

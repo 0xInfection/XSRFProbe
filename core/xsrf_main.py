@@ -7,7 +7,7 @@
 
 # Author: @_tID
 # This module requires XSRFProbe
-# https://github.com/theInfectedDrake/XSRFProbe
+# https://github.com/0xInfection/XSRFProbe
 
 from core.impo import *
 from files.config import *
@@ -63,11 +63,11 @@ def xsrf_main(): # lets begin it!
                     continue; # making sure not to end the program yet...
                 i = 0 # set count = 0
                 if Referer(url):
-                    print(color.RED+' [+] '+color.ORANGE+'Referer Validation'+color.RED+' Present!')
-                    print(color.ORANGE+' [-] Heuristics reveal endpoint might NOT be vulnerable...')
+                    print(color.GREEN+' [+] Endoint '+color.ORANGE+'Referer Validation'+color.GREEN+' Present!')
+                    print(color.GREEN+' [-] Heuristics reveal endpoint might NOT be vulnerable...')
                 else:
-                    print(color.GREEN+' [+] '+color.ORANGE+'Referer Validation'+color.GREEN+' Not Present!')
-                    print(color.GREEN+' [-] Heuristics reveal endpoint might be VULNERABLE...')
+                    print(color.RED+' [+] Endpoint '+color.ORANGE+'Referer Validation'+color.RED+' Not Present!')
+                    print(color.RED+' [-] Heuristics reveal endpoint might be VULNERABLE to Referer Based CSRFs...')
                 
                 verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
                 for m in getAllForms(soup): # iterating over all forms extracted
@@ -83,7 +83,7 @@ def xsrf_main(): # lets begin it!
                                 if Entropy(result): #  yep we got the vuln for sure!
                                     if re.search(csrf, r2): 
                                         print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-                                        print(color.ORANGE+' [!] Vulnerability Type: '+color.CYAN+'No/Very Weak Anti-CSRF Token...')
+                                        print(color.ORANGE+' [!] Vulnerability Type: '+color.CYAN+'Very Weak/No Anti-CSRF Token...')
                                         try:
                                             if m['name']: # print it out fancy:p
                                                 print(color.RED+'\n +---------+')
@@ -183,7 +183,7 @@ def xsrf_main(): # lets begin it!
                 verbout(O, 'Moving on...')
                 continue; # make sure it doesn't stop
 
-        verbout('\n'+G+"Scan completed!"+'\n')
+        verbout('\n'+G,"Scan completed!"+'\n')
 
     except urllib.error.HTTPError as e: # 403 not authenticated
         if str(e.code) == '403':

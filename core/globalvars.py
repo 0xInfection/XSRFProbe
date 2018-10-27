@@ -5,9 +5,9 @@
 #    XSRF Probe     #
 #-:-:-:-:-:-:-::-:-:#
 
-#Author: the-Infected-Drake (@_tID)
+#Author: 0xInfection (@_tID)
 #This module requires XSRF-Probe
-#https://github.com/the-Infected-Drake/XSRF-Probe
+#https://github.com/0xInfection/XSRF-Probe
 
 # some global variables needed
 global web

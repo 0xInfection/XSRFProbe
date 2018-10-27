@@ -7,14 +7,14 @@
 
 #Author: @_tID
 #This module requires XSRFProbe
-#https://github.com/theInfectedDrake/XSRFProbe
+#https://github.com/0xInfection/XSRFProbe
 
 import time
 from core.colors import *
 
 def banabout(): # some fancy banner stuff :p
 
-    print(color.BLUE+'   [---]           '+color.GREY+'XSRF Probe | '+color.ORANGE+'A Cross Site Request Forgery '+color.RED+'Audit Toolkit          '+color.BLUE+'[---]')
+    print(color.BLUE+'   [---]           '+color.GREY+'XSRF Probe |'+color.RED+' A'+color.ORANGE+' Cross Site Request Forgery '+color.RED+'Audit Toolkit          '+color.BLUE+'[---]')
     time.sleep(0.2)
     print(color.BLUE+'   [---]                                                                            [---]')
     time.sleep(0.2)

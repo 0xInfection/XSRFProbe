@@ -7,7 +7,7 @@
 
 #Author: @_tID
 #This module requires XSRFProbe
-#https://github.com/the-Infected-Drake/XSRFProbe
+#https://github.com/0xInfection/XSRFProbe
 
 ###############################
 class color:

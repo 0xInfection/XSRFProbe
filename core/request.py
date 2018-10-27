@@ -7,7 +7,7 @@
 
 # Author: @_tID
 #This module requires XSRFProbe
-#https://github.com/theInfectedDrake/XSRFProbe
+#https://github.com/0xInfection/XSRFProbe
 
 import urllib.request, urllib.parse, urllib.error
 from core.impo import *
