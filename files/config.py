@@ -7,7 +7,7 @@
 
 # Author: @_tID
 # This module requires XSRFProbe
-# https://github.com/theInfectedDrake/XSRFProbe
+# https://github.com/0xInfection/XSRFProbe
 
 # Print out verbose (turn it off for only brief outputs)
 DEBUG = True

@@ -7,7 +7,7 @@
 
 # Author: @_tID
 # This module requires XSRFProbe
-# https://github.com/theInfectedDrake/XSRFProbe
+# https://github.com/0xInfection/XSRFProbe
 
 # List of anti-CSRF paramter values which are sent for form 
 # verification of the token.
