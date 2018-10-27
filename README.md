@@ -1,6 +1,6 @@
 <p align="middle"><img src='https://i.imgur.com/b7SnRvX.png' /></p>  
 
-# XSRF Probe [![python](https://img.shields.io/badge/Python-3.x-green.svg?style=style=flat-square)](https://docs.python.org/3/download.html) [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/LICENSE) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/README.md#version) [![Build Status](https://travis-ci.org/theInfectedDrake/XSRFProbe.svg?branch=master)](https://travis-ci.org/theInfectedDrake/XSRFProbe)
+# XSRF Probe [![python](https://img.shields.io/badge/Python-3.x-green.svg?style=style=flat-square)](https://docs.python.org/3/download.html) [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/LICENSE) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/theinfecteddrake/XSRFProbe/blob/master/README.md#version) [![Build Status](https://travis-ci.org/0xInfection/XSRFProbe.svg?branch=master)](https://travis-ci.org/0xInfection/XSRFProbe)
 
 XSRF Probe is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling and Intelligent Token Generation Capabilities.
 
