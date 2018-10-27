@@ -38,3 +38,4 @@ from modules.Referer import *
 from modules.Crawler import *
 from modules.Debugger import *
 from modules.Parser import *
+from modules.Entropy import *
