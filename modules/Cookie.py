@@ -28,6 +28,8 @@ def Cookie(url):
                     prevent CSRF attacks.
     '''
     if COOKIE_BASED:
+        SameSite(url)
+        Persistence(url)
 
 def Persistence(url):
     verbout(GR,'Proceeding to test for '+color.GREY+'Cookie Persistence'+color.END+'...')
@@ -51,7 +53,7 @@ def Persistence(url):
         resps.append(req.headers.get('Set-Cookie'))
         c+=1
     if has_duplicates(resps):
-        verbout(G,'Set-Cookie header does not change with ')
+        verbout(G,'Set-Cookie header does not change with varied User-Agents...')
 
 def SameSite(url):
     '''
