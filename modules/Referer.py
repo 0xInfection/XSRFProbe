@@ -12,7 +12,7 @@
 import requests
 from core.colors import *
 from core.verbout import verbout
-from files.config import REFERER_URL as fake_referer
+from files.config import *
 
 def Referer(url):
     """
@@ -22,19 +22,24 @@ def Referer(url):
 
     # Make the request normally and get content
     verbout(O,'Making request on normal basis...')
-    req0x01 = requests.get(url, verify=True).text
+    req0x01 = norm_requester(url)
     
-    # Set a fake referer along with UA (pretending to be a 
+    # Set normal headers...
+    verbout(GR,'Setting generic headers...')
+    gen_headers = HEADER_VALUES
+    
+    # Set a fake Referer along with UA (pretending to be a 
     # legitimate request from a browser)
     verbout(GR,'Setting generic headers...')
-    gen_headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201',
-                'Referer': fake_referer,
-                'Connection': 'close'
-            }
+    gen_headers['Referer'] = REFERER_URL
+            
+    # We put the cookie in request, if cookie supplied :D
+    if COOKIE_VALUE:
+        gen_headers['Cookie'] = COOKIE_VALUE
+    
     # Make the request with different referer header and get the content
     verbout(O,'Making request with tampered headers...')
-    req0x02 = requests.get(url, headers=gen_headers, verify=True).text
+    req0x02 = norm_requester(url, headers=gen_headers)
     
     # Comparing the length of the requests' responses. If both content 
     # lengths are same, then the site actually does not validate referer 
@@ -49,7 +54,14 @@ def Referer(url):
     # domain.
     #
     # TODO: This algorithm has lots of room for improvement
-    if len(req0x01) != len(req0x02):
+    if len(req0x01.content) != len(req0x02.content):
+        print(color.GREEN+' [+] Endoint '+color.ORANGE+'Referer Validation'+color.GREEN+' Present!')
+        print(color.GREEN+' [-] Heuristics reveal endpoint might NOT be vulnerable...')
         return True
     else:
+        print(color.RED+' [+] Endpoint '+color.ORANGE+'Referer Validation'+color.RED+' Not Present!')
+        print(color.RED+' [-] Heuristics reveal endpoint might be VULNERABLE to Referer Based CSRFs...')
+        print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
+        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BR+' Referer Based Request Forgery '+color.END)
         return False
+
