@@ -50,7 +50,7 @@ def Entropy(req):
     # Check length
     if len(value) <= min_length:
         print(color.RED+' [-] CSRF Token Length less than 5 bytes. '+color.ORANGE+'Token value can be guessed/bruteforced...')
-        print(color.ORANGE+' [-] Application likely '+color.RED+'VULNERABLE'+color.ORANGE+' to CSRF Attacks...')
+        print(color.ORANGE+' [-] Endpoint likely '+color.BR+' VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
 
     if len(value) > max_length:
         # Multipart uploads usually have a trailing sequence of 
@@ -58,7 +58,7 @@ def Entropy(req):
         # This is a very important step with respect to 
         # decreasing [[ False Positives ]].
         print(color.GREEN+' [+] CSRF Token Length greater than 256 bytes. '+color.ORANGE+'Token value cannot be guessed/bruteforced...')
-        print(color.ORANGE+' [+] Application likely '+color.GREEN+'NOT VULNERABLE'+color.ORANGE+' to CSRF Attacks...')
+        print(color.ORANGE+' [+] Endpoint likely '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
     
     # Calculate entropy
     verbout(O, 'Proceeding to calculate '+color.GREY+'Shannon Entropy'+color.END+' of Token audited...')
@@ -66,13 +66,13 @@ def Entropy(req):
     verbout(GR, 'Calculating Entropy...')
     if entropy >= min_entropy:
         print(color.GREEN+' [-] Anti-CSRF Token Entropy Calculated is '+color.ORANGE+'GREATER than 2.4... ')
-        print(color.ORANGE+' [-] Application '+color.GREEN+'NOT VULNERABLE'+color.ORANGE+' to CSRF Attacks...')
+        print(color.ORANGE+' [-] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
         time.sleep(0.5)
-        print(color.GREEN+' [+] The Application implements Token Based Checks for preventing CSRF Attacks...')
+        print(color.GREEN+' [+] The Endpoint implements Token Based Checks for preventing CSRF Attacks...')
         return False
     else:
         print(color.RED+' [-] Anti-CSRF Token Entropy Calculated is '+color.ORANGE+'less than 2.4... ')
-        print(color.ORANGE+' [-] Application likely '+color.GREEN+'VULNERABLE'+color.ORANGE+' to CSRF Attacks inspite of CSRF Tokens...')
+        print(color.ORANGE+' [-] Endpoint likely '+color.BR+' VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks inspite of CSRF Tokens...')
         return True
 
 def shannon_entropy(data):
@@ -99,7 +99,7 @@ def smart_string(s, encoding='utf8'):
     """
     try:
         s = s.encode(encoding)
-    except UnicodeEncodeError:
+    except (UnicodeEncodeError, UnicodeDecodeError):
         s = str(s)
     return s
 
