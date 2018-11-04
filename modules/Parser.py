@@ -11,6 +11,7 @@
 
 import re
 from urllib.parse import urlsplit
+from core.verbout import verbout
 from core.colors import * # import ends
 
 def buildUrl(url, href): # receive form input type / url
@@ -54,7 +55,7 @@ def buildAction(url, action):
     The main function of this is to create an action Url based
                 on Current Location and Destination.    
     '''
-    print(O+'Parsing URL parameters...')
+    verbout(O,'Parsing URL parameters...')
     if action and not re.match('#', action): # make sure it is not a fragment (eg. http://site.tld/index.php#search)
         return buildUrl(url, action) # get the url and reutrn it!
     else:
