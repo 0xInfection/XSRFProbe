@@ -10,7 +10,6 @@
 # https://github.com/0xInfection/XSRFProbe
 
 from core.impo import * # import all stuff
-from core.globalvars import * # import the global variables
 xsrf_main() # the true start of the program ;)
 
 
