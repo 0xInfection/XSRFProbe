@@ -80,7 +80,7 @@ def SameSite(url):
         else:
             verbout(R, 'No cookie value reflection found...')
 
-    if found = 0x01:
+    if found == 0x01:
         print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to ANY type of CSRF attacks!')
         print(color.GREEN+' [+] Protection Method Detected : '+color.BG+' SameSite Flag on Cookies ')
     else:
