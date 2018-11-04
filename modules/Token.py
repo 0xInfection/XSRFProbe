@@ -19,10 +19,9 @@ from files.paramlist import COMMON_CSRF_NAMES
 
 def Token(req):
     '''
-    This method checks for whether anti-csrf tokens are
+    This method checks for whether Anti-CSRF Tokens are
                present in the request. 
     '''
-
     param = '' # Initializing param
     query = ''
     # First lets have a look at core/config.py and see if its set 
