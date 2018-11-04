@@ -9,66 +9,78 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
+# Importing stuff
 from core.impo import *
 from files.config import *
 from core.verbout import *
-from core.globalvars import *
 from modules.Crawler import *
 from modules.Debugger import *
-from modules.Parser import * # get imports
+from modules.Parser import *
 from modules.Entropy import *
 from modules.Referer import *
+from modules.Origin import *
+from modules.Cookie import *
+warnings.filterwarnings('ignore') # Remove lame warnings :D
 
 def xsrf_main(): # lets begin it!
 
-    os.system('clear') # clear shit from terminal :p
-    banner() # print the banner
-    banabout() # the second banner
-    web, cookie = inputin() # take the input
-    form1 = form10() # get the form 1 ready
-    form2 = form20() # get the form 2 ready
+    os.system('clear') # Clear shit from terminal :p
+    banner() # Print the banner
+    banabout() # The second banner
+    web, cookie = inputin() # Take the input
+    form1 = form10() # Get the form 1 ready
+    form2 = form20() # Get the form 2 ready
 
-    Cookie0 = http.cookiejar.CookieJar() # cookies ummm...
-    Cookie1 = http.cookiejar.CookieJar() # another one :o
-    resp1 = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(Cookie0)) # process cookies and do stuff
-    resp2 = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(Cookie1))  # process cookies and do stuff
+    # Lets get the cookies that we encounter...
+    Cookie0 = http.cookiejar.CookieJar() # First as User1
+    Cookie1 = http.cookiejar.CookieJar() # Then as User2
+    resp1 = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(Cookie0)) # Process cookies and do stuff
+    resp2 = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(Cookie1)) # Process cookies and do stuff
 
     actionDone = [] # init to the done stuff
 
-    csrf='' # no token initialise / invalid token
+    csrf = '' # no token initialise / invalid token
+    ref_detect = 0x00 # Null Char
+    ori_detect = 0x00
     init1 = web # get the starting page
     form = Form_Debugger() # init to the form parser+token generator
 
     bs1=BeautifulSoup(form1).findAll('form',action=True)[0] # make sure the stuff works properly
     bs2=BeautifulSoup(form2).findAll('form',action=True)[0] # same as above
 
-    action = init1 # lets start the stuff
+    action = init1 # First init
 
-    resp1.open(action) # make thre req ;)
-    resp2.open(action) # go for the second one
+    resp1.open(action) # Makes request as User2
+    resp2.open(action) # Make request as User1
 
     verbout(GR, "Initializing crawling and scanning...")
-    crawler = Crawler_Handler(init1,resp1) # pass onto the crawler
+    crawler = Crawler_Handler(init1, resp1) # Init to the Crawler handler
 
     try:
 
-        while crawler.noinit(): # until 0 urls left
-            url = next(crawler) # go for next!
+        while crawler.noinit(): # Until 0 urls left
+            url = next(crawler) # Go for next!
 
-            verbout(C, 'Crawling :> ' +color.CYAN+ url) # display what url its crawling
+            print('\n'+C+'Crawling :> ' +color.CYAN+ url) # Display what url its crawling
 
             try:
-                soup = crawler.process(web) # start the parser
+                soup = crawler.process(web) # Start the parser
                 if not soup:
-                    continue; # making sure not to end the program yet...
-                i = 0 # set count = 0
-                if Referer(url):
-                    print(color.GREEN+' [+] Endoint '+color.ORANGE+'Referer Validation'+color.GREEN+' Present!')
-                    print(color.GREEN+' [-] Heuristics reveal endpoint might NOT be vulnerable...')
-                else:
-                    print(color.RED+' [+] Endpoint '+color.ORANGE+'Referer Validation'+color.RED+' Not Present!')
-                    print(color.RED+' [-] Heuristics reveal endpoint might be VULNERABLE to Referer Based CSRFs...')
-                
+                    continue; # Making sure not to end the program yet...
+                i = 0 # Set count = 0
+                if REFERER_ORIGIN_CHECKS:
+                    # Referer Based Checks if True...
+                    verbout(O, 'Checking endpoint request validation via '+color.GREY+'Referer'+color.END+' Checks...')
+                    if Referer(url):
+                        ref_detect = 0x01
+                    verbout(O, 'Confirming the vulnerability...')
+                        
+                    # We have finished with Referer Based Checks, lets go for Origin Based Ones...
+                    verbout(O, 'Confirming endpoint request validation via '+color.GREY+'Origin'+color.END+' Checks...')
+                    if Origin(url):
+                        ori_detect = 0x01
+
+                # Now lets get the forms...
                 verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
                 for m in getAllForms(soup): # iterating over all forms extracted
                     action = Parser.buildAction(url,m['action']) # get all forms which have 'action' attribute
@@ -76,14 +88,14 @@ def xsrf_main(): # lets begin it!
                         if FORM_SUBMISSION:
                             try:
                                 result = form.prepareFormInputs(m) # prepare inputs
-                                r1 = request(url, action, result, resp1, cookie) # make request with token values generated as user1
+                                r1 = form_requester(url, action, result) # make request with token values generated as user1
                                 result = form.prepareFormInputs(m) # prepare the input types
-                                r2 = request(url, action, result, resp2, cookie) # again make request with token values generated as user2
+                                r2 = form_requester(url, action, result) # again make request with token values generated as user2
 
                                 if Entropy(result): #  yep we got the vuln for sure!
                                     if re.search(csrf, r2): 
                                         print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-                                        print(color.ORANGE+' [!] Vulnerability Type: '+color.CYAN+'Very Weak/No Anti-CSRF Token...')
+                                        print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Very Weak/No Anti-CSRF Token '+color.END)
                                         try:
                                             if m['name']: # print it out fancy:p
                                                 print(color.RED+'\n +---------+')
@@ -100,9 +112,9 @@ def xsrf_main(): # lets begin it!
                                             print(color.RED+' +---------+\n')
                                             print(color.BLUE+' [+] URL : ' +color.CYAN+url)
                                             print(color.GREEN+' [+] Action : ' +color.ORANGE+m['action'])
-
+                                        # Print out the params
                                         print(color.ORANGE+' [+] Query : '+color.GREY+urllib.parse.urlencode(result))
-                                        print('')                               # print out the params + url
+                                        print('')
 
                                     continue;
 
@@ -117,7 +129,7 @@ def xsrf_main(): # lets begin it!
 
                                 verbout(GR, 'Preparing form inputs...')
                                 contents2 = form.prepareFormInputs(form2) # prepare for form 2
-                                r3 = request(url,action,contents2,resp2, cookie) # make request as user3
+                                r3 = form_requester(url,action,contents2) # make request as user3
 
                                 try:
                                     checkdiff = difflib.ndiff(r1.splitlines(1),r2.splitlines(1)) # check the diff noted
@@ -140,7 +152,7 @@ def xsrf_main(): # lets begin it!
                                     # than result13
                                     if len(result12)<=len(result13):
                                         print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-                                        print(color.ORANGE+' [!] Vulnerability Type: '+color.CYAN+' POST-Based Request Forgery...')
+                                        print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' POST-Based Request Forgery '+color.END)
                                         time.sleep(0.3)
                                         print(O+'PoC of response and request...')
                                         try: # yet we give out what we found
