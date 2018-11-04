@@ -9,8 +9,57 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
+# Lets assign some global variables...
+global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALUE
+global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
+
+# Site Url to be scanned (Required)
+SITE_URL = ''
+
 # Print out verbose (turn it off for only brief outputs)
-DEBUG = True
+DEBUG = False
+
+# User-Agent to be used (If COOKIE_VALUE is not supplied)
+USER_AGENT_RANDOM = False
+
+# User-Agent to be used (If COOKIE_VALUE supplied)
+#
+# NOTE: This is a precaution in case the cookie value is supplied,
+# if the user-agent gets changed from time to time, the remote 
+# application might trigger up some protection agents
+USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)'
+
+# Cookie value to be sent alongwith the requests
+#
+# Keep this value to '' untill you want to scan your web application
+# as a authorised user/admin with elevated priviledges, which might
+# give XSRFProbe a wider scope to scan. This is typically recommended
+# for websites which has logins/sessions feature. (eg. Social Networking
+# Sites, E-Commerce Sites).
+COOKIE_VALUE = ''
+
+# Header values to be used (Modify it as per your need)
+HEADER_VALUES = {
+                    'Accept'            : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language'   : 'en-US,en;q=0.5',
+                    'Accept-Encoding'   : 'gzip',
+                    'DNT'               : '1', # Do Not Track Request Header :D
+                    'Connection'        : 'close'
+                }
+
+# Request Timeout (Keep the max. timeout value to 10s)
+TIMEOUT_VALUE = 10
+
+# Whether to include Cookie Based Checks everywhere
+#
+# Note: If you keep this to 'True', you must supply a 
+# cookie value in COOKIE_VALUE to test with full efficiency.
+# Otherwise only a partial check will be done against the cookies
+# which XSRFProbe might come across while requesting forms/data
+# and other relevant areas.
+#
+# (Recommended Keeping True)
+COOKIE_BASED = True
 
 # Include checks for Form Based CSRFs (POST method) 
 # (Recommended keeping True)
@@ -20,7 +69,7 @@ POST_BASED = True
 TOKEN_CHECKS = True
 
 # Referer/Origin Checks (Recommended keeping True)
-REFERER_CHECKS = True
+REFERER_ORIGIN_CHECKS = True
 
 # Whether to submit Crafted Forms (Recommended keeping True)
 # If you turn this to False, it will omit form submissions, 
@@ -32,6 +81,10 @@ FORM_SUBMISSION = True
 # eg. Use one of your Subdomains (Same Origin Policy))
 REFERER_URL = 'http://www.pwn.io'
 
+# Origin Url (Change It Accordingly) 
+# eg. Use one of your Subdomains (Same Origin Policy))
+ORIGIN_URL = 'http://www.pwn.io'
+
 # The length of the custom token to be generated for params
 #
 # The recommended value I prefer is 6. Greater value might
@@ -41,3 +94,6 @@ REFERER_URL = 'http://www.pwn.io'
 # Lower value wll not harm but it will make it difficult 
 # identifying request parameters and token values in a. 
 TOKEN_GENERATION_LENGTH = 6
+
+# List of Urls that are not to be scanned (excluded).
+EXCLUDE_URLS = []

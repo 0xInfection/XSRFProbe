@@ -10,7 +10,10 @@
 # https://github.com/0xInfection/XSRFProbe
 
 # List of anti-CSRF paramter values which are sent for form 
-# verification of the token.
+# verification, I have seen. These values are collected based on
+# my interactions with different web-applications. :)
+#
+# Feel free to add more of your tokens if you have. ;)
 COMMON_CSRF_NAMES = (
         'CSRFName',                   # OWASP CSRF_Guard
         'CSRFToken',                  # OWASP CSRF_Guard
