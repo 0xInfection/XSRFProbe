@@ -9,14 +9,17 @@
 #This module requires XSRF-Probe
 #https://github.com/0xInfection/XSRF-Probe
 
-
 import sys
 import socket
 from core.colors import *
+from files.config import *
 
 def inputin():
 
-    web = input(color.CYAN+' [$] Enter target address :> '+color.END) # take input
+    if SITE_URL != '':
+        web = SITE_URL # If already assigned
+    else:
+        web = input(color.CYAN+' [$] Enter target address :> '+color.END) # take input
 
     if 'http' not in web: # add protocol to site
         web = 'http://' + web
@@ -31,7 +34,9 @@ def inputin():
         print(R+'Site seems to be down...')
         sys.exit(0)
 
-    cook = input(color.RED+' [$] Got any cookies? '+color.ORANGE+'[Enter for None]'+color.RED+' :> '+color.END)
+    if COOKIE_VALUE:
+        cook = COOKIE_VALUE
+        
     if web.endswith('/'): # check
         return web, cook
     else:

@@ -44,7 +44,7 @@ Do not use this tool on a live site!
 
 It is because this tool is designed to perform all kinds of form submissions automatically which can sabotage the site. Sometimes you may screw up the database and most probably perform a DoS on the site as well.
 
-Test on a disposable setup/test site!
+Test on a disposable test site!
 
 ### Drawbacks:
 The scanner has the following drawbacks presently:
@@ -98,4 +98,4 @@ Usage of XSRFProbe for testing websites without prior mutual consistency can be 
 
 Thats it folks! Thank you...
 
-> Copyright © [The Infected Drake](https://www.twitter.com/0xInfection)
+> Copyright © [The Infected Drake](https://www.twitter.com/0xinfection)
