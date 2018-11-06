@@ -92,5 +92,5 @@ def randString(): # generate random strings
     verbout(GR,'Compiling strings...')
     return ''.join( Random().sample(string.ascii_letters, TOKEN_GENERATION_LENGTH)) # any 6 chars
 
-def getAllForms(soup): # get all forms (form based csrf)
+def getAllForms(soup): # get all forms
     return soup.findAll('form',action=True,method=re.compile("post", re.IGNORECASE)) # duh...
