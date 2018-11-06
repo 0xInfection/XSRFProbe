@@ -11,8 +11,9 @@
 
 import requests
 from core.colors import *
-from core.verbout import verbout
 from files.config import *
+from core.verbout import verbout
+from core.request import Get
 
 def Referer(url):
     """
@@ -22,7 +23,7 @@ def Referer(url):
 
     # Make the request normally and get content
     verbout(O,'Making request on normal basis...')
-    req0x01 = norm_requester(url)
+    req0x01 = Get(url)
     
     # Set normal headers...
     verbout(GR,'Setting generic headers...')
@@ -35,11 +36,12 @@ def Referer(url):
             
     # We put the cookie in request, if cookie supplied :D
     if COOKIE_VALUE:
-        gen_headers['Cookie'] = COOKIE_VALUE
+        for cookie in COOKIE_VALUE:
+            gen_headers['Cookie'] = cookie
     
     # Make the request with different referer header and get the content
     verbout(O,'Making request with tampered headers...')
-    req0x02 = norm_requester(url, headers=gen_headers)
+    req0x02 = Get(url, headers=gen_headers)
     
     # Comparing the length of the requests' responses. If both content 
     # lengths are same, then the site actually does not validate referer 
@@ -56,11 +58,11 @@ def Referer(url):
     # TODO: This algorithm has lots of room for improvement
     if len(req0x01.content) != len(req0x02.content):
         print(color.GREEN+' [+] Endoint '+color.ORANGE+'Referer Validation'+color.GREEN+' Present!')
-        print(color.GREEN+' [-] Heuristics reveal endpoint might NOT be vulnerable...')
+        print(color.GREEN+' [-] Heuristics reveal endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+'...')
         return True
     else:
         print(color.RED+' [+] Endpoint '+color.ORANGE+'Referer Validation'+color.RED+' Not Present!')
-        print(color.RED+' [-] Heuristics reveal endpoint might be VULNERABLE to Referer Based CSRFs...')
+        verbout(color.RED,' [-] Heuristics reveal endpoint might be '+color.BR+' VULNERABLE '+color.END+color.RED+' to Origin Based CSRFs...')
         print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
         print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BR+' Referer Based Request Forgery '+color.END)
         return False
