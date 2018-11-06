@@ -54,7 +54,7 @@ def SameSite(url):
         if 'Cookie'.lower() in h.lower():
             verbout(G,'Found cookie header value...')
             cookieval = head[h]
-            verbout(color.ORANGE,'Cookie Received: '+color.CYAN+str(cookieval))
+            verbout(color.ORANGE,' [+] Cookie Received: '+color.CYAN+str(cookieval))
             m = cookieval.split(';')
             verbout(GR,'Examining Cookie...')
             for q in m:
@@ -81,7 +81,7 @@ def SameSite(url):
         if 'Cookie'.lower() in h.lower():
             verbout(G,'Found cookie header value...')
             cookieval = head[h]
-            verbout(color.ORANGE,'Cookie Received: '+color.CYAN+str(cookieval))
+            verbout(color.ORANGE,' [+] Cookie Received: '+color.CYAN+str(cookieval))
             m = cookieval.split(';')
             verbout(GR,'Examining Cookie...')
             for q in m:
@@ -101,7 +101,7 @@ def SameSite(url):
     # This is the most crucial part of the detection.
     #
     # TODO: Improve the logic in detection.
-    verbout(color.GREY,' [+] Lets examine how server reacts to valid cookie fromj different referer...')
+    verbout(color.GREY,' [+] Lets examine how server reacts to valid cookie from a different referer...')
     gen_headers = HEADER_VALUES
     gen_headers['User-Agent'] = USER_AGENT or RandomAgent()
     gen_headers['Referer'] = REFERER_URL

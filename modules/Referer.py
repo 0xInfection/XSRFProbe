@@ -63,7 +63,7 @@ def Referer(url):
     else:
         print(color.RED+' [+] Endpoint '+color.ORANGE+'Referer Validation'+color.RED+' Not Present!')
         verbout(color.RED,' [-] Heuristics reveal endpoint might be '+color.BR+' VULNERABLE '+color.END+color.RED+' to Origin Based CSRFs...')
-        print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
+        print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
         print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BR+' Referer Based Request Forgery '+color.END)
         return False
 

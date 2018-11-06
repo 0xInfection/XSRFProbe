@@ -21,7 +21,7 @@ class Form_Debugger():
     def prepareFormInputs(self, form):
         '''
         This method parses specific form types and generates tokens based 
-                            on their input types. :)
+                        on their input types.
         '''
         verbout(O,'Crafting inputs as form type...')
         verbout(GR,'Parsing final inputs...')
@@ -29,7 +29,7 @@ class Form_Debugger():
 
         verbout(O,'Processing'+color.BOLD+' <input type="hidden" name="...') # get hidden input types
         for m in form.findAll('input',{'name' : True,'type' : 'hidden'}):
-            if re.search(' value=',m.__str__()):
+            if re.search(' value=', str(m), re.IGNORECASE):
                 value=m['value'].encode('utf8') # make sure no encoding errors there
             else:
                 value=randString()
@@ -37,7 +37,7 @@ class Form_Debugger():
 
         verbout(O,'Processing '+color.BOLD+'<input type="test" name="...') # get name type inputs
         for m in form.findAll('input',{'name' : True,'type' : 'text'}):
-            if re.search(' value=',m.__str__()):
+            if re.search(' value=', str(m), re.IGNORECASE):
                 value=m['value'].encode('utf8') # make sure no encoding errors there
             else:
                 value=randString()
@@ -45,7 +45,7 @@ class Form_Debugger():
 
         verbout(O,'Processing'+color.BOLD+' <input type="password" name="...') # get password inputs
         for m in form.findAll('input',{'name' : True,'type' : 'password'}):
-            if re.search(' value=',m.__str__()):
+            if re.search(' value=', str(m), re.IGNORECASE):
                 value=m['value'].encode('utf8') # make sure no encoding errors there
             else:
                 value=randString()
@@ -53,7 +53,7 @@ class Form_Debugger():
 
         verbout(O,'Processing '+color.BOLD+'<input type="submit" name="...') # get submit buttons :D
         for m in form.findAll('input',{'name' : True,'type' : 'submit'}):
-            if re.search(' value=',m.__str__()):
+            if re.search(' value=', str(m), re.IGNORECASE):
                 value=m['value'].encode('utf8') # make sure no encoding errors there
             else:
                 value=randString()
@@ -61,7 +61,7 @@ class Form_Debugger():
 
         verbout(O,'Processing'+color.BOLD+' <input type="checkbox" name="...') # get checkbox type inputs
         for m in form.findAll('input',{'name' : True,'type' : 'checkbox'}):
-            if re.search(' value=',m.__str__()):
+            if re.search(' value=', str(m), re.IGNORECASE):
                 value=m['value'].encode('utf8') # make sure no encoding errors there
             else:
                 value=randString() # assign passed on value
@@ -70,7 +70,7 @@ class Form_Debugger():
         verbout(O,'Processing'+color.BOLD+' <input type="radio" name="...') # get radio buttons :D
         listRadio = []
         for m in form.findAll('input',{'name' : True,'type' : 'radio'}):
-            if (not m['name'] in listRadio) and re.search(' value=',m.__str__()):
+            if (not m['name'] in listRadio) and re.search(' value=', str(m), re.IGNORECASE):
                 listRadio.append(m['name'])
                 input[m['name']] = value.encode('utf8') # make sure no encoding errors there
 
