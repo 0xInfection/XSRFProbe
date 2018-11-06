@@ -29,13 +29,20 @@ USER_AGENT_RANDOM = False
 # application might trigger up some protection agents
 USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)'
 
-# Cookie value to be sent alongwith the requests
+# Cookie value to be sent alongwith the requests. This option is particularly
+# needed for a wholesome check on CSRFs. Since for a basic successful CSRF attack
+# one needs to have a site with long-duration persistent session cookies and no
+# Referer validation.
 #
-# Keep this value to '' untill you want to scan your web application
-# as a authorised user/admin with elevated priviledges, which might
-# give XSRFProbe a wider scope to scan. This is typically recommended
-# for websites which has logins/sessions feature. (eg. Social Networking
-# Sites, E-Commerce Sites).
+# Also you might want to keep this value to '' untill you want to scan your 
+# web application as a authorised user/admin with elevated priviledges,
+# which might give XSRFProbe a wider scope to scan. This is typically
+# recommended for websites which has logins/sessions feature. (eg. Social
+# Networking Sites, E-Commerce Sites).
+#
+# NOTE: If this value is not supplied, XSRFProbe will only scan for simple
+# cookies which the tool might encounter while making requests, especially
+# POST requests. 
 COOKIE_VALUE = []
 
 # Header values to be used (Modify it as per your need)
@@ -48,7 +55,12 @@ HEADER_VALUES = {
                 }
 
 # Request Timeout (Keep the max. timeout value to 10s)
-TIMEOUT_VALUE = 10
+TIMEOUT_VALUE = 7
+
+# The time delay between requests. This option is especially required 
+# when there is some sort of security measure such as load-balancers
+# or a Firewall (WAF).
+DELAY_VALUE = 0
 
 # Whether to include Cookie Based Checks everywhere
 #
