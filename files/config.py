@@ -17,7 +17,7 @@ global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BA
 SITE_URL = ''
 
 # Print out verbose (turn it off for only brief outputs)
-DEBUG = False
+DEBUG = True
 
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
 USER_AGENT_RANDOM = False
@@ -36,7 +36,7 @@ USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .N
 # give XSRFProbe a wider scope to scan. This is typically recommended
 # for websites which has logins/sessions feature. (eg. Social Networking
 # Sites, E-Commerce Sites).
-COOKIE_VALUE = ''
+COOKIE_VALUE = []
 
 # Header values to be used (Modify it as per your need)
 HEADER_VALUES = {
@@ -97,3 +97,7 @@ TOKEN_GENERATION_LENGTH = 6
 
 # List of Urls that are not to be scanned (excluded).
 EXCLUDE_URLS = []
+
+# Output directory where everything (including logs) are to 
+# be stored
+OUTPUT_DIR = ''
