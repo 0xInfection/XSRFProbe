@@ -11,9 +11,10 @@
 
 import requests
 from core.colors import * 
-from core.randua import *
 from files.config import *
-from core.verbout import *
+from core.verbout import verbout
+from core.logger import pheaders
+from core.randua import RandomAgent
 import urllib.request, urllib.parse, urllib.error # import ends
 
 headers = HEADER_VALUES # set the headers
@@ -69,4 +70,5 @@ def Get(url, headers=headers):
     # We do not verify thr request while GET requests
     verbout(GR, 'Processing the GET Request...')
     req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, verify=False)
+    pheaders(req.headers)
     return req

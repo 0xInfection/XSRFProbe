@@ -17,7 +17,7 @@ from core.banabout import msg
 from files.updater import updater
 
 # Processing command line arguments
-parser = argparse.ArgumentParser(prog='xsrfprobe.py')
+parser = argparse.ArgumentParser('python3 xsrfprobe.py')
 parser._action_groups.pop()
 
 # A simple hack to have required argumentsa and optional arguments separately
@@ -47,7 +47,7 @@ args = parser.parse_args()
 
 if not len(sys.argv) > 1:
     print('''
-    \033[1;91mXSRFProbe\033[0m, \033[1;97mA Cross Site Request Forgery Audit Toolkit\033[0m
+    \033[1;91mXSRFProbe\033[0m, \033[1;97mA \033[1;93mCross Site Request Forgery \033[1;97mAudit Toolkit\033[0m
 ''')
     parser.print_help()
     quit('')
@@ -59,7 +59,7 @@ if args.update:
 
 # Print out XSRFProbe version
 if args.version:
-    print('\n [+] \033[1;91mXSRFProbe Version\033[0m : \033[1;97m'+open('files/VersionNum').read())
+    print('\n\033[1;97m [+] \033[1;91mXSRFProbe Version\033[0m : \033[1;97m'+open('files/VersionNum').read())
     quit()
 
 # Now lets update some global config variables

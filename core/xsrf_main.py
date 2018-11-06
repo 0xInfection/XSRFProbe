@@ -80,8 +80,8 @@ def xsrf_main(): # lets begin it!
                     if Origin(url):
                         ori_detect = 0x01
 
-                if COOKIE_BASED:
-                    Cookie(url)
+                #if COOKIE_BASED:
+                 #   Cookie(url)
 
                 # Now lets get the forms...
                 verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')

@@ -18,6 +18,7 @@ class color:
     ORANGE  = '\033[1;93m' # orange
     BLUE  = '\033[1;94m' # blue
     PURPLE  = '\033[1;95m' # purple
+    UNDERLINE = '\033[4m'
     CYAN  = '\033[1;96m' # cyan
     GREY = '\033[1;97m' # gray
     TAN  = '\033[1;93m' # tan
