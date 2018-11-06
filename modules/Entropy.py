@@ -68,7 +68,7 @@ def Entropy(req):
         print(color.GREEN+' [-] Anti-CSRF Token Entropy Calculated is '+color.ORANGE+'GREATER than 2.4... ')
         print(color.ORANGE+' [-] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
         time.sleep(0.5)
-        print(color.GREEN+' [+] The Endpoint implements Token Based Checks for preventing CSRF Attacks...')
+        print(color.ORANGE+' [!] CSRF Mitigation Method: '+color.BG+' High Entropy Anti-CSRF Tokens '+color.END)
         return False
     else:
         print(color.RED+' [-] Anti-CSRF Token Entropy Calculated is '+color.ORANGE+'less than 2.4... ')
