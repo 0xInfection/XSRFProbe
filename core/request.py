@@ -17,12 +17,11 @@ from core.verbout import *
 import urllib.request, urllib.parse, urllib.error # import ends
 
 headers = HEADER_VALUES # set the headers
-headers['Referer'] = referer # set referer
 
 # Set Cookie
 if COOKIE_VALUE:
-    headers['Cookie'] = COOKIE_VALUE # set cookie
-    headers['User-Agent'] = USER_AGENT
+    for cookie in COOKIE_VALUE:
+        headers['Cookie'] = cookie
         
 # Set User-Agent
 if USER_AGENT_RANDOM:
@@ -31,11 +30,12 @@ else:
     headers['User-Agent'] = USER_AGENT
 
 
-def form_requester(referer,action,form):
+def Post(referer,action,form):
     '''
     The main use of this function is as a
             Form Requester [POST].
     '''
+    headers['Referer'] = referer # set referer
     verbout(GR, 'Requesting the form...')
     data = urllib.parse.urlencode(form) # encode stuff to make callable
     try:
@@ -61,12 +61,12 @@ def form_requester(referer,action,form):
     except:
         return '' # if at all nothing happens :(
         
-def norm_requester(url, _headers=headers):
+def Get(url, headers=headers):
     '''
     The main use of this function is as a 
             Url Requester [GET].
     '''
     # We do not verify thr request while GET requests
     verbout(GR, 'Processing the GET Request...')
-    req = requests.get(url, headers=_headers, timeout=TIMEOUT_VALUE, verify=False)
+    req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, verify=False)
     return req

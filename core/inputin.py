@@ -29,16 +29,11 @@ def inputin():
         print(O+'Testing site status...')
         socket.gethostbyname(web0) # test whether site is up or not
         print(color.GREEN+' [+] Site seems to be up!'+color.END)
-
     except socket.gaierror: # if site is down
         print(R+'Site seems to be down...')
         sys.exit(0)
-
-    if COOKIE_VALUE:
-        cook = COOKIE_VALUE
         
-    if web.endswith('/'): # check
-        return web, cook
-    else:
+    if not web.endswith('/'): # check
         web = web + '/' # make sure the site address ends with '/'
-        return web, cook
+    return web
+

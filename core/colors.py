@@ -22,7 +22,7 @@ class color:
     GREY = '\033[1;97m' # gray
     TAN  = '\033[1;93m' # tan
     BR = '\033[1;97;41m' # background red
-    BG = '\033[1;97;42m'
+    BG = '\033[1;97;42m' # background green
     r3d  = '\033[91m' # red
     org  = '\033[93m' # orange
 

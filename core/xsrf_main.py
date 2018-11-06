@@ -10,6 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 # Importing stuff
+from core.options import *
 from core.impo import *
 from files.config import *
 from core.verbout import *
@@ -27,7 +28,7 @@ def xsrf_main(): # lets begin it!
     os.system('clear') # Clear shit from terminal :p
     banner() # Print the banner
     banabout() # The second banner
-    web, cookie = inputin() # Take the input
+    web = inputin() # Take the input
     form1 = form10() # Get the form 1 ready
     form2 = form20() # Get the form 2 ready
 
@@ -57,11 +58,10 @@ def xsrf_main(): # lets begin it!
     crawler = Crawler_Handler(init1, resp1) # Init to the Crawler handler
 
     try:
-
         while crawler.noinit(): # Until 0 urls left
             url = next(crawler) # Go for next!
 
-            print('\n'+C+'Crawling :> ' +color.CYAN+ url) # Display what url its crawling
+            print(C+'Crawling :> ' +color.CYAN+ url) # Display what url its crawling
 
             try:
                 soup = crawler.process(web) # Start the parser
@@ -80,6 +80,9 @@ def xsrf_main(): # lets begin it!
                     if Origin(url):
                         ori_detect = 0x01
 
+                if COOKIE_BASED:
+                    Cookie(url)
+
                 # Now lets get the forms...
                 verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
                 for m in getAllForms(soup): # iterating over all forms extracted
@@ -88,9 +91,9 @@ def xsrf_main(): # lets begin it!
                         if FORM_SUBMISSION:
                             try:
                                 result = form.prepareFormInputs(m) # prepare inputs
-                                r1 = form_requester(url, action, result) # make request with token values generated as user1
+                                r1 = Post(url, action, result) # make request with token values generated as user1
                                 result = form.prepareFormInputs(m) # prepare the input types
-                                r2 = form_requester(url, action, result) # again make request with token values generated as user2
+                                r2 = Post(url, action, result) # again make request with token values generated as user2
 
                                 if Entropy(result): #  yep we got the vuln for sure!
                                     if re.search(csrf, r2): 
@@ -129,7 +132,7 @@ def xsrf_main(): # lets begin it!
 
                                 verbout(GR, 'Preparing form inputs...')
                                 contents2 = form.prepareFormInputs(form2) # prepare for form 2
-                                r3 = form_requester(url,action,contents2) # make request as user3
+                                r3 = Post(url,action,contents2) # make request as user3
 
                                 try:
                                     checkdiff = difflib.ndiff(r1.splitlines(1),r2.splitlines(1)) # check the diff noted
