@@ -54,7 +54,7 @@ if not len(sys.argv) > 1:
 
 # Update XSRFProbe to latest version
 if args.update:
-    update()
+    updater()
     quit()
 
 # Print out XSRFProbe version
