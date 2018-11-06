@@ -55,7 +55,7 @@ def Referer(url):
     # other vulnerabilities, such as XSS or open redirects, in the same
     # domain.
     #
-    # TODO: This algorithm has lots of room for improvement
+    # TODO: This algorithm has lots of room for improvement.
     if len(req0x01.content) != len(req0x02.content):
         print(color.GREEN+' [+] Endoint '+color.ORANGE+'Referer Validation'+color.GREEN+' Present!')
         print(color.GREEN+' [-] Heuristics reveal endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+'...')
