@@ -24,7 +24,7 @@ def Token(req):
     '''
     param = '' # Initializing param
     query = ''
-    # First lets have a look at core/config.py and see if its set 
+    # First lets have a look at config.py and see if its set 
     if TOKEN_CHECKS:
         # Lets check for the request values. But before that lets encode and unquote the request :D
         verbout(O,'Parsing request for detecting anti-csrf tokens...')
