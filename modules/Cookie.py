@@ -64,12 +64,8 @@ def SameSite(url):
                     q = q.split('=')[1].strip()
                     verbout(C, 'Cookie: '+color.ORANGE+q)
                     break
-                else:
-                    verbout(R,'No '+color.GREY+'SameSite Flag'+color.RED+' detected on Cookies...')
             if foundx1 == 0x01:
                 verbout(R,' [+] Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Present!')
-        else:
-            verbout(R, 'No cookie value reflection found...')
             
     # Step 2: Now we check security mechanisms when the Referer is
     # different, i.e. request originates from a different url other
@@ -95,10 +91,9 @@ def SameSite(url):
                     q = q.split('=')[1].strip()
                     verbout(C, 'Cookie: '+color.ORANGE+q)
                     break
-                else:
-                    verbout(R,'No '+color.GREY+'SameSite Flag'+color.RED+' detected on Cookies...')
-        else:
-            verbout(R, 'No cookie value reflection found...')
+            
+            if foundx1 == 0x01:
+                verbout(R,' [+] Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Present!')
             
     # Step 3: And finally comes the most important step. Lets see how
     # the site reacts to a valid cookie (ofc supplied by the user) coming
@@ -120,7 +115,7 @@ def SameSite(url):
         if 'Cookie'.lower() in h.lower():
             verbout(G,'Found cookie header value...')
             cookieval = head[h]
-            verbout(color.ORANGE,'Cookie Received: '+color.CYAN+str(cookieval))
+            verbout(color.ORANGE,' [+] Cookie Received: '+color.CYAN+str(cookieval))
             m = cookieval.split(';')
             verbout(GR,'Examining Cookie...')
             for q in m:
@@ -129,19 +124,17 @@ def SameSite(url):
                     foundx3 = 0x01
                     q = q.split('=')[1].strip()
                     verbout(C, 'Cookie: '+color.ORANGE+q)
-                    break
-                else:
-                    verbout(R,'No '+color.GREY+'SameSite Flag'+color.RED+' detected on Cookies...')
-        else:
-            verbout(R, 'No cookie value reflection found...')   
-    
+                    break 
+            
+            if foundx1 == 0x01:
+                verbout(R,'Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Present!')
     
     if (foundx1 == 0x01 and foundx3 == 0x00) and (foundx2 == 0x00 or foundx2 == 0x01):
         print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to ANY type of CSRF attacks!')
         print(color.GREEN+' [+] Protection Method Detected : '+color.BG+' SameSite Flag on Cookies '+color.END)
     else:
-        verbout(R,' [+] Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Not Present!')
-        verbout(R,' [!] Heuristic(s) reveal endpoint might be '+color.BR+' VULNERABLE '+color.END+' to CSRFs...')
+        verbout(R,'Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Not Present!')
+        verbout(R,'Heuristic(s) reveal endpoint might be '+color.BR+' VULNERABLE '+color.END+' to CSRFs...')
         print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
         print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BR+' No SameSite Flag on Cookies '+color.END)                
 
