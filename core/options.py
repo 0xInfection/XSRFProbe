@@ -13,7 +13,6 @@
 import argparse, sys
 from files import config
 from core.colors import R
-from core.banabout import msg
 from files.updater import updater
 
 # Processing command line arguments

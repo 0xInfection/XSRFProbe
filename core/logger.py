@@ -31,7 +31,7 @@ def pheaders(tup):
                     requests normally.
     '''
     verbout(GR, 'Receiving headers...\n')
-    print(color.GREY+'  '+color.UNDERLINE+'HEADERS'+color.END+color.GREY+':'+'\n')
+    verbout(color.GREY,'  '+color.UNDERLINE+'HEADERS'+color.END+color.GREY+':'+'\n')
     for key, val in tup.items():
         verbout('  ',color.CYAN+key+': '+color.ORANGE+val)
     verbout('','')

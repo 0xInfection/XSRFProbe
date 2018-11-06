@@ -80,8 +80,8 @@ def xsrf_main(): # lets begin it!
                     if Origin(url):
                         ori_detect = 0x01
 
-                #if COOKIE_BASED:
-                 #   Cookie(url)
+                if COOKIE_BASED:
+                    Cookie(url)
 
                 # Now lets get the forms...
                 verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
@@ -198,7 +198,7 @@ def xsrf_main(): # lets begin it!
                 verbout(O, 'Moving on...')
                 continue; # make sure it doesn't stop
 
-        verbout('\n'+G,"Scan completed!"+'\n')
+        print('\n'+G+"Scan completed!"+'\n')
 
     except urllib.error.HTTPError as e: # 403 not authenticated
         if str(e.code) == '403':
