@@ -27,6 +27,7 @@ def Cookie(url):
             and the related security on them to
                     prevent CSRF attacks.
     '''
+    print(color.GREY+' [+] Proceeding for cookie based checks...')
     SameSite(url)
     Persistence(url)
 
@@ -36,18 +37,17 @@ def SameSite(url):
                     SameSite Flags.
     '''
     foundx1, foundx2, foundx3 = 0x00, 0x00, 0x00
-    print(color.ORANGE+' [+] Proceeding for cookie based checks...')
     # Step 1: First we check that if the server returns any 
     # SameSite flag on Cookies with the same Referer as the netloc
-    verbout(C,'Lets examine how server reacts to same referer...')
+    verbout(color.GREY,' [+] Lets examine how server reacts to same referer...')
     gen_headers = HEADER_VALUES
     gen_headers['User-Agent'] = USER_AGENT or RandomAgent()
-    verbout(GR,'Setting referer same as host...')
+    verbout(GR,'Setting Referer header same as host...')
     gen_headers['Referer'] = urlsplit(url).netloc
     if COOKIE_VALUE:
         for cook in COOKIE_VALUE:
             gen_headers['Cookie'] = cook
-    getreq = Get(url, headers=gen_headers)
+    getreq = Get(url, headers=gen_headers)  # Making the request
     head = getreq.headers
     for h in head:
         #if search('cookie', h, I) or search('set-cookie', h, I):
@@ -55,14 +55,14 @@ def SameSite(url):
             verbout(G,'Found cookie header value...')
             cookieval = head[h]
             verbout(color.ORANGE,'Cookie Received: '+color.CYAN+str(cookieval))
-            m = cookieval.split(';')[1].strip()
+            m = cookieval.split(';')
             verbout(GR,'Examining Cookie...')
             for q in m:
                 if search('SameSite', q, I):
                     verbout(G,'SameSite Flag '+color.ORANGE+' detected on cookie!')
                     foundx1 = 0x01
-                    q = q.split('=')[1]
-                    verbout
+                    q = q.split('=')[1].strip()
+                    verbout(C, 'Cookie: '+color.ORANGE+q)
                     break
                 else:
                     verbout(R,'No '+color.GREY+'SameSite Flag'+color.RED+' detected on Cookies...')
@@ -74,25 +74,26 @@ def SameSite(url):
     # Step 2: Now we check security mechanisms when the Referer is
     # different, i.e. request originates from a different url other
     # than the host. (This time without the Cookie assigned)
+    verbout(color.GREY,' [+] Lets examine how server reacts to a fake external referer...')
     gen_headers = HEADER_VALUES
-    gen_headers['User-Agent'] = USER_AGENT or RandomAgent() # Setting user-agents
-    gen_headers['Referer'] = REFERER_URL # Assigning a fake referer
+    gen_headers['User-Agent'] = USER_AGENT or RandomAgent()  # Setting user-agents
+    gen_headers['Referer'] = REFERER_URL  # Assigning a fake referer
     getreq = Get(url, headers=gen_headers)
-    head = getreq.headers # Getting headers from requests
+    head = getreq.headers  # Getting headers from requests
     for h in head:
-        #if search('cookie', h, I) or search('set-cookie', h, I):
+        # If search('cookie', h, I) or search('set-cookie', h, I):
         if 'Cookie'.lower() in h.lower():
             verbout(G,'Found cookie header value...')
             cookieval = head[h]
             verbout(color.ORANGE,'Cookie Received: '+color.CYAN+str(cookieval))
-            m = cookieval.split(';')[1].strip()
+            m = cookieval.split(';')
             verbout(GR,'Examining Cookie...')
             for q in m:
                 if search('SameSite', q, I):
                     verbout(G,'SameSite Flag '+color.ORANGE+' detected on cookie!')
                     foundx2 = 0x01
-                    q = q.split('=')[1]
-                    verbout
+                    q = q.split('=')[1].strip()
+                    verbout(C, 'Cookie: '+color.ORANGE+q)
                     break
                 else:
                     verbout(R,'No '+color.GREY+'SameSite Flag'+color.RED+' detected on Cookies...')
@@ -105,6 +106,7 @@ def SameSite(url):
     # This is the most crucial part of the detection.
     #
     # TODO: Improve the logic in detection.
+    verbout(color.GREY,' [+] Lets examine how server reacts to valid cookie fromj different referer...')
     gen_headers = HEADER_VALUES
     gen_headers['User-Agent'] = USER_AGENT or RandomAgent()
     gen_headers['Referer'] = REFERER_URL
@@ -114,19 +116,19 @@ def SameSite(url):
     getreq = Get(url, headers=gen_headers)
     head = getreq.headers
     for h in head:
-        #if search('cookie', h, I) or search('set-cookie', h, I):
+        # if search('cookie', h, I) or search('set-cookie', h, I):
         if 'Cookie'.lower() in h.lower():
             verbout(G,'Found cookie header value...')
             cookieval = head[h]
             verbout(color.ORANGE,'Cookie Received: '+color.CYAN+str(cookieval))
-            m = cookieval.split(';')[1].strip()
+            m = cookieval.split(';')
             verbout(GR,'Examining Cookie...')
             for q in m:
                 if search('SameSite', q, I):
                     verbout(G,'SameSite Flag '+color.ORANGE+' detected on cookie!')
                     foundx3 = 0x01
-                    q = q.split('=')[1]
-                    verbout
+                    q = q.split('=')[1].strip()
+                    verbout(C, 'Cookie: '+color.ORANGE+q)
                     break
                 else:
                     verbout(R,'No '+color.GREY+'SameSite Flag'+color.RED+' detected on Cookies...')
@@ -134,7 +136,7 @@ def SameSite(url):
             verbout(R, 'No cookie value reflection found...')   
     
     
-    if found == 0x01:
+    if (foundx1 == 0x01 and foundx3 == 0x00) and (foundx2 == 0x00 or foundx2 == 0x01):
         print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to ANY type of CSRF attacks!')
         print(color.GREEN+' [+] Protection Method Detected : '+color.BG+' SameSite Flag on Cookies '+color.END)
     else:
