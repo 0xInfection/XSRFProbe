@@ -9,7 +9,7 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-# List of anti-CSRF paramter values which are sent for form 
+# List of anti-CSRF paramter values which are sent for form
 # verification, I have seen. These values are collected based on
 # my interactions with different web-applications. :)
 #
@@ -24,8 +24,8 @@ COMMON_CSRF_NAMES = (
         '[_token]',                   # Symfony 2.x
         '_csrf_token',                # Symfony 1.4
         'csrfmiddlewaretoken',        # Django 1.5
-        
-        # These are some other various token names I have seen in 
+
+        # These are some other various token names I have seen in
         # various websites.
         #
         # TODO: Add more similar csrf token parameters
