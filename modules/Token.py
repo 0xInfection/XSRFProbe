@@ -14,17 +14,18 @@ from time import sleep
 from files.config import *
 from core.colors import *
 from core.verbout import verbout
+from files.discovered import REQUEST_TOKENS
 from urllib.parse import urlencode, unquote
 from files.paramlist import COMMON_CSRF_NAMES
 
 def Token(req):
     '''
     This method checks for whether Anti-CSRF Tokens are
-               present in the request. 
+               present in the request.
     '''
-    param = '' # Initializing param
+    param = ''  # Initializing param
     query = ''
-    # First lets have a look at config.py and see if its set 
+    # First lets have a look at config.py and see if its set
     if TOKEN_CHECKS:
         # Lets check for the request values. But before that lets encode and unquote the request :D
         verbout(O,'Parsing request for detecting anti-csrf tokens...')
@@ -34,19 +35,20 @@ def Token(req):
                 for name in COMMON_CSRF_NAMES:
                     qu = c.split('=')
                     if qu[0].lower() == name.lower():
-                        print(color.GREEN+' [+] The form was requested with a '+color.ORANGE+'Anti-CSRF Token'+color.GREEN+'...')
-                        print(color.GREY+' [+] Token Parameter : '+color.CYAN+qu[0]+'='+qu[1]+' ...')
+                        verbout(color.GREEN,' [+] The form was requested with a '+color.ORANGE+'Anti-CSRF Token'+color.GREEN+'...')
+                        verbout(color.GREY,' [+] Token Parameter : '+color.CYAN+qu[0]+'='+qu[1]+' ...')
                         query, param = qu[0], qu[1]
+                        REQUEST_TOKENS.append(param)  # We are appending the token to a variable for further analysis
                         sleep(0.5)
-                        break
-            
+                        break  # Break execution is a Anti-CSRF token is found
+
         except Exception as e:
-            print(R+'Request Parsing Execption!')
-            print(R+'Error: '+str(e))           
+            verbout(R,'Request Parsing Execption!')
+            verbout(R,'Error: '+e.__str__())
 
         if param != '':
-            return param
+            return query, param
         else:
-            print(color.RED+' [-] The form was requested without a '+color.ORANGE+'Anti-CSRF token'+color.RED+'...')
-            print(color.RED+' [-] Endpoint seems vulnerable to CSRF POST-Based Attacks...')
+            verbout(color.RED,' [-] The form was requested without a '+color.ORANGE+'Anti-CSRF token'+color.RED+'...')
+            verbout(color.RED,' [-] Endpoint seems vulnerable to CSRF POST-Based Attacks...')
             return ''

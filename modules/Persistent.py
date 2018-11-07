@@ -54,10 +54,10 @@ def Persistence(url):
             print(color.GREEN+' [+] Protection Method Detected : '+color.BG+' No Persistent Cookies '+color.END)
     else:
         verbout(R,'Skipping persistence checks as no cookie value supplied...')
-        
+
 def has_duplicates(iterable):
     '''
-    This function works as a byte sequence checker for 
+    This function works as a byte sequence checker for
             tuples passed onto this function.
     '''
     seen = set()

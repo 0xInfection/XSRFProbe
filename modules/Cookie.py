@@ -137,4 +137,3 @@ def SameSite(url):
         verbout(R,'Heuristic(s) reveal endpoint might be '+color.BR+' VULNERABLE '+color.END+' to CSRFs...')
         print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
         print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BR+' No SameSite Flag on Cookies '+color.END)                
-

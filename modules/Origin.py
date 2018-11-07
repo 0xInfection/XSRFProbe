@@ -25,25 +25,25 @@ def Origin(url):
     # Make the request normally and get content
     verbout(O,'Making request on normal basis...')
     req0x01 = Get(url)
-    
-    # Set a fake Origin along with UA (pretending to be a 
+
+    # Set a fake Origin along with UA (pretending to be a
     # legitimate request from a browser)
     verbout(GR,'Setting generic headers...')
     gen_headers = HEADER_VALUES
     gen_headers['Origin'] = ORIGIN_URL
-            
+
     # We put the cookie in request, if cookie supplied :D
     if COOKIE_VALUE:
         for cookie in COOKIE_VALUE:
             gen_headers['Cookie'] = cookie
-    
+
     # Make the request with different Origin header and get the content
     verbout(O,'Making request with tampered headers...')
     req0x02 = Get(url, headers=gen_headers)
-    
-    # Comparing the length of the requests' responses. If both content 
-    # lengths are same, then the site actually does not validate Origin 
-    # before processing the HTTP request which makes the site more 
+
+    # Comparing the length of the requests' responses. If both content
+    # lengths are same, then the site actually does not validate Origin
+    # before processing the HTTP request which makes the site more
     # vulnerable to CSRF attacks.
     #
     # IMPORTANT NOTE: I'm aware that checking for the Origin header does
