@@ -94,9 +94,10 @@ def xsrf_main():  # lets begin it!
                                 r1 = Post(url, action, result).text  # make request with token values generated as user1
                                 result = form.prepareFormInputs(m)  # prepare the input types
                                 r2 = Post(url, action, result).text  # again make request with token values generated as user2
-                                if m['name']:
-                                    Entropy(result, url, m['action'], m['name'])
-                                else:
+                                try:
+                                    if m['name']:
+                                        Entropy(result, url, m['action'], m['name'])
+                                except KeyError:
                                     Entropy(result, url, m['action'])
                                 o2 = resp2.open(url).read()  # make request as user2
                                 try:
