@@ -51,4 +51,4 @@ def Token(req):
         else:
             verbout(color.RED,' [-] The form was requested without a '+color.ORANGE+'Anti-CSRF token'+color.RED+'...')
             verbout(color.RED,' [-] Endpoint seems vulnerable to CSRF POST-Based Attacks...')
-            return ''
+            return '', ''

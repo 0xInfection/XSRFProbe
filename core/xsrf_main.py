@@ -96,9 +96,11 @@ def xsrf_main():  # lets begin it!
                                 r2 = Post(url, action, result).text  # again make request with token values generated as user2
                                 try:
                                     if m['name']:
-                                        Entropy(result, url, m['action'], m['name'])
+                                        if Entropy(result, url, m['action'], m['name']):
+                                            pass
                                 except KeyError:
-                                    Entropy(result, url, m['action'])
+                                    if Entropy(result, url, m['action']):
+                                        pass
                                 o2 = resp2.open(url).read()  # make request as user2
                                 try:
                                     form2 = getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
@@ -137,9 +139,7 @@ def xsrf_main():  # lets begin it!
                                                 print(color.BLUE+' [+] URL : ' +color.CYAN+url)  # url part
                                                 print(color.CYAN+' [+] Name : ' +color.ORANGE+m['name'])  # name
                                                 print(color.GREEN+' [+] Action : ' +color.END+m['action'])  # action
-
                                         except KeyError:# if value m['name'] not there :(
-
                                             print(color.RED+'\n +---------+')
                                             print(color.RED+' |   PoC   |')
                                             print(color.RED+' +---------+\n')
