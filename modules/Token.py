@@ -36,10 +36,9 @@ def Token(req):
                     qu = c.split('=')
                     if qu[0].lower() == name.lower():
                         verbout(color.GREEN,' [+] The form was requested with a '+color.ORANGE+'Anti-CSRF Token'+color.GREEN+'...')
-                        verbout(color.GREY,' [+] Token Parameter : '+color.CYAN+qu[0]+'='+qu[1]+' ...')
+                        verbout(color.GREY,' [+] Token Parameter: '+color.CYAN+qu[0]+'='+qu[1]+' ...')
                         query, param = qu[0], qu[1]
                         REQUEST_TOKENS.append(param)  # We are appending the token to a variable for further analysis
-                        sleep(0.5)
                         break  # Break execution is a Anti-CSRF token is found
 
         except Exception as e:

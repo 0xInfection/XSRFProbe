@@ -47,8 +47,8 @@ def Entropy(req, url, m_action, m_name=''):
 
     # Check for common CSRF token names
     _q, para = Token(req)
-    if para == '':
-        return True
+    if (para and _q) == '':
+        return '', ''
     # Coverting the token to a raw string, cause some special
     # chars might fu*k with the Shannon Entropy operation.
     value = r'%s' % para
@@ -92,6 +92,7 @@ def Entropy(req, url, m_action, m_name=''):
         # Print out the params
         print(color.ORANGE+' [+] Query : '+color.GREY+urllib.parse.urlencode(result))
         print('')
+    return _q, para  # Return the query paramter and anti-csrf token
 
 def shannon_entropy(data):
     """

@@ -11,7 +11,6 @@
 
 from re import search, I
 from core.colors import *
-from .Token import Token
 from request import Post
 from files.config import *
 from core.verbout import verbout
@@ -21,7 +20,7 @@ from urllib.parse import urlencode, quote
 flagx1 = 0x00
 flagx2 = 0x00
 
-def Tamper(url, action, req, body):
+def Tamper(url, action, req, body, query, para):
     '''
     The main idea behind this is to tamper the Anti-CSRF tokens
           found and check the content length for related
@@ -29,7 +28,6 @@ def Tamper(url, action, req, body):
     '''
     verbout(GR, 'Proceeding for CSRF attack via Anti-CSRF token tampering...')
     # First of all lets get out token from request
-    query, para = Token(req)
     if para == '':
         return True
     # Coverting the token to a raw string, cause some special
@@ -86,12 +84,10 @@ def Tamper(url, action, req, body):
         verbout(color.GREEN,' [-] The Tampered Anti-CSRF Token requested does NOT return a 40x or 50x response! ')
         print(color.ORANGE+' [-] Endpoint '+color.BR+' CONFIRMED VULNERABLE '+color.END+color.ORANGE+' to Request Forgery Attacks...')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BG+' Non-Unique Anti-CSRF Tokens in Requests '+color.END)
-        return False
     else:
         print(color.RED+' [-] The Tampered Anti-CSRF Token requested returns a 40x or 50x response... ')
         print(color.ORANGE+' [-] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
         print(color.ORANGE+' [!] CSRF Mitigation Method: '+color.BG+' Unique Anti-CSRF Tokens '+color.END)
-        return True
 
 def replaceStrIndex(text, index=0, replacement=''):
     ''' This method returns a tampered string by replacement '''
