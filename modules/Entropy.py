@@ -16,7 +16,7 @@ from core.colors import *
 from .Token import Token
 from core.verbout import verbout
 
-def Entropy(m_name='', req, url, m_action):
+def Entropy(req, url, m_action, m_name=''):
     """
     This function has the work of comparing and
       calculating Shannon Entropy and related

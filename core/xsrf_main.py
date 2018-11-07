@@ -95,7 +95,7 @@ def xsrf_main():  # lets begin it!
                                 result = form.prepareFormInputs(m)  # prepare the input types
                                 r2 = Post(url, action, result).text  # again make request with token values generated as user2
                                 if m['name']:
-                                    Entropy(m['name'], result, url, m['action'])
+                                    Entropy(result, url, m['action'], m['name'])
                                 else:
                                     Entropy(result, url, m['action'])
                                 o2 = resp2.open(url).read()  # make request as user2
