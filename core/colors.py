@@ -24,7 +24,7 @@ class color:
     TAN  = '\033[1;93m'             # tan
     BR = '\033[1;97;41m'            # background red
     BG = '\033[1;97;42m'            # background green
-    BY = '\033[1;30;43m'            # background yellow
+    BY = '\033[1;97;43m'            # background yellow
 
 O  = '\033[1m \033[93m[!]\033[0m '  # information
 R  = '\033[1m \033[91m[-]\033[0m '  # something's not right

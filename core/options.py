@@ -13,7 +13,7 @@
 import argparse, sys
 from files import config
 from core.colors import R
-from files.updater import updater
+from core.updater import updater
 
 # Processing command line arguments
 parser = argparse.ArgumentParser('python3 xsrfprobe.py')

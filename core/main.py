@@ -34,20 +34,20 @@ from core.banner import banner, banabout
 from files.config import *
 
 # Imports from modules
+from modules import Debugger
+from modules import Parser
+from modules import Crawler
 from modules.Origin import Origin
 from modules.Cookie import Cookie
 from modules.Tamper import Tamper
 from modules.Entropy import Entropy
 from modules.Referer import Referer
-from modules.Debugger import Form_Debugger
-from modules.Crawler import Crawler_Handler
-from modules.Parser import buildUrl, buildAction
 # Import Ends
 
 # First rule, remove the warnings!
 warnings.filterwarnings('ignore')
 
-def xsrf_main():  # lets begin it!
+def Engine():  # lets begin it!
 
     os.system('clear')  # Clear shit from terminal :p
     banner()  # Print the banner
@@ -68,7 +68,7 @@ def xsrf_main():  # lets begin it!
     ref_detect = 0x00  # Null Char
     ori_detect = 0x00
     init1 = web  # get the starting page
-    form = Form_Debugger()  # init to the form parser+token generator
+    form = Debugger.Form_Debugger()  # init to the form parser+token generator
 
     bs1=BeautifulSoup(form1).findAll('form',action=True)[0]  # make sure the stuff works properly
     bs2=BeautifulSoup(form2).findAll('form',action=True)[0]  # same as above
@@ -79,7 +79,7 @@ def xsrf_main():  # lets begin it!
     resp2.open(action)  # Make request as User1
 
     verbout(GR, "Initializing crawling and scanning...")
-    crawler = Crawler_Handler(init1, resp1)  # Init to the Crawler handler
+    crawler = Crawler.Handler(init1, resp1)  # Init to the Crawler handler
 
     try:
         while crawler.noinit():  # Until 0 urls left
@@ -109,7 +109,7 @@ def xsrf_main():  # lets begin it!
 
                 # Now lets get the forms...
                 verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
-                for m in getAllForms(soup):  # iterating over all forms extracted
+                for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
                     action = Parser.buildAction(url,m['action'])  # get all forms which have 'action' attribute
                     if not action in actionDone and action!='':  # if url returned is not a null value nor duplicate...
                         # If form submission is kept to True
@@ -129,7 +129,7 @@ def xsrf_main():  # lets begin it!
                                 Tamper(url, action, result, r2, query, token)
                                 o2 = resp2.open(url).read()  # make request as user2
                                 try:
-                                    form2 = getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
+                                    form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                                 except IndexError:
                                     verbout(R, 'Form Error')
                                     continue;  # making sure program won't end here (dirty fix :( )
