@@ -29,3 +29,19 @@ def banner():
     time.sleep(0.1)
     print(color.ORANGE+'    |_____|     |_____|     |_____|    |_____|     |_____| \n\n')
     time.sleep(0.1)
+
+def banabout(): # some fancy banner stuff :p
+
+    print(color.BLUE+'   [---]           '+color.GREY+'XSRF Probe |'+color.RED+' A'+color.ORANGE+' Cross Site Request Forgery '+color.RED+'Audit Toolkit          '+color.BLUE+'[---]')
+    time.sleep(0.2)
+    print(color.BLUE+'   [---]                                                                            [---]')
+    time.sleep(0.2)
+    print(color.BLUE+'   [---]   '+color.PURPLE+'                  '+color.GREEN+'~  Author : '+color.CYAN+'The Infected Drake  ~                 '+color.BLUE+'     [---]')
+    time.sleep(0.2)
+    print(color.BLUE+'   [---]   '+color.CYAN+'                    ~  github.com / '+color.GREY+'0xInfection  ~                     '+color.BLUE+'  [---]')
+    time.sleep(0.2)
+    print(color.BLUE+'   [---]                                                                            [---]')
+    time.sleep(0.2)
+    print(color.BLUE+'   [---]   '+color.ORANGE+'                          ~  Version '+color.RED+'v1.1.0'+color.ORANGE+'  ~                         '+color.BLUE+'  [---]\n')
+    time.sleep(0.2)
+

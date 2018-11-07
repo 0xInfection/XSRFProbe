@@ -9,19 +9,43 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-# Importing stuff
+# Standard Package imports
+import os
+import re
+import time
+import warnings
+import difflib
+import urllib.error
+import http.cookiejar
+from bs4 import BeautifulSoup
+from urllib.parse import urlencode
+from urllib.request import build_opener, HTTPCookieProcessor
+
+# Imports from core
 from core.options import *
-from core.impo import *
+from core.colors import *
+from core.inputin import inputin
+from core.request import Get, Post
+from core.verbout import verbout
+from core.forms import form10, form20
+from core.banner import banner, banabout
+
+# Imports from files
 from files.config import *
-from core.verbout import *
-from modules.Crawler import *
-from modules.Debugger import *
-from modules.Parser import *
-from modules.Entropy import *
-from modules.Referer import *
-from modules.Origin import *
-from modules.Cookie import *
-warnings.filterwarnings('ignore')  # Remove lame warnings :D
+
+# Imports from modules
+from modules.Origin import Origin
+from modules.Cookie import Cookie
+from modules.Tamper import Tamper
+from modules.Entropy import Entropy
+from modules.Referer import Referer
+from modules.Debugger import Form_Debugger
+from modules.Crawler import Crawler_Handler
+from modules.Parser import buildUrl, buildAction
+# Import Ends
+
+# First rule, remove the warnings!
+warnings.filterwarnings('ignore')
 
 def xsrf_main():  # lets begin it!
 
@@ -32,11 +56,11 @@ def xsrf_main():  # lets begin it!
     form1 = form10()  # Get the form 1 ready
     form2 = form20()  # Get the form 2 ready
 
-    # Lets get the cookies that we encounter...
+    # For the cookies that we encounter during requests...
     Cookie0 = http.cookiejar.CookieJar()  # First as User1
     Cookie1 = http.cookiejar.CookieJar()  # Then as User2
-    resp1 = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(Cookie0))  # Process cookies and do stuff
-    resp2 = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(Cookie1))  # Process cookies and do stuff
+    resp1 = build_opener(HTTPCookieProcessor(Cookie0))  # Process cookies and do stuff
+    resp2 = build_opener(HTTPCookieProcessor(Cookie1))  # Process cookies and do stuff
 
     actionDone = []  # init to the done stuff
 
@@ -88,19 +112,21 @@ def xsrf_main():  # lets begin it!
                 for m in getAllForms(soup):  # iterating over all forms extracted
                     action = Parser.buildAction(url,m['action'])  # get all forms which have 'action' attribute
                     if not action in actionDone and action!='':  # if url returned is not a null value nor duplicate...
+                        # If form submission is kept to True
                         if FORM_SUBMISSION:
                             try:
                                 result = form.prepareFormInputs(m)  # prepare inputs
                                 r1 = Post(url, action, result).text  # make request with token values generated as user1
                                 result = form.prepareFormInputs(m)  # prepare the input types
                                 r2 = Post(url, action, result).text  # again make request with token values generated as user2
+                                # Go for token based entropy checks...
                                 try:
                                     if m['name']:
-                                        if Entropy(result, url, m['action'], m['name']):
-                                            pass
+                                        query, token = Entropy(result, url, m['action'], m['name'])
                                 except KeyError:
-                                    if Entropy(result, url, m['action']):
-                                        pass
+                                    query, token = Entropy(result, url, m['action'])
+                                # Go for token parameter tamper checks.
+                                Tamper(url, action, result, r2, query, token)
                                 o2 = resp2.open(url).read()  # make request as user2
                                 try:
                                     form2 = getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
@@ -122,7 +148,7 @@ def xsrf_main():  # lets begin it!
                                         if re.match('\+|-',n):  # get regex matching stuff
                                             result13.append(n)  # append to existing list
                                     # This logic is based purely on the assumption on the difference of requests and
-                                    # response body (thats why we're using difflib).
+                                    # response body.
                                     #
                                     # If the number of differences of result12 are less than the number of differences
                                     # than result13
@@ -146,13 +172,13 @@ def xsrf_main():  # lets begin it!
                                             print(color.BLUE+' [+] URL : ' +color.CYAN+url)  # the url
                                             print(color.GREEN+' [+] Action : ' +color.END+ m['action'])  # action
 
-                                        print(color.ORANGE+' [+] Query : '+color.GREY+ urllib.parse.urlencode(result).strip())
+                                        print(color.ORANGE+' [+] Query : '+color.GREY+ urlencode(result).strip())
                                         print('')                                        # print out the params + url
 
                                 except KeyboardInterrupt:  # incase user wants to exit (while form processing)
                                     verbout(R, 'User Interrupt!')
                                     print(R+'Aborted!')  # say goodbye
-                                    sys.exit(1)
+                                    quit()
 
                                 except KeyboardInterrupt:  # other exceptions ;-; can be ignored
                                     pass
@@ -180,4 +206,4 @@ def xsrf_main():  # lets begin it!
     except KeyboardInterrupt:  # incase user wants to exit ;-; (while crawling)
         verbout(R, 'User Interrupt!')
         print(R+'Aborted!')  # say goodbye
-        sys.exit(1)
+        quit()
