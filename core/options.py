@@ -54,7 +54,7 @@ if not len(sys.argv) > 1:
 # Update XSRFProbe to latest version
 if args.update:
     updater()
-    quit()
+    quit('')
 
 # Print out XSRFProbe version
 if args.version:
@@ -77,7 +77,7 @@ if not args.version and not args.update:
             config.SITE_URL = 'http://'+args.url
     else:
         print(R+'You must supply a url.')
-    
+
 if args.cookie:
     # Assigning Cookie
     if ',' in args.cookie:
@@ -92,14 +92,14 @@ if args.cookie:
 # Timeout value
 if args.timeout:
     config.TIMEOUT_VALUE = args.timeout
-    
+
 if args.exclude:
     exc = args.exclude
     #EXCLUDE_URLS = [s for s in exc.split(',').strip()]
     m = exc.split(',').strip()
     for s in m:
         config.EXCLUDE_URLS.append(s)
-        
+
 if args.randagent:
     # If random-agent argument supplied...
     config.USER_AGENT_RANDOM = True
@@ -112,7 +112,6 @@ if len(config.SITE_URL) != 0:
         config.OUTPUT_DIR = args.output + config.SITE_URL.split('//')[1]
     else:
         config.OUTPUT_DIR = 'files' + config.SITE_URL.split('//')[1]
-    
+
 if args.quiet:
     config.DEBUG = False
-

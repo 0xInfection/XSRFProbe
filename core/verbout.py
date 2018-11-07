@@ -17,8 +17,8 @@ def verbout(stat,content_info):
     This module is for giving a verbose
                 output.
     '''
-    
+
     # If debug mode is chosen as True
-    if verbose: 
+    if verbose:
         # Concatenate the stat type and string value and print out
         print(stat+content_info)
