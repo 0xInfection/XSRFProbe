@@ -24,28 +24,28 @@ def Referer(url):
     # Make the request normally and get content
     verbout(O,'Making request on normal basis...')
     req0x01 = Get(url)
-    
+
     # Set normal headers...
     verbout(GR,'Setting generic headers...')
     gen_headers = HEADER_VALUES
-    
-    # Set a fake Referer along with UA (pretending to be a 
+
+    # Set a fake Referer along with UA (pretending to be a
     # legitimate request from a browser)
     verbout(GR,'Setting generic headers...')
     gen_headers['Referer'] = REFERER_URL
-            
+
     # We put the cookie in request, if cookie supplied :D
     if COOKIE_VALUE:
         for cookie in COOKIE_VALUE:
             gen_headers['Cookie'] = cookie
-    
+
     # Make the request with different referer header and get the content
     verbout(O,'Making request with tampered headers...')
     req0x02 = Get(url, headers=gen_headers)
-    
-    # Comparing the length of the requests' responses. If both content 
-    # lengths are same, then the site actually does not validate referer 
-    # before processing the HTTP request which makes the site more 
+
+    # Comparing the length of the requests' responses. If both content
+    # lengths are same, then the site actually does not validate referer
+    # before processing the HTTP request which makes the site more
     # vulnerable to CSRF attacks.
     #
     # IMPORTANT NOTE: I'm aware that checking for the referer header does
@@ -59,11 +59,12 @@ def Referer(url):
     if len(req0x01.content) != len(req0x02.content):
         print(color.GREEN+' [+] Endoint '+color.ORANGE+'Referer Validation'+color.GREEN+' Present!')
         print(color.GREEN+' [-] Heuristics reveal endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+'...')
+        print(color.ORANGE+' [+] Mitigation Method: '+color.BG+' Referer Based Request Validation '+color.END)
         return True
     else:
-        print(color.RED+' [+] Endpoint '+color.ORANGE+'Referer Validation'+color.RED+' Not Present!')
-        verbout(color.RED,' [-] Heuristics reveal endpoint might be '+color.BR+' VULNERABLE '+color.END+color.RED+' to Origin Based CSRFs...')
+        verbout(R,'Endpoint '+color.ORANGE+'Referer Validation Not Present'+color.END+'!')
+        verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
-        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BR+' Referer Based Request Forgery '+color.END)
+        print(color.ORANGE+' [+] Possible Vulnerability Type: '+color.BY+' Referer Based Request Forgery '+color.END)
         return False
 

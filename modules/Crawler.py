@@ -18,7 +18,7 @@ from core.verbout import verbout
 from files.discovered import INTERNAL_URLS
 import urllib.request, urllib.error, urllib.parse
 
-class Crawler_Handler():  # Main Crawler Handler
+class Handler():  # Main Crawler Handler
     '''
     This is a crawler that is used to fetch all the Urls
         associated to the HTML page, and susequently

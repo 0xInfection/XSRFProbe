@@ -37,7 +37,7 @@ def SameSite(url):
                     SameSite Flags.
     '''
     foundx1, foundx2, foundx3 = 0x00, 0x00, 0x00
-    # Step 1: First we check that if the server returns any 
+    # Step 1: First we check that if the server returns any
     # SameSite flag on Cookies with the same Referer as the netloc
     verbout(color.GREY,' [+] Lets examine how server reacts to same referer...')
     gen_headers = HEADER_VALUES
@@ -66,7 +66,7 @@ def SameSite(url):
                     break
             if foundx1 == 0x01:
                 verbout(R,' [+] Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Present!')
-            
+
     # Step 2: Now we check security mechanisms when the Referer is
     # different, i.e. request originates from a different url other
     # than the host. (This time without the Cookie assigned)
@@ -91,10 +91,10 @@ def SameSite(url):
                     q = q.split('=')[1].strip()
                     verbout(C, 'Cookie: '+color.ORANGE+q)
                     break
-            
+
             if foundx1 == 0x01:
                 verbout(R,' [+] Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Present!')
-            
+
     # Step 3: And finally comes the most important step. Lets see how
     # the site reacts to a valid cookie (ofc supplied by the user) coming
     # froma a different site, i.e Referer set to other than host.
@@ -124,16 +124,16 @@ def SameSite(url):
                     foundx3 = 0x01
                     q = q.split('=')[1].strip()
                     verbout(C, 'Cookie: '+color.ORANGE+q)
-                    break 
-            
+                    break
+
             if foundx1 == 0x01:
                 verbout(R,'Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Present!')
-    
+
     if (foundx1 == 0x01 and foundx3 == 0x00) and (foundx2 == 0x00 or foundx2 == 0x01):
         print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to ANY type of CSRF attacks!')
         print(color.GREEN+' [+] Protection Method Detected : '+color.BG+' SameSite Flag on Cookies '+color.END)
     else:
         verbout(R,'Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Not Present!')
-        verbout(R,'Heuristic(s) reveal endpoint might be '+color.BR+' VULNERABLE '+color.END+' to CSRFs...')
+        verbout(R,'Heuristic(s) reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to CSRFs...')
         print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BR+' No SameSite Flag on Cookies '+color.END)                
+        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No SameSite Flag on Cookies '+color.END)

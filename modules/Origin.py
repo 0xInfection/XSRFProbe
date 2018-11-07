@@ -55,12 +55,13 @@ def Origin(url):
     #
     # TODO: This algorithm has lots of room for improvement
     if len(req0x01.content) != len(req0x02.content):
-        print(color.GREEN+' [+] Endoint '+color.ORANGE+'Origin Validation'+color.GREEN+' Present!')
+        verbout(color.GREEN,' [+] Endoint '+color.ORANGE+'Origin Validation'+color.GREEN+' Present!')
         print(color.GREEN+' [-] Heuristics reveal endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+'...')
+        print(color.ORANGE+' [+] Mitigation Method: '+color.BG+' Origin Based Request Validation '+color.END)
         return True
     else:
-        print(color.RED+' [+] Endpoint '+color.ORANGE+'Origin Validation'+color.RED+' Not Present!')
-        verbout(color.RED,' [-] Heuristics reveal endpoint might be '+color.BR+' VULNERABLE '+color.END+color.RED+' to Origin Based CSRFs...')
+        verbout(R,' [+] Endpoint '+color.ORANGE+'Origin Validation Not Present'+color.END+'!')
+        verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
-        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BR+' Origin Based Request Forgery '+color.END)
+        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' Origin Based Request Forgery '+color.END)
         return False

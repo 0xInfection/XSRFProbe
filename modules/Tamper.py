@@ -11,7 +11,7 @@
 
 from re import search, I
 from core.colors import *
-from request import Post
+from core.request import Post
 from files.config import *
 from core.verbout import verbout
 from urllib.parse import urlencode, quote
