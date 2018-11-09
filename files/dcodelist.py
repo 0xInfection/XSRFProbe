@@ -49,5 +49,5 @@ token = {
         # Hex Strings.
         'HEX'   : r'^(0x|0X)?[a-fA-F0-9]+$',
         # FromChar Strings
-        'FROMCHAR': r'\d*, \d*,''
+        'FROMCHAR': r'\d*, \d*,'
         }

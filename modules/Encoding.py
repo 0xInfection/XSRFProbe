@@ -10,6 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 from re import search
+from core.colors import *
 from core.verbout import verbout
 from files.dcodelist import token
 
@@ -29,4 +30,4 @@ def makeAscii(value, encoding='latin-1'):
                 has all characters in ASCII.
     '''
     if isinstance(value, (str, bytearray)):
-        return s.decode(encoding, 'strict')
+        return value.decode(encoding, 'strict')
