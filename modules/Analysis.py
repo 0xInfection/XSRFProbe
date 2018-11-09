@@ -23,5 +23,6 @@ def Analysis():
     '''
     # Checking if the no of tokens is greater than 1
     if len(REQUEST_TOKENS) > 1:
-        verbout(GR,'Proceeding for analysis of tokens gathered...')
+        print(GR+'Proceeding for analysis of tokens gathered...')
+        verbout(G, 'A total of '+str(len(REQUEST_TOKENS))+' tokens was discovered during requests.')
 

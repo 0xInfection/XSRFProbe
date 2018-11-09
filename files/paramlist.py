@@ -15,39 +15,55 @@
 #
 # Feel free to add more of your tokens if you have. ;)
 COMMON_CSRF_NAMES = (
-        'CSRFName',                   # OWASP CSRF_Guard
-        'CSRFToken',                  # OWASP CSRF_Guard
-        'anticsrf',                   # AntiCsrfParam.java
-        '__RequestVerificationToken', # AntiCsrfParam.java
-        'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
-        'yii_anticsrf'                # http://www.yiiframework.com/
-        '[_token]',                   # Symfony 2.x
-        '_csrf_token',                # Symfony 1.4
-        'csrfmiddlewaretoken',        # Django 1.5
+                    'CSRFName',                   # OWASP CSRF_Guard
+                    'CSRFToken',                  # OWASP CSRF_Guard
+                    'anticsrf',                   # AntiCsrfParam.java
+                    '__RequestVerificationToken', # AntiCsrfParam.java
+                    'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
+                    'yii_anticsrf'                # http://www.yiiframework.com/
+                    '[_token]',                   # Symfony 2.x
+                    '_csrf_token',                # Symfony 1.4
+                    'csrfmiddlewaretoken',        # Django 1.5
 
-        # These are some other various token names I have seen in
-        # various websites.
-        #
-        # TODO: Add more similar csrf token parameters
-        'token',
-        'csrf',
-        'authenticity',
-        'auth_token',
-        'authenticity_token',
-        'auth',
-        'anti_csrf',
-        'auth_value',
-        'csrf_value',
-        'csrf_token',
-        'VerificationToken',
-        '__authvalue',
-        'authenticity_value',
-        '__token',
-        '__auth',
-        'secret',
-        'timestamp_id',
-        'auth_id',
-        'timestamp_secret',
-        'csrf_id',
-        '__csrf'
-    )
+                    # These are some other various token names I have seen in
+                    # various websites.
+                    #
+                    # TODO: Add more similar csrf token parameters
+                    'token',
+                    'csrf',
+                    'authenticity',
+                    'auth_token',
+                    'authenticity_token',
+                    'auth',
+                    'anti_csrf',
+                    'auth_value',
+                    'csrf_value',
+                    'csrf_token',
+                    'VerificationToken',
+                    '__authvalue',
+                    'authenticity_value',
+                    '__token',
+                    '__auth',
+                    'secret',
+                    'timestamp_id',
+                    'auth_id',
+                    'timestamp_secret',
+                    'csrf_id',
+                    '__csrf',
+                    'dts_id',
+                    'req_id',
+                    '_id',
+                    'request_id'
+                )
+
+# TODO: Add and replace with more valid and arguable exclusion lists
+EXCLUSIONS_LIST = (
+                    'logout',
+                    'action=out',
+                    'action=logoff',
+                    'action=delete',
+                    'UserLogout',
+                    'osCsid',
+                    'file_manager.php',
+                    'action=logout',
+                )

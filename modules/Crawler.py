@@ -13,6 +13,7 @@ import re, sys
 from . import Parser
 from core.colors import *
 from files.config import *
+from files.dcodelist import *
 from bs4 import BeautifulSoup
 from core.verbout import verbout
 from files.discovered import INTERNAL_URLS
@@ -101,11 +102,11 @@ class Handler():  # Main Crawler Handler
             # If we get a valid link
             if app!='' and re.search(root, app):
                 # Getting rid of Urls starting with '../../../..'
-                while re.search(r'/\.\./',app):
-                    p = re.compile('/[^/]*/../')
+                while re.search(RID_DOUBLE,app):
+                    p = re.compile(RID_COMPILE)
                     app = p.sub('/',app)
                 # Getting rid of Urls starting with './'
-                p = re.compile('\./')
+                p = re.compile(RID_SINGLE)
                 app = p.sub('',app)
 
                 # Add new link to the queue only if its pattern has not been added yet
@@ -137,8 +138,8 @@ def removeIDs(Parser):
     This function removes the Numbers from the Urls
                     which are built.
     '''
-    p = re.compile('=[0-9]+')
+    p = re.compile(NUM_SUB)
     Parser = p.sub('=',Parser)
-    p = re.compile('(title=)[^&]*')
+    p = re.compile(NUM_COM)
     Parser = p.sub('\\1',Parser)
     return Parser
