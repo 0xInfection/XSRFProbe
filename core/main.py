@@ -42,6 +42,7 @@ from modules.Cookie import Cookie
 from modules.Tamper import Tamper
 from modules.Entropy import Entropy
 from modules.Referer import Referer
+from modules.Encoding import Encoding
 # Import Ends
 
 # First rule, remove the warnings!
@@ -126,7 +127,8 @@ def Engine():  # lets begin it!
                                 except KeyError:
                                     query, token = Entropy(result, url, m['action'])
                                 # Go for token parameter tamper checks.
-                                Tamper(url, action, result, r2, query, token)
+                                if (query and token):
+                                    Tamper(url, action, result, r2, query, token)
                                 o2 = resp2.open(url).read()  # make request as user2
                                 try:
                                     form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
