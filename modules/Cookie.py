@@ -16,7 +16,7 @@ from re import search, I
 from core.verbout import verbout
 from core.request import Get
 from core.randua import RandomAgent
-from .Persistent import Persistence
+from .Persistence import Persistence
 from urllib.parse import urlencode, unquote, urlsplit
 
 resps = []
