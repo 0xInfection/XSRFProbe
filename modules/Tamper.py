@@ -19,6 +19,7 @@ from urllib.parse import urlencode, quote
 # Null char flags (hex)
 flagx1 = 0x00
 flagx2 = 0x00
+flagx3 = 0x00
 
 def Tamper(url, action, req, body, query, para):
     '''
@@ -54,15 +55,14 @@ def Tamper(url, action, req, body, query, para):
     # we assume that the tamper did not work :( But if there is a 20x
     # (Accepted) or a 30x (Redirection), then we know it worked.
     #
-    # NOTE: This algorithm has lots of room for improvment.
-    if not str(resp.status_code).startswith('40') or not str(resp.status_code).startswith('50'):
+    # NOTE: This algorithm has lots of room for improvement.
+    if str(resp.status_code).startswith('50'):
+        verbout(color.RED,' [+] Token tamper from request causes a 50x Internal Error!')
+    if not str(resp.status_code).startswith('40') and not str(resp.status_code).startswith('50'):
         flagx1 = 0x01
 
     # [Step 2]: Second we take the token and then remove a char
     # at a specific position and test the response body.
-    #
-    # Required check for checking if string at that position isn't the
-    # same char we are going to replace with.
     verbout(GR, 'Tampering Token by index removal...')
     tampvalx2 = replaceStrIndex(value, 3)
     verbout(G, 'Tampered Token: '+color.CYAN+tampvalx1)
@@ -74,12 +74,32 @@ def Tamper(url, action, req, body, query, para):
     # we assume that the tamper did not work :( But if there is a 20x
     # (Accepted) or a 30x (Redirection), then we know it worked.
     #
-    # NOTE: This algorithm has lots of room for improvment.
-    if not str(resp.status_code).startswith('40') or not str(resp.status_code).startswith('50'):
+    # NOTE: This algorithm has lots of room for improvement.
+    if str(resp.status_code).startswith('50'):
+        verbout(color.RED,' [+] Token tamper from request causes a 50x Internal Error!')
+    if not str(resp.status_code).startswith('40') and not str(resp.status_code).startswith('50'):
+        flagx2 = 0x01
+
+    # [Step 3]: Third we take the token and then remove the whole
+    # anticsrf token and test the response body.
+    verbout(GR, 'Tampering Token by Token removal...')
+    del req[query]
+    verbout(G, 'Removed token from request!')
+    # Lets build up the request...
+    resp = Post(url, action, req)
+
+    # If there is a 40x (Not Found) or a 50x (Internal Error) error,
+    # we assume that the tamper did not work :( But if there is a 20x
+    # (Accepted) or a 30x (Redirection), then we know it worked.
+    #
+    # NOTE: This algorithm has lots of room for improvement.
+    if str(resp.status_code).startswith('50'):
+        verbout(color.RED,' [+] Token removal from request causes a 50x Internal Error!')
+    if not str(resp.status_code).startswith('40') and not str(resp.status_code).startswith('50'):
         flagx2 = 0x01
 
     # If any of the forgeries worked...
-    if flagx1 == 0x01 or flagx2 == 0x01:
+    if flagx1 == 0x01 or flagx2 == 0x01 or flagx3 == 0x01:
         verbout(color.GREEN,' [+] The tampered token value works!')
         verbout(color.GREEN,' [-] The Tampered Anti-CSRF Token requested does NOT return a 40x or 50x response! ')
         print(color.ORANGE+' [-] Endpoint '+color.BR+' CONFIRMED VULNERABLE '+color.END+color.ORANGE+' to Request Forgery Attacks...')
@@ -92,4 +112,3 @@ def Tamper(url, action, req, body, query, para):
 def replaceStrIndex(text, index=0, replacement=''):
     ''' This method returns a tampered string by replacement '''
     return '%s%s%s' % (text[:index], replacement, text[index+1:])
-
