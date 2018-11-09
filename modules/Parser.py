@@ -28,7 +28,7 @@ def buildUrl(url, href):  # receive form input type / url
     # of as low quality CSRF (bugs).
     #
     # TODO: Add more to EXCLUSIONS_LIST.
-    if href == "http://localhost" or any((re.search(s,href)) for s in EXCLUSIONS_LIST.split()):
+    if href == "http://localhost" or any((re.search(s,href)) for s in EXCLUSIONS_LIST):
         return ''
 
     url_parts = urlsplit(url)  # SplitResult(scheme, netloc, path, query, fragment)
