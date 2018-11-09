@@ -4,7 +4,7 @@
 
 XSRF Probe is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling and Intelligent Token Generation Capabilities.
 
-> XSRFProbe is undergoing [major code changes and core refactors](https://github.com/0xinfection/XSRFProbe/projects/1) at present. So please consider avoiding making pull requests and raising issues temporarily until I publish the next release. If interested, have a look at [this one](https://github.com/0xInfection/XSRFProbe/projects/1).
+> XSRFProbe is undergoing [major code changes and core refactors](https://github.com/0xinfection/XSRFProbe/projects/1) at present. So please consider avoiding making pull requests and raising issues temporarily until I publish the next release. If interested, have a look at [this one](https://github.com/0xInfection/XSRFProbe/pull/9).
 
 <img src="https://i.imgur.com/HTz6EDY.png" />
 
@@ -98,4 +98,4 @@ Usage of XSRFProbe for testing websites without prior mutual consistency can be 
 
 Thats it folks! Thank you...
 
-> Copyright © [The Infected Drake](https://www.twitter.com/0xinfection)
+> Copyright © [The Infected Drake](https://www.twitter.com/0xInfection)
