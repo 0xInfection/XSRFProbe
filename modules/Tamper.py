@@ -14,6 +14,7 @@ from core.colors import *
 from core.request import Post
 from files.config import *
 from core.verbout import verbout
+from core.utils import replaceStrIndex
 from urllib.parse import urlencode, quote
 
 # Null char flags (hex)
@@ -108,7 +109,3 @@ def Tamper(url, action, req, body, query, para):
         print(color.RED+' [-] The Tampered Anti-CSRF Token requested returns a 40x or 50x response... ')
         print(color.ORANGE+' [-] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
         print(color.ORANGE+' [!] CSRF Mitigation Method: '+color.BG+' Unique Anti-CSRF Tokens '+color.END)
-
-def replaceStrIndex(text, index=0, replacement=''):
-    ''' This method returns a tampered string by replacement '''
-    return '%s%s%s' % (text[:index], replacement, text[index+1:])
