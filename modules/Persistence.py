@@ -16,6 +16,7 @@ from re import search, I
 from core.verbout import verbout
 from core.request import Get
 from core.randua import RandomAgent
+from core.utils import checkDuplicates
 from urllib.parse import urlencode, unquote, urlsplit
 
 resps = []
@@ -42,7 +43,7 @@ def Persistence(url):
             verbout(GR,'Making the request...')
             req = Get(url, headers=gen_headers)
             resps.append(req.headers.get('Set-Cookie'))
-        if has_duplicates(resps):
+        if checkDuplicates(resps):
             verbout(G,'Set-Cookie header does not change with varied User-Agents...')
             verbout(R,'Possible persistent session cookies found...')
             print(color.RED+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
@@ -54,15 +55,3 @@ def Persistence(url):
             print(color.GREEN+' [+] Protection Method Detected : '+color.BG+' No Persistent Cookies '+color.END)
     else:
         verbout(R,'Skipping persistence checks as no cookie value supplied...')
-
-def has_duplicates(iterable):
-    '''
-    This function works as a byte sequence checker for
-            tuples passed onto this function.
-    '''
-    seen = set()
-    for x in iterable:
-        if x in seen:
-            return True
-        seen.add(x)
-    return False
