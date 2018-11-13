@@ -43,6 +43,7 @@ from modules.Tamper import Tamper
 from modules.Entropy import Entropy
 from modules.Referer import Referer
 from modules.Encoding import Encoding
+from modules.Analysis import Analysis
 # Import Ends
 
 # First rule, remove the warnings!
@@ -198,14 +199,16 @@ def Engine():  # lets begin it!
                 continue;  # make sure it doesn't stop
 
         print('\n'+G+"Scan completed!"+'\n')
+        Analysis()  # For Post Scan Analysis
 
     except urllib.error.HTTPError as e:  # 403 not authenticated
         if str(e.code) == '403':
             verbout(R, 'HTTP Authentication Error!')
             verbout(R, 'Error Code : ' +O+ str(e.code))
-            pass
+            quit()
 
     except KeyboardInterrupt:  # incase user wants to exit ;-; (while crawling)
         verbout(R, 'User Interrupt!')
+        Analysis()  # For Post scan Analysis
         print(R+'Aborted!')  # say goodbye
         quit()
