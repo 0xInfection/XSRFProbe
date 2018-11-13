@@ -111,13 +111,3 @@ def shannon_entropy(data):
 
     return entropy
 
-def smart_string(s, encoding='utf8'):
-    """
-    Return a byte-string version of 's',
-            Encoded as utf-8.
-    """
-    try:
-        s = s.encode(encoding)
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        s = str(s)
-    return s
