@@ -26,7 +26,7 @@ def Analysis():
     # Checking if the no of tokens is greater than 1
     if len(REQUEST_TOKENS) > 1:
         print(GR+'Proceeding for post-scan analysis of tokens gathered...')
-        verbout(G, 'A total of %s tokens was discovered during the scan' %s len(REQUEST_TOKENS))
+        verbout(G, 'A total of %s tokens was discovered during the scan' %s (len(REQUEST_TOKENS)))
         # The idea behind this is to generate all possible combinations (not
         # considering permutations) from the given list of discovered tokens
         # and generate anti-CSRF token generation pattern.
