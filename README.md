@@ -13,7 +13,7 @@
     <img src="https://img.shields.io/badge/Python-3.x-green.svg">
   </a>
   <a href="https://github.com/0xinfection/XSRFProbe/releases">
-    <img src="https://img.shields.io/badge/TIDoS-v1.1.0-blue.svg">
+    <img src="https://img.shields.io/badge/Version-v1.1.0-blue.svg">
   </a>
   <a href="https://github.com/0xinfection/XSRFProbe/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-GPLv3-orange.svg">
