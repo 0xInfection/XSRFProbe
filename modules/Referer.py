@@ -67,4 +67,3 @@ def Referer(url):
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
         print(color.ORANGE+' [+] Possible Vulnerability Type: '+color.BY+' Referer Based Request Forgery '+color.END)
         return False
-
