@@ -16,19 +16,19 @@ def sameSequence(str1,str2):
     This function is intended to find same sequence
                 between str1 and str2.
     '''
-	# Initialize SequenceMatcher object with
-	# Input string
-	seqMatch = SequenceMatcher(None,str1,str2)
+    # Initialize SequenceMatcher object with
+    # Input string
+    seqMatch = SequenceMatcher(None,str1,str2)
 
-	# Find match of longest sub-string
-	# Output will be like Match(a=0, b=0, size=5)
-	match = seqMatch.find_longest_match(0, len(str1), 0, len(str2))
+    # Find match of longest sub-string
+    # Output will be like Match(a=0, b=0, size=5)
+    match = seqMatch.find_longest_match(0, len(str1), 0, len(str2))
 
-	# Print longest substring
-	if (match.size!=0):
-		return (str1[match.a: match.a + match.size])
-	else:
-		return ''
+    # Print longest substring
+    if (match.size!=0):
+        return (str1[match.a: match.a + match.size])
+    else:
+        return ''
 
 def replaceStrIndex(text, index=0, replacement=''):
     '''
