@@ -15,11 +15,19 @@ import re
 import time
 import warnings
 import difflib
-import urllib.error
 import http.cookiejar
 from bs4 import BeautifulSoup
-from urllib.parse import urlencode
-from urllib.request import build_opener, HTTPCookieProcessor
+try:
+    from urllib.parse import urlencode
+    from urllib.error import HTTPError, URLError
+    from urllib.request import build_opener, HTTPCookieProcessor
+except ImportError:  # Throws exception in Case of Python2
+    print("\033[1;91m [-] \033[1;93mXSRFProbe\033[0m isn't compatible with Python 2.x versions.\n\033[1;91m [-] \033[0mUse Python 3.x to run \033[1;93mXSRFProbe.")
+    quit()
+try:
+    import requests, stringdist, lxml, bs4
+except ImportError:
+    print(' [-] Required dependencies are not installed.\n [-] Run \033[1;93mpip3 install -r requirements.txt\033[0m to fix it.')
 
 # Imports from core
 from core.options import *
@@ -44,6 +52,7 @@ from modules.Entropy import Entropy
 from modules.Referer import Referer
 from modules.Encoding import Encoding
 from modules.Analysis import Analysis
+from modules.Checkpost import PostBased
 # Import Ends
 
 # First rule, remove the warnings!
@@ -129,7 +138,7 @@ def Engine():  # lets begin it!
                                     query, token = Entropy(result, url, m['action'])
                                 # Go for token parameter tamper checks.
                                 if (query and token):
-                                    Tamper(url, action, result, r2, query, token)
+                                    Tamper(url, action, result, r2.text, query, token)
                                 o2 = resp2.open(url).read()  # make request as user2
                                 try:
                                     form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
@@ -139,61 +148,20 @@ def Engine():  # lets begin it!
                                 verbout(GR, 'Preparing form inputs...')
                                 contents2 = form.prepareFormInputs(form2)  # prepare for form 2 as user2
                                 r3 = Post(url,action,contents2).text  # make request as user3 with user2's form
-                                try:
-                                    checkdiff = difflib.ndiff(r1.splitlines(1),r2.splitlines(1))  # check the diff noted
-                                    checkdiff0 = difflib.ndiff(r1.splitlines(1),r3.splitlines(1))  # check the diff noted
-                                    result12 = []  # an init
-                                    for n in checkdiff:
-                                        if re.match('\+|-',n):  # get regex matching stuff
-                                            result12.append(n)  # append to existing list
-                                    result13 = []  # an init
-                                    for n in checkdiff0:
-                                        if re.match('\+|-',n):  # get regex matching stuff
-                                            result13.append(n)  # append to existing list
-                                    # This logic is based purely on the assumption on the difference of requests and
-                                    # response body.
-                                    # If the number of differences of result12 are less than the number of differences
-                                    # than result13 then we have the vulnerability.
-                                    #
-                                    # NOTE: The alogrithm has lots of scopes of improvements
-                                    if len(result12)<=len(result13):
-                                        print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-                                        print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' POST-Based Request Forgery '+color.END)
-                                        time.sleep(0.3)
-                                        print(O+'PoC of response and request...')
-                                        try:  # yet we give out what we found
-                                            if m['name']:
-                                                print(color.RED+'\n +---------+')
-                                                print(color.RED+' |   PoC   |')
-                                                print(color.RED+' +---------+\n')
-                                                print(color.BLUE+' [+] URL : ' +color.CYAN+url)  # url part
-                                                print(color.CYAN+' [+] Name : ' +color.ORANGE+m['name'])  # name
-                                                print(color.GREEN+' [+] Action : ' +color.END+m['action'])  # action
-                                        except KeyError:# if value m['name'] not there :(
-                                            print(color.RED+'\n +---------+')
-                                            print(color.RED+' |   PoC   |')
-                                            print(color.RED+' +---------+\n')
-                                            print(color.BLUE+' [+] URL : ' +color.CYAN+url)  # the url
-                                            print(color.GREEN+' [+] Action : ' +color.END+ m['action'])  # action
+                                if POST_BASED:
+                                    try:
+                                        if m['name']:
+                                            PostBased(url, r1, r2, r3, m['action'], result, m['name'])
+                                    except KeyError:
+                                        PostBased(url, r1, r2, r3, m['action'], result)
 
-                                        print(color.ORANGE+' [+] Query : '+color.GREY+ urlencode(result).strip())
-                                        print('')                                        # print out the params + url
-
-                                except KeyboardInterrupt:  # incase user wants to exit (while form processing)
-                                    verbout(R, 'User Interrupt!')
-                                    print(R+'Aborted!')  # say goodbye
-                                    quit()
-
-                                except KeyboardInterrupt:  # other exceptions ;-; can be ignored
-                                    pass
-
-                            except urllib.error.HTTPError as msg:  # if runtime exception...
+                            except HTTPError as msg:  # if runtime exception...
                                 verbout(R, 'Exception : '+msg.__str__())  # again exception :(
 
                     actionDone.append(action)  # add the stuff done
                     i+=1  # ctr++
 
-            except urllib.error.URLError:  # if again...
+            except URLError:  # if again...
                 verbout(R, 'Exception at : '+url)  # again exception -_-
                 time.sleep(0.4)
                 verbout(O, 'Moving on...')
@@ -202,7 +170,10 @@ def Engine():  # lets begin it!
         print('\n'+G+"Scan completed!"+'\n')
         Analysis()  # For Post Scan Analysis
 
-    except urllib.error.HTTPError as e:  # 403 not authenticated
+    # This error usually happens when some sites are protected by some load balancer
+    # example Cloudflare. These domains return a 403 forbidden response in various
+    # contexts. For example when making reverse DNS queries.
+    except HTTPError as e:
         if str(e.code) == '403':
             verbout(R, 'HTTP Authentication Error!')
             verbout(R, 'Error Code : ' +O+ str(e.code))
