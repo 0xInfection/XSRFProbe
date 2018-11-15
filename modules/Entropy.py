@@ -65,7 +65,7 @@ def Entropy(req, url, m_action, m_name=''):
 
     # Calculate entropy
     verbout(O, 'Proceeding to calculate '+color.GREY+'Shannon Entropy'+color.END+' of Token audited...')
-    entropy = shannon_entropy(value)
+    entropy = calcEntropy(value)
     verbout(GR, 'Calculating Entropy...')
     verbout(color.ORANGE, ' [+] Entropy Calculated: '+color.CYAN+str(entropy))
     if entropy >= min_entropy:
@@ -94,10 +94,10 @@ def Entropy(req, url, m_action, m_name=''):
         print('')
     return _q, para  # Return the query paramter and anti-csrf token
 
-def shannon_entropy(data):
+def calcEntropy(data):
     """
     This function is used to calculate
-            Shannon Entropy.
+                Entropy.
     """
     if not data:
         return 0

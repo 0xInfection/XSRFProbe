@@ -27,9 +27,9 @@ def Token(req):
     query = ''
     # First lets have a look at config.py and see if its set
     if TOKEN_CHECKS:
-        # Lets check for the request values. But before that lets encode and unquote the request :D
         verbout(O,'Parsing request for detecting anti-csrf tokens...')
         try:
+            # Lets check for the request values. But before that lets encode and unquote the request :D
             con = unquote(urlencode(req)).split('&')
             for c in con:
                 for name in COMMON_CSRF_NAMES:
@@ -39,7 +39,7 @@ def Token(req):
                         verbout(color.GREY,' [+] Token Parameter: '+color.CYAN+qu[0]+'='+qu[1]+' ...')
                         query, param = qu[0], qu[1]
                         REQUEST_TOKENS.append(param)  # We are appending the token to a variable for further analysis
-                        break  # Break execution is a Anti-CSRF token is found
+                        break  # Break execution if a Anti-CSRF token is found
 
         except Exception as e:
             verbout(R,'Request Parsing Execption!')

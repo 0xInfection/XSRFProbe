@@ -97,7 +97,7 @@ def SameSite(url):
 
     # Step 3: And finally comes the most important step. Lets see how
     # the site reacts to a valid cookie (ofc supplied by the user) coming
-    # froma a different site, i.e Referer set to other than host.
+    # from a a different site, i.e Referer set to other than host.
     # This is the most crucial part of the detection.
     #
     # TODO: Improve the logic in detection.

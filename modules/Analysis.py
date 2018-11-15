@@ -34,7 +34,7 @@ def Analysis():
             verbout(C, 'Comparing '+color.ORANGE+'%s'+color.END+' and '+color.ORANGE+'%s' % (tokenx1 ,tokenx2))
             # Calculating the edit distance via Damerau Levenshtein algorithm
             m = stringdist.rdlevenshtein(tokenx1, tokenx2)
-            verbout(color.CYAN, ' [+] Edit Distance Calculated: '+color.GREY+str(m))
+            verbout(color.CYAN, ' [+] Edit Distance Calculated: '+color.GREY+str(m*100)+'%')
             # Now its time to detect the alignment ratio
             n = stringdist.rdlevenshtein_norm(tokenx1, tokenx2)
             verbout(color.CYAN, ' [+] Alignment Ratio Calculated: '+color.GREY+str(m))
@@ -43,6 +43,15 @@ def Analysis():
                 verbout(C, 'Token length calculated is same: Each %s bytes' % len(byteString(tokenx1)))
             else:
                 verbout(C, 'Token length calculated is different: By %s bytes' % (len(byteString(tokenx1)) - len(byteString(tokenx2))))
+            # In my experience with web security assessments, often the Anti-CSRF token
+            # is composed of two parts, one of them remains static while the other one dynamic.
+            #
+            # For example, if the Anti CSRF Tokens “837456mzy29jkd911139” for one request, the
+            # other time “837456mzy29jkd337221”, “837456mzy29jkd” part of the token remains same
+            # in both requests.
+            #
+            # The main idea behind this is to detect the static and dynamic part via DL Algorithm
+            # as discussed above by calculating edit distance.
             if n == 0.5 or m == len(tokenx1)/2:
                 verbout(GR, 'The tokens are composed of 2 parts (one static and other dynamic)... ')
                 p = sameSequence(tokenx1. tokenx2)
@@ -52,7 +61,7 @@ def Analysis():
                     verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BR+' VULNERABLE '+color.END'!')
                     print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                     print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
-                    print(color.GREY+' [+] Tokens can easily be forged via bruteforce/guessing!')
+                    print(color.GREY+' [+] Tokens can easily be '+BR+' Forged by Bruteforcing/Guessing '+color.END+'!')
             elif n < 0.5 or m < len(tokenx1)/2:
                 verbout(R, 'Token distance calculated is '+color.RED+'less than 0.5!')
                 p = sameSequence(tokenx1. tokenx2)
@@ -61,7 +70,7 @@ def Analysis():
                 verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BR+' VULNERABLE '+color.END'!')
                 print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                 print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
-                print(color.GREY+' [+] Tokens can easily be forged via bruteforce/guessing!')
+                print(color.GREY+' [+] Tokens can easily be '+BR+' Forged by Bruteforcing/Guessing '+color.END+'!')
             else:
                 verbout(R, 'Token distance calculated is '+color.GREEN+'greater than 0.5!')
                 p = sameSequence(tokenx1. tokenx2)
@@ -70,5 +79,5 @@ def Analysis():
                 verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BG+' NOT VULNERABLE '+color.END'!')
                 print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                 print(color.ORANGE+' [!] Vulnerability Mitigation: '+color.BG+' Strong Dynamic Part of Tokens '+color.END)
-                print(color.GREY+' [+] Tokens cannot easily be bruteforced/guessed!')
+                print(color.GREY+' [+] Tokens '+BG+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
         print(C+'Post-Scan Analysis Completed!')
