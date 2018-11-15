@@ -9,6 +9,8 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
+# this module holds values for controlling the entire scan interface.
+
 # Lets assign some global variables...
 global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALUE
 global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
@@ -16,7 +18,8 @@ global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BA
 # Site Url to be scanned (Required)
 SITE_URL = ''
 
-# Print out verbose (turn it off for only brief outputs)
+# Print out verbose (turn it off for only brief outputs).
+# Turning off is Highly Discouraged, since you will miss what the tool is doing.
 DEBUG = True
 
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
@@ -117,4 +120,8 @@ OUTPUT_DIR = ''
 # This option is for displaying the headers received as response.
 # Turn this off if you don't want to see the headers on the
 # terminal, or if it feels irritating.
-DISPLAY_HEADERS = True
+DISPLAY_HEADERS = False
+
+# Option for controlling post-scan analysis. Turning it off
+# results in not analysing the tokens gathered.
+SCAN_ANALYSIS = True
