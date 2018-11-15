@@ -14,17 +14,16 @@ import string
 from core.colors import *
 from random import Random
 from files.config import *
-from core.verbout import verbout 
+from core.verbout import verbout
 
 class Form_Debugger():
 
     def prepareFormInputs(self, form):
         '''
-        This method parses specific form types and generates tokens based 
+        This method parses specific form types and generates tokens based
                         on their input types.
         '''
         verbout(O,'Crafting inputs as form type...')
-        verbout(GR,'Parsing final inputs...')
         input = {}
 
         verbout(O,'Processing '+color.BOLD+'<input type="text" name="...')  # get name type inputs
@@ -85,12 +84,12 @@ class Form_Debugger():
             if len(m.findAll('option',value=True))>0:
                 name = m['name']  # assign passed on value
                 input[name] = m.findAll('option',value=True)[0]['value'].encode('utf8')  # find forms fields based on value
-
+        verbout(GR,'Parsing final inputs...')
         return input  # Return the form input types
 
 def randString():  # generate random strings
     verbout(GR,'Compiling strings...')
-    return ''.join( Random().sample(string.ascii_letters, TOKEN_GENERATION_LENGTH))  # any 6 chars
+    return ''.join(Random().sample(string.ascii_letters, TOKEN_GENERATION_LENGTH))  # any 6 chars
 
 def getAllForms(soup):  # get all forms
     return soup.findAll('form',action=True,method=re.compile("post", re.IGNORECASE))  # duh...
