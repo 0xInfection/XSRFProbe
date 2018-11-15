@@ -137,8 +137,8 @@ def Engine():  # lets begin it!
                                     verbout(R, 'Form Error')
                                     continue;  # making sure program won't end here (dirty fix :( )
                                 verbout(GR, 'Preparing form inputs...')
-                                contents2 = form.prepareFormInputs(form2)  # prepare for form 2
-                                r3 = Post(url,action,contents2).text  # make request as user3
+                                contents2 = form.prepareFormInputs(form2)  # prepare for form 2 as user2
+                                r3 = Post(url,action,contents2).text  # make request as user3 with user2's form
                                 try:
                                     checkdiff = difflib.ndiff(r1.splitlines(1),r2.splitlines(1))  # check the diff noted
                                     checkdiff0 = difflib.ndiff(r1.splitlines(1),r3.splitlines(1))  # check the diff noted
@@ -152,9 +152,10 @@ def Engine():  # lets begin it!
                                             result13.append(n)  # append to existing list
                                     # This logic is based purely on the assumption on the difference of requests and
                                     # response body.
-                                    #
                                     # If the number of differences of result12 are less than the number of differences
-                                    # than result13
+                                    # than result13 then we have the vulnerability.
+                                    #
+                                    # NOTE: The alogrithm has lots of scopes of improvements
                                     if len(result12)<=len(result13):
                                         print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
                                         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' POST-Based Request Forgery '+color.END)

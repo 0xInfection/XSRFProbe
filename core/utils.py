@@ -59,3 +59,30 @@ def byteString(s, encoding='utf8'):
     except (UnicodeEncodeError, UnicodeDecodeError):
         s = str(s)
     return s
+
+# Iterative Python program to check if a string is subsequence of another string
+
+# Returns true if str1 is a subsequence of str2
+# m is length of str1, n is length of str2
+def subSequence(str1,str2):
+    '''
+    Returns whether 'str1' and 'str2' are subsequence
+                    of one another.
+    '''
+    j = 0    # Index of str1
+    i = 0    # Index of str2
+
+    # Traverse both str1 and str2
+    # Compare current character of str2 with
+    # First unmatched character of str1
+    # If matched, then move ahead in str1
+    m = len(str1)
+    n = len(str2)
+    while j<m and i<n:
+        if str1[j] == str2[i]:
+            j = j+1
+        i = i + 1
+
+    # If all characters of str1 matched, then j is equal to m
+    return j==m
+
