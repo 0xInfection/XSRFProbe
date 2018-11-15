@@ -15,10 +15,13 @@
 #
 # Feel free to add more of your tokens if you have. ;)
 COMMON_CSRF_NAMES = (
+                    # These are a list of known common tokens parameters
                     'CSRFName',                   # OWASP CSRF_Guard
                     'CSRFToken',                  # OWASP CSRF_Guard
                     'anticsrf',                   # AntiCsrfParam.java
                     '__RequestVerificationToken', # AntiCsrfParam.java
+                    'authenticity_token',         # Ruby on Rails
+                    'csrf_param'                  # Ruby on Rails
                     'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
                     'yii_anticsrf'                # http://www.yiiframework.com/
                     '[_token]',                   # Symfony 2.x
@@ -33,11 +36,11 @@ COMMON_CSRF_NAMES = (
                     'csrf',
                     'authenticity',
                     'auth_token',
-                    'authenticity_token',
                     'auth',
                     'anti_csrf',
                     'auth_value',
                     'csrf_value',
+                    '_debugval',
                     'csrf_token',
                     'VerificationToken',
                     '__authvalue',
@@ -53,7 +56,11 @@ COMMON_CSRF_NAMES = (
                     'dts_id',
                     'req_id',
                     '_id',
-                    'request_id'
+                    'request_id',
+                    'sessionid',
+                    '_sessionid',
+                    'debug_id',
+                    'vtoken'
                 )
 
 # TODO: Add and replace with more valid and arguable exclusion lists
@@ -64,6 +71,5 @@ EXCLUSIONS_LIST = (
                     'action=delete',
                     'UserLogout',
                     'osCsid',
-                    'file_manager.php',
                     'action=logout',
                 )
