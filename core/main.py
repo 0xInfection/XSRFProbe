@@ -138,7 +138,7 @@ def Engine():  # lets begin it!
                                     query, token = Entropy(result, url, m['action'])
                                 # Go for token parameter tamper checks.
                                 if (query and token):
-                                    Tamper(url, action, result, r2.text, query, token)
+                                    Tamper(url, action, result, r2, query, token)
                                 o2 = resp2.open(url).read()  # make request as user2
                                 try:
                                     form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
@@ -159,7 +159,7 @@ def Engine():  # lets begin it!
                                 verbout(R, 'Exception : '+msg.__str__())  # again exception :(
 
                     actionDone.append(action)  # add the stuff done
-                    i+=1  # ctr++
+                    i+=1  # Increase user iteration
 
             except URLError:  # if again...
                 verbout(R, 'Exception at : '+url)  # again exception -_-

@@ -36,7 +36,7 @@ def Post(url, action, data):
            Form Requester [POST].
     '''
     time.sleep(DELAY_VALUE)  # If delay param has been supplied
-    verbout(GR, 'Processing the POST Request...')
+    verbout(GR, 'Processing the '+color.GREY+'POST'+color.END+' Request...')
     main_url = urljoin(url, action)  # encode stuff to make callable
     try:
         # Make the POST Request.
@@ -62,7 +62,7 @@ def Get(url, headers=headers):
             Url Requester [GET].
     '''
     # We do not verify thr request while GET requests
-    verbout(GR, 'Processing the GET Request...')
+    verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
     time.sleep(DELAY_VALUE)  # We make requests after the time delay
     req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, verify=False)
     if DISPLAY_HEADERS:
