@@ -48,6 +48,6 @@ def Token(req):
         if param != '':
             return query, param
         else:
-            verbout(color.RED,' [-] The form was requested without a '+color.ORANGE+'Anti-CSRF token'+color.RED+'...')
-            verbout(color.RED,' [-] Endpoint seems vulnerable to CSRF POST-Based Attacks...')
+            print(color.RED+' [-] The form was requested '+color.BR+' Without an Anti-CSRF Token '+color.END+color.RED+'...')
+            print(color.RED+' [-] Endpoint seems '+color.BR+' VULNERABLE '+color.RED+' to '+color.BR+' POST-Based Request Forgery '+color.END)
             return '', ''

@@ -17,17 +17,16 @@ from core.verbout import verbout
 from core.utils import replaceStrIndex
 from urllib.parse import urlencode, quote
 
-# Null char flags (hex)
-flagx1 = 0x00
-flagx2 = 0x00
-flagx3 = 0x00
-
 def Tamper(url, action, req, body, query, para):
     '''
     The main idea behind this is to tamper the Anti-CSRF tokens
           found and check the content length for related
                       vulnerabilities.
     '''
+    # Null char flags (hex)
+    flagx1 = 0x00
+    flagx2 = 0x00
+    flagx3 = 0x00
     verbout(GR, 'Proceeding for CSRF attack via Anti-CSRF token tampering...')
     # First of all lets get out token from request
     if para == '':
@@ -42,12 +41,12 @@ def Tamper(url, action, req, body, query, para):
     #
     # Required check for checking if string at that position isn't the
     # same char we are going to replace with.
-    verbout(GR, 'Tampering Token by index replacement...')
+    verbout(GR, 'Tampering Token by '+color.GREY+'index replacement'+color.END+'...')
     if value[3] != 'a':
         tampvalx1 = replaceStrIndex(value, 3, 'a')
     else:
         tampvalx1 = replaceStrIndex(value, 3, 'x')
-    verbout(G, 'Tampered Token: '+color.CYAN+tampvalx1)
+    verbout(color.ORANGE, ' [+] Tampered Token: '+color.CYAN+tampvalx1)
     # Lets build up the request...
     req[query] = tampvalx1
     resp = Post(url, action, req)
@@ -56,17 +55,20 @@ def Tamper(url, action, req, body, query, para):
     # we assume that the tamper did not work :( But if there is a 20x
     # (Accepted) or a 30x (Redirection), then we know it worked.
     #
+    # Or if the previous request has same content length as this tampered
+    # request, then we have the vulnerability.
+    #
     # NOTE: This algorithm has lots of room for improvement.
     if str(resp.status_code).startswith('50'):
         verbout(color.RED,' [+] Token tamper from request causes a 50x Internal Error!')
-    if not str(resp.status_code).startswith('40') and not str(resp.status_code).startswith('50'):
+    if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
         flagx1 = 0x01
 
     # [Step 2]: Second we take the token and then remove a char
     # at a specific position and test the response body.
-    verbout(GR, 'Tampering Token by index removal...')
+    verbout(GR, 'Tampering Token by '+color.GREY+'index removal'+color.END+'...')
     tampvalx2 = replaceStrIndex(value, 3)
-    verbout(G, 'Tampered Token: '+color.CYAN+tampvalx1)
+    verbout(color.ORANGE, ' [+] Tampered Token: '+color.CYAN+tampvalx1)
     # Lets build up the request...
     req[query] = tampvalx2
     resp = Post(url, action, req)
@@ -78,12 +80,12 @@ def Tamper(url, action, req, body, query, para):
     # NOTE: This algorithm has lots of room for improvement.
     if str(resp.status_code).startswith('50'):
         verbout(color.RED,' [+] Token tamper from request causes a 50x Internal Error!')
-    if not str(resp.status_code).startswith('40') and not str(resp.status_code).startswith('50'):
+    if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
         flagx2 = 0x01
 
     # [Step 3]: Third we take the token and then remove the whole
     # anticsrf token and test the response body.
-    verbout(GR, 'Tampering Token by Token removal...')
+    verbout(GR, 'Tampering Token by '+color.GREY+'Token removal'+color.END+'...')
     del req[query]
     verbout(G, 'Removed token from request!')
     # Lets build up the request...
@@ -96,7 +98,7 @@ def Tamper(url, action, req, body, query, para):
     # NOTE: This algorithm has lots of room for improvement.
     if str(resp.status_code).startswith('50'):
         verbout(color.RED,' [+] Token removal from request causes a 50x Internal Error!')
-    if not str(resp.status_code).startswith('40') and not str(resp.status_code).startswith('50'):
+    if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
         flagx2 = 0x01
 
     # If any of the forgeries worked...
