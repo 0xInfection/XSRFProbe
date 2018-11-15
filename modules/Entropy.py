@@ -67,7 +67,7 @@ def Entropy(req, url, m_action, m_name=''):
     verbout(O, 'Proceeding to calculate '+color.GREY+'Shannon Entropy'+color.END+' of Token audited...')
     entropy = calcEntropy(value)
     verbout(GR, 'Calculating Entropy...')
-    verbout(color.ORANGE, ' [+] Entropy Calculated: '+color.CYAN+str(entropy))
+    verbout(color.BLUE, ' [+] Entropy Calculated: '+color.CYAN+str(entropy))
     if entropy >= min_entropy:
         verbout(color.GREEN,' [+] Anti-CSRF Token Entropy Calculated is '+color.BY+'GREATER than 2.4'+color.END+'... ')
         print(color.ORANGE+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
