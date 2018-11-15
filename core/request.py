@@ -30,7 +30,6 @@ if USER_AGENT_RANDOM:
 else:
     headers['User-Agent'] = USER_AGENT
 
-
 def Post(url, action, data):
     '''
     The main use of this function is as a
@@ -42,6 +41,8 @@ def Post(url, action, data):
     try:
         # Make the POST Request.
         response = requests.post(main_url, headers=headers, data=data, timeout=TIMEOUT_VALUE)
+        if DISPLAY_HEADERS:
+            pheaders(response.headers)
         return response  # read data content
 
     except requests.exceptions:  # if error
@@ -64,5 +65,6 @@ def Get(url, headers=headers):
     verbout(GR, 'Processing the GET Request...')
     time.sleep(DELAY_VALUE)  # We make requests after the time delay
     req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, verify=False)
-    pheaders(req.headers)
+    if DISPLAY_HEADERS:
+        pheaders(req.headers)
     return req

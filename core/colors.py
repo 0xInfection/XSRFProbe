@@ -21,7 +21,6 @@ class color:
     UNDERLINE = '\033[4m'           # underline
     CYAN  = '\033[1;96m'            # cyan
     GREY = '\033[1;97m'             # gray
-    TAN  = '\033[1;93m'             # tan
     BR = '\033[1;97;41m'            # background red
     BG = '\033[1;97;42m'            # background green
     BY = '\033[1;97;43m'            # background yellow

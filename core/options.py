@@ -93,9 +93,21 @@ if args.cookie:
 if args.timeout:
     config.TIMEOUT_VALUE = args.timeout
 
+# Custom header values if specified
+if args.headers:
+    # NOTE: As a default idea, when the user supplies custom headers, we
+    # simply add the custom headers to a list of existing headers in
+    # files/config.py.
+    # Uncomment the following lines to just reinitialise the headers everytime
+    # they make a request.
+    #
+    #config.HEADER_VALUES = {}
+    for m in args.headers.split(','):
+        config.HEADER_VALUES[m.split('=')[0]] = m.split('=')[1]
+
 if args.exclude:
     exc = args.exclude
-    #EXCLUDE_URLS = [s for s in exc.split(',').strip()]
+    #config.EXCLUDE_URLS = [s for s in exc.split(',').strip()]
     m = exc.split(',').strip()
     for s in m:
         config.EXCLUDE_URLS.append(s)

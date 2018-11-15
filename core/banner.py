@@ -9,6 +9,7 @@
 #This module requires XSRF-Probe
 #https://github.com/0xInfection/XSRF-Probe
 
+# Just for some fancy benner to appear at beginning
 
 from core.colors import *
 import time
