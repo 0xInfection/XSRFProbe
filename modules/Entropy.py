@@ -110,4 +110,3 @@ def calcEntropy(data):
             entropy += - p_x * log(p_x, 2)
 
     return entropy
-
