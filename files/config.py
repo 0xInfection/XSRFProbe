@@ -111,7 +111,7 @@ ORIGIN_URL = 'http://www.pwn.io'
 TOKEN_GENERATION_LENGTH = 6
 
 # List of Urls that are not to be scanned (excluded).
-EXCLUDE_URLS = []
+EXCLUDE_DIRS = []
 
 # Output directory where everything (including logs) are to
 # be stored
