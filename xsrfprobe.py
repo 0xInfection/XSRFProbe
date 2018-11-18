@@ -7,10 +7,8 @@
 
 # Author: @_tID
 # This module requires XSRFProbe
-# https://github.com/theInfectedDrake/XSRFProbe
+# https://github.com/0xInfection/XSRFProbe
 
-from core.impo import * # import all stuff
-from core.globalvars import * # import the global variables
-xsrf_main() # the true start of the program ;)
-
+from core import main  # import all stuff
+main.Engine()  # the true start of the program ;)
 
