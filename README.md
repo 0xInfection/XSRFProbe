@@ -1,8 +1,29 @@
-<p align="middle"><img src='https://i.imgur.com/b7SnRvX.png' /></p>  
+<h1 align="center">
+  <br>
+  <a href="https://github.com/0xinfection"><img src="https://i.imgur.com/b7SnRvX.png" alt="XSRFProbe"></a>
+  <br>
+  XSRFProbe
+  <br>
+</h1>
 
-# XSRF Probe [![python](https://img.shields.io/badge/Python-3.x-green.svg?style=style=flat-square)](https://docs.python.org/3/download.html) [![license](https://img.shields.io/badge/License-GPLv3-orange.svg?style=style=flat-square)](https://github.com/0xinfection/XSRFProbe/blob/master/LICENSE) [![version](https://img.shields.io/badge/Version-v1.0-blue.svg?style=style=flat-square)](https://github.com/0xinfection/XSRFProbe/blob/master/README.md#version) [![Build Status](https://travis-ci.org/0xInfection/XSRFProbe.svg?branch=master)](https://travis-ci.org/0xInfection/XSRFProbe)
+<h4 align="center">The Offensive Cross Site Request Forgery Audit Toolkit.</h4>
 
-XSRF Probe is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling and Intelligent Token Generation Capabilities.
+<p align="center">  
+  <a href="https://docs.python.org/3/download.html">
+    <img src="https://img.shields.io/badge/Python-3.x-green.svg">
+  </a>
+  <a href="https://github.com/0xinfection/XSRFProbe/releases">
+    <img src="https://img.shields.io/badge/Version-v1.1.0-blue.svg">
+  </a>
+  <a href="https://github.com/0xinfection/XSRFProbe/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/License-GPLv3-orange.svg">
+  </a> 
+  <a href="https://travis-ci.org/0xInfection/XSRFProbe">
+    <img src="https://travis-ci.org/0xInfection/XSRFProbe.svg?branch=master">
+  </a>
+</p>
+<p align="center">
+  <b>XSRFProbe</b> is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling and Intelligent Token Generation Capabilities.</p>
 
 > XSRFProbe is undergoing [major code changes and core refactors](https://github.com/0xinfection/XSRFProbe/projects/1) at present. So please consider avoiding making pull requests and raising issues temporarily until I publish the next release. If interested, have a look at [this one](https://github.com/0xInfection/XSRFProbe/pull/9).
 
@@ -44,7 +65,7 @@ Do not use this tool on a live site!
 
 It is because this tool is designed to perform all kinds of form submissions automatically which can sabotage the site. Sometimes you may screw up the database and most probably perform a DoS on the site as well.
 
-Test on a disposable test site!
+Test on a disposable setup/test site!
 
 ### Drawbacks:
 The scanner has the following drawbacks presently:
