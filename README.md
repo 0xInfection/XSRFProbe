@@ -65,10 +65,9 @@ Lets see some real-world scenarios of XSRFProbe in action:
 <img src="https://i.imgur.com/VPgdwI1.png" width=50%></img><img src="https://i.imgur.com/XQxwKHS.png" width=50%></img>
 <img src="https://i.imgur.com/wSWFdZG.png" width=50%></img><img src="https://i.imgur.com/4TCrza9.png" width=50%></img>
 
-### Version:
-```
-v2.0.0
-```
+### Version and License:
+XSRFProbe v2 is in beta phase and has been released for public testing.
+XSRFprobe is licensed under the GPLv3 license.
 
 ### Disclaimer:
 Usage of XSRFProbe for testing websites without prior mutual consistency can be considered as an illegal activity. It is the final user's responsibility to obey all applicable local, state and federal laws. The author assumes no liability and is not exclusively responsible for any misuse or damage caused by this program.
