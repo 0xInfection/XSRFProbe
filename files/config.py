@@ -120,7 +120,7 @@ OUTPUT_DIR = ''
 # This option is for displaying the headers received as response.
 # Turn this off if you don't want to see the headers on the
 # terminal, or if it feels irritating.
-DISPLAY_HEADERS = False
+DISPLAY_HEADERS = True
 
 # Option for controlling post-scan analysis. Turning it off
 # results in not analysing the tokens gathered.
