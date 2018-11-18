@@ -16,8 +16,9 @@
     <img src="https://travis-ci.org/0xInfection/XSRFProbe.svg?branch=master">
   </a>
 </p>
-<p align="center">
-  <b>XSRFProbe</b> is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling and Intelligent Token Generation Capabilities.</p>
+
+### About XSRFProbe
+__XSRFProbe__ is an advanced Cross Site Request Forgery Audit Toolkit equipped with Powerful Crawling Engine and Token Generation Capabilities. It has well-capable built in module which can hunt out CSRF vulnerabilities. For more info on how XSRFProbe works, see [XSRFProbe Internals](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals) on [wiki](https://github.com/0xInfection/XSRFProbe/wiki/).
 
 > XSRFProbe is undergoing [major code changes and core refactors](https://github.com/0xinfection/XSRFProbe/projects/1) at present. So please consider avoiding making pull requests and raising issues temporarily until I publish the next release. If interested, have a look at [this one](https://github.com/0xInfection/XSRFProbe/pull/9).
 
