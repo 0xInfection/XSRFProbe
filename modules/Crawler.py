@@ -56,8 +56,8 @@ class Handler():  # Main Crawler Handler
     def process(self, root):
         # Our first task is to remove urls that aren't to be scanned and have been
         # passed via the --exclude parameter.
-        if EXCLUDE_URLS:
-            for link in EXCLUDE_URLS:
+        if EXCLUDE_DIRS:
+            for link in EXCLUDE_DIRS:
                 self.toVisit.remove(link)
         url = self.currentURI  # Main Url (Current)
         try:
