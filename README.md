@@ -1,12 +1,10 @@
 <h1 align="center">
   <br>
-  <a href="https://github.com/0xinfection"><img src="https://i.imgur.com/b7SnRvX.png" alt="XSRFProbe"></a>
-  <br>
-  XSRFProbe
+  <a href="https://github.com/0xinfection"><img src="https://i.imgur.com/PCZPfg8.png" alt="XSRFProbe"></a>
   <br>
 </h1>
 
-<h4 align="center">The Offensive Cross Site Request Forgery Audit Toolkit.</h4>
+<h4 align="center">The Prime Cross Site Request Forgery Audit Toolkit.</h4>
 
 <p align="center">  
   <a href="https://docs.python.org/3/download.html">
