@@ -40,7 +40,8 @@ __XSRFProbe__ is an advanced Cross Site Request Forgery Audit Toolkit equipped w
 - [x] Out of the box support for custom cookie values and generic headers.
 - [x] Can intelligently generate crafted tokens for different types of parameters.
 - [x] Submits forms in the normal values as well as with crafted token.
-- [x] Follows a redirect when there is a 302 response.
+- [x] Follows a redirect when there is a 30x response.
+- [x] Highly documented code and [highly generalised workflow](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals).
 - [x] Has a user-friendly interaction environment.
 - [x] Everything is automated on demand.
 
@@ -73,10 +74,10 @@ v2.0.0
 Usage of XSRFProbe for testing websites without prior mutual consistency can be considered as an illegal activity. It is the final user's responsibility to obey all applicable local, state and federal laws. The author assumes no liability and is not exclusively responsible for any misuse or damage caused by this program.
 
 ### To Do's:
-- include 
+- Include detailed logging system. 
 - Associate multithreading for the better.
 - Include methods for detecting blind CSRF. 
 
 Thats it folks! Thank you...
 
-> Copyright © [The Infected Drake](https://www.twitter.com/0xInfection)
+> Copyright © [__Infected Drake__](https://www.twitter.com/0xInfection)
