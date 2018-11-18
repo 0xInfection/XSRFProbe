@@ -99,7 +99,7 @@ def Tamper(url, action, req, body, query, para):
     if str(resp.status_code).startswith('50'):
         verbout(color.RED,' [+] Token removal from request causes a 50x Internal Error!')
     if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
-        flagx2 = 0x01
+        flagx3 = 0x01
 
     # If any of the forgeries worked...
     if flagx1 == 0x01 or flagx2 == 0x01 or flagx3 == 0x01:
