@@ -1,7 +1,6 @@
 <h1 align="center">
   <br>
   <a href="https://github.com/0xinfection"><img src="https://i.imgur.com/NnHAZx2.png" alt="XSRFProbe"></a>
-  <br>
 </h1>
 <p align="center">  
   <a href="https://docs.python.org/3/download.html">
