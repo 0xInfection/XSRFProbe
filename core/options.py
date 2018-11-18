@@ -11,6 +11,7 @@
 
 # Importing stuff
 import argparse, sys
+import urllib.parse
 from files import config
 from core.colors import R
 from core.updater import updater
@@ -116,7 +117,7 @@ if args.exclude:
     #config.EXCLUDE_URLS = [s for s in exc.split(',').strip()]
     m = exc.split(',').strip()
     for s in m:
-        config.EXCLUDE_URLS.append(s)
+        config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s))
 
 if args.randagent:
     # If random-agent argument supplied...
