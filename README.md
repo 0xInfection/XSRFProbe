@@ -38,7 +38,7 @@ __XSRFProbe__ is an advanced Cross Site Request Forgery Audit Toolkit. Equipped 
 - [x] The user is in [control of everything](https://github.com/0xInfection/XSRFProbe/wiki/Advanced-Usage#xsrfprobe-configuration-variables) that the scanner does.
 - [x] Can detect several types of Anti-CSRF tokens in requests.
 - [x] Out of the box support for custom cookie values and generic headers.
-- [x] Accurate [token-strength detection](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#token-randomness-calculation) using Shannon Entropy.
+- [x] Accurate [Token-Strength Detection](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#token-randomness-calculation) and [Post-Scan Analysis](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#post-scan-token-analysis) using various algorithms.
 - [x] Submits forms in the normal values as well as with crafted token.
 - [x] Follows a redirect when there is a 30x response.
 - [x] Plus a bonus over it, the [Post-Scan Analysis](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#post-scan-token-analysis), using Damerau-Levenshtein's Algorithm.
@@ -52,7 +52,7 @@ Do not use this tool on a live site!
 
 It is because this tool is designed to perform all kinds of form submissions automatically which can sabotage the site. Sometimes you may screw up the database and most probably perform a DoS on the site as well.
 
-Test on a disposable setup/test site!
+Test on a disposable/dummy setup/site!
 
 ### Drawbacks:
 The scanner has the following drawbacks presently:
