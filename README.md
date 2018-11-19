@@ -38,9 +38,10 @@ __XSRFProbe__ is an advanced Cross Site Request Forgery Audit Toolkit. Equipped 
 - [x] The user is in [control of everything](https://github.com/0xInfection/XSRFProbe/wiki/Advanced-Usage#xsrfprobe-configuration-variables) that the scanner does.
 - [x] Can detect several types of Anti-CSRF tokens in requests.
 - [x] Out of the box support for custom cookie values and generic headers.
-- [x] Can intelligently generate crafted tokens for different types of parameters.
+- [x] Accurate token-strength detection using Shannon Entropy.
 - [x] Submits forms in the normal values as well as with crafted token.
 - [x] Follows a redirect when there is a 30x response.
+- [x] Plus a bonus over it, the [Post-Scan Analysis](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#post-scan-token-analysis), using Damerau-Levenshtein's Algorithm.
 - [x] Highly documented code and [highly generalised workflow](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals).
 - [x] Has a user-friendly interaction environment.
 - [x] Everything is automated on demand.
