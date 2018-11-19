@@ -25,6 +25,9 @@ def Analysis():
     ctr = 0  # Counter variable set to 0
     # Checking if the no of tokens is greater than 1
     if len(REQUEST_TOKENS) > 1:
+        print(color.RED+'\n +--------------+')
+        print(color.RED+' |   Analysis   |')
+        print(color.RED+' +--------------+\n')
         print(GR+'Proceeding for post-scan analysis of tokens gathered...')
         verbout(G, 'A total of %s tokens was discovered during the scan' % (len(REQUEST_TOKENS)))
         # The idea behind this is to generate all possible combinations (not
@@ -65,7 +68,7 @@ def Analysis():
                         verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BR+' VULNERABLE '+color.END+'!')
                         print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
-                        print(color.GREY+' [+] Tokens can easily be '+color.BR+' Forged by Bruteforcing/Guessing '+color.END+'!')
+                        print(color.GREY+' [+] Tokens can easily be '+color.RED+' Forged by Bruteforcing/Guessing '+color.END+'!')
                 elif n < 0.5 or m < len(tokenx1)/2:
                     verbout(R, 'Token distance calculated is '+color.RED+'less than 0.5!')
                     p = sameSequence(tokenx1, tokenx2)
@@ -75,7 +78,7 @@ def Analysis():
                     verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BR+' VULNERABLE '+color.END+'!')
                     print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                     print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
-                    print(color.GREY+' [+] Tokens can easily be '+color.BR+' Forged by Bruteforcing/Guessing '+color.END+'!')
+                    print(color.GREY+' [+] Tokens can easily be '+color.RED+' Forged by Bruteforcing/Guessing '+color.END+'!')
                 else:
                     verbout(R, 'Token distance calculated is '+color.GREEN+'greater than 0.5!')
                     p = sameSequence(tokenx1, tokenx2)
@@ -85,7 +88,7 @@ def Analysis():
                     verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BG+' NOT VULNERABLE '+color.END+'!')
                     print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                     print(color.ORANGE+' [!] Vulnerability Mitigation: '+color.BG+' Strong Dynamic Part of Tokens '+color.END)
-                    print(color.GREY+' [+] Tokens '+color.BG+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
+                    print(color.GREY+' [+] Tokens '+color.GREEN+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
                 time.sleep(1)
             except KeyboardInterrupt:
                 continue;
