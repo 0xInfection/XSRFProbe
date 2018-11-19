@@ -181,6 +181,7 @@ def Engine():  # lets begin it!
 
     except KeyboardInterrupt:  # incase user wants to exit ;-; (while crawling)
         verbout(R, 'User Interrupt!')
+        time.sleep(1.5)
         Analysis()  # For Post scan Analysis
         print(R+'Aborted!')  # say goodbye
         quit()
