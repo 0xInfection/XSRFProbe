@@ -10,7 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import stringdist
-import itertools
+import itertools, time
 from core.colors import *
 from core.verbout import verbout
 from core.utils import sameSequence, byteString
@@ -24,20 +24,20 @@ def Analysis():
     '''
     ctr = 0  # Counter variable set to 0
     # Checking if the no of tokens is greater than 1
-    try:
-        if len(REQUEST_TOKENS) > 1:
-            print(GR+'Proceeding for post-scan analysis of tokens gathered...')
-            verbout(G, 'A total of %s tokens was discovered during the scan' % (len(REQUEST_TOKENS)))
-            # The idea behind this is to generate all possible combinations (not
-            # considering permutations) from the given list of discovered tokens
-            # and generate anti-CSRF token generation pattern.
-            for tokenx1, tokenx2 in itertools.combinations(REQUEST_TOKENS, 2):
+    if len(REQUEST_TOKENS) > 1:
+        print(GR+'Proceeding for post-scan analysis of tokens gathered...')
+        verbout(G, 'A total of %s tokens was discovered during the scan' % (len(REQUEST_TOKENS)))
+        # The idea behind this is to generate all possible combinations (not
+        # considering permutations) from the given list of discovered tokens
+        # and generate anti-CSRF token generation pattern.
+        for tokenx1, tokenx2 in itertools.combinations(REQUEST_TOKENS, 2):
+            try:
                 verbout(GR, 'Analysing 2 Anti-CSRF Tokens from gathered requests...')
                 verbout(C, 'First Token: '+color.ORANGE+str(tokenx1))
                 verbout(C, 'Second Token: '+color.ORANGE+str(tokenx2))
                 # Calculating the edit distance via Damerau Levenshtein algorithm
                 m = stringdist.rdlevenshtein(tokenx1, tokenx2)
-                verbout(color.CYAN, ' [+] Edit Distance Calculated: '+color.GREY+str(m*100)+'%')
+                verbout(color.CYAN, ' [+] Edit Distance Calculated: '+color.GREY+str(m)+'%')
                 # Now its time to detect the alignment ratio
                 n = stringdist.rdlevenshtein_norm(tokenx1, tokenx2)
                 verbout(color.CYAN, ' [+] Alignment Ratio Calculated: '+color.GREY+str(n))
@@ -58,31 +58,36 @@ def Analysis():
                 if n == 0.5 or m == len(tokenx1)/2:
                     verbout(GR, 'The tokens are composed of 2 parts (one static and other dynamic)... ')
                     p = sameSequence(tokenx1, tokenx2)
-                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+len(p))
-                    verbout(O, 'Dynamic Part(s): '+color.GREY+tokenx1[len(tokenx1)/2:]+color.END+' | Length: '+len(len(tokenx1)/2))
+                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+str(len(p)))
+                    verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx1.replace(p,'')+color.END+' | Length: '+str(len(tokenx1.replace(p,''))))
+                    verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx2.replace(p,'')+color.END+' | Length: '+str(len(tokenx2.replace(p,''))))
                     if len(len(tokenx1)/2) <= 6:
                         verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BR+' VULNERABLE '+color.END+'!')
                         print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
-                        print(color.GREY+' [+] Tokens can easily be '+BR+' Forged by Bruteforcing/Guessing '+color.END+'!')
+                        print(color.GREY+' [+] Tokens can easily be '+color.BR+' Forged by Bruteforcing/Guessing '+color.END+'!')
                 elif n < 0.5 or m < len(tokenx1)/2:
                     verbout(R, 'Token distance calculated is '+color.RED+'less than 0.5!')
                     p = sameSequence(tokenx1, tokenx2)
-                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+len(p))
-                    verbout(O, 'Dynamic Part(s): '+color.GREY+tokenx1[len(tokenx1)/2:]+color.END+' | Length: '+len(p))
+                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+str(len(p)))
+                    verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx1.replace(p,'')+color.END+' | Length: '+str(len(tokenx1.replace(p,''))))
+                    verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx2.replace(p,'')+color.END+' | Length: '+str(len(tokenx2.replace(p,''))))
                     verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BR+' VULNERABLE '+color.END+'!')
                     print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                     print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
-                    print(color.GREY+' [+] Tokens can easily be '+BR+' Forged by Bruteforcing/Guessing '+color.END+'!')
+                    print(color.GREY+' [+] Tokens can easily be '+color.BR+' Forged by Bruteforcing/Guessing '+color.END+'!')
                 else:
                     verbout(R, 'Token distance calculated is '+color.GREEN+'greater than 0.5!')
                     p = sameSequence(tokenx1, tokenx2)
-                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+len(p))
-                    verbout(O, 'Dynamic Part(s): '+color.GREY+tokenx1[len(tokenx1)/2:]+color.END+' | Length: '+len(p))
+                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+str(len(p)))
+                    verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx1.replace(p,'')+color.END+' | Length: '+str(len(tokenx1.replace(p,''))))
+                    verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx2.replace(p,'')+color.END+' | Length: '+str(len(tokenx2.replace(p,''))))
                     verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BG+' NOT VULNERABLE '+color.END+'!')
                     print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                     print(color.ORANGE+' [!] Vulnerability Mitigation: '+color.BG+' Strong Dynamic Part of Tokens '+color.END)
-                    print(color.GREY+' [+] Tokens '+BG+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
-    except KeyboardInterrupt:
-        pass;
-    print(C+'Post-Scan Analysis Completed!')
+                    print(color.GREY+' [+] Tokens '+color.BG+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
+                time.sleep(1)
+            except KeyboardInterrupt:
+                continue;
+        print(C+'Post-Scan Analysis Completed!')
+
