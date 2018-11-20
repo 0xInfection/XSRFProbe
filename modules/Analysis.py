@@ -49,6 +49,7 @@ def Analysis():
                     verbout(C, 'Token length calculated is same: '+color.ORANGE+'Each %s bytes' % len(byteString(tokenx1)))
                 else:
                     verbout(C, 'Token length calculated is different: '+color.ORANGE+'By %s bytes' % (len(byteString(tokenx1)) - len(byteString(tokenx2))))
+                time.sleep(0.5)
                 # In my experience with web security assessments, often the Anti-CSRF token
                 # is composed of two parts, one of them remains static while the other one dynamic.
                 #
@@ -86,7 +87,6 @@ def Analysis():
                     verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx1.replace(p,'')+color.END+' | Length: '+str(len(tokenx1.replace(p,''))))
                     verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx2.replace(p,'')+color.END+' | Length: '+str(len(tokenx2.replace(p,''))))
                     verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BG+' NOT VULNERABLE '+color.END+'!')
-                    print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                     print(color.ORANGE+' [!] Vulnerability Mitigation: '+color.BG+' Strong Dynamic Part of Tokens '+color.END)
                     print(color.GREY+' [+] Tokens '+color.GREEN+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
                 time.sleep(1)
