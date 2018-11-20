@@ -63,7 +63,7 @@ The scanner has the following drawbacks presently:
 Lets see some real-world scenarios of XSRFProbe in action:
 
 <img src="https://i.imgur.com/VPgdwI1.png" width=50%></img><img src="https://i.imgur.com/XQxwKHS.png" width=50%></img>
-<img src="https://i.imgur.com/wSWFdZG.png" width=50%></img><img src="https://i.imgur.com/SnDQ82j.png" width=50%></img>
+<img src="https://i.imgur.com/yeq4gfC.png" width=50%></img><img src="https://i.imgur.com/SnDQ82j.png" width=50%></img>
 
 ### Version and License:
 XSRFProbe v2 is in beta phase and has been released for public testing.
