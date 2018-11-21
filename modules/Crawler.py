@@ -15,6 +15,7 @@ from core.colors import *
 from files.config import *
 from files.dcodelist import *
 from bs4 import BeautifulSoup
+from requests import get
 from core.verbout import verbout
 from files.discovered import INTERNAL_URLS
 import urllib.request, urllib.error, urllib.parse
@@ -61,10 +62,14 @@ class Handler():  # Main Crawler Handler
                 self.toVisit.remove(link)
         url = self.currentURI  # Main Url (Current)
         try:
-            query = urllib.request.urlopen(url)  # Open it (to check if it exists)
-            INTERNAL_URLS.append(url)  # We append it to the list of valid urls
+            query = get(url)  # Open it (to check if it exists)
+            if not str(query.status_code).startswith('40'):  # Avoiding 40x errors
+                INTERNAL_URLS.append(url)  # We append it to the list of valid urls
+            else:
+                if url in self.toVisit:
+                    self.toVisit.remove(url)
 
-        except urllib.error.HTTPError as msg:  # Incase there isan exception connecting to Url
+        except (urllib.exceptions.HTTPError, urllib.exceptions.URLError) as msg:  # Incase there isan exception connecting to Url
             verbout(R,'HTTP Request Error: '+msg.__str__())
             if url in self.toVisit:
                 self.toVisit.remove(url)  # Remove non-existent / errored urls
