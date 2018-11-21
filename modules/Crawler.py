@@ -77,15 +77,15 @@ class Handler():  # Main Crawler Handler
 
         # Making sure the content type is in HTML format, so that BeautifulSoup
         # can parse it...
-        if not re.search('html',query.info()['Content-Type']):
+        if not re.search('html',query.headers['Content-Type']):
             return
 
         # Just in case there is a redirection, we are supposed to follow it :D
         verbout(GR,'Making request to new location...')
-        if hasattr(query.info(), 'Location'):
-            url = query.info()['Location']
+        if hasattr(query.headers, 'Location'):
+            url = query.headers['Location']
         verbout(O,'Reading response...')
-        response = query.read()  # Read the response contents
+        response = query.content  # Read the response contents
 
         try:
             verbout(O,'Trying to parse response...')
