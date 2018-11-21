@@ -46,6 +46,7 @@ def Tamper(url, action, req, body, query, para):
         tampvalx1 = replaceStrIndex(value, 3, 'a')
     else:
         tampvalx1 = replaceStrIndex(value, 3, 'x')
+    verbout(color.BLUE, ' [+] Original Token: '+color.CYAN+value)
     verbout(color.BLUE, ' [+] Tampered Token: '+color.CYAN+tampvalx1)
     # Lets build up the request...
     req[query] = tampvalx1
@@ -68,7 +69,8 @@ def Tamper(url, action, req, body, query, para):
     # at a specific position and test the response body.
     verbout(GR, 'Tampering Token by '+color.GREY+'index removal'+color.END+'...')
     tampvalx2 = replaceStrIndex(value, 3)
-    verbout(color.BLUE, ' [+] Tampered Token: '+color.CYAN+tampvalx1)
+    verbout(color.BLUE, ' [+] Original Token: '+color.CYAN+value)
+    verbout(color.BLUE, ' [+] Tampered Token: '+color.CYAN+tampvalx2)
     # Lets build up the request...
     req[query] = tampvalx2
     resp = Post(url, action, req)
