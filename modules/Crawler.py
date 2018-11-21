@@ -62,7 +62,8 @@ class Handler():  # Main Crawler Handler
                 self.toVisit.remove(link)
         url = self.currentURI  # Main Url (Current)
         try:
-            query = Get(url)  # Open it (to check if it exists)
+            queri = Get(url)  # Open it (to check if it exists)
+            query = queri.text  # Converting query to content directive only
             INTERNAL_URLS.append(url)  # We append it to the list of valid urls
 
         except urllib.error.HTTPError as msg:  # Incase there isan exception connecting to Url
