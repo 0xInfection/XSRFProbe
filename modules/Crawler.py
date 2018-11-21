@@ -16,9 +16,8 @@ from files.config import *
 from files.dcodelist import *
 from bs4 import BeautifulSoup
 from core.verbout import verbout
-from requests import get
 from files.discovered import INTERNAL_URLS
-import urllib.error, urllib.parse
+import urllib.request, urllib.error, urllib.parse
 
 class Handler():  # Main Crawler Handler
     '''
@@ -62,10 +61,10 @@ class Handler():  # Main Crawler Handler
                 self.toVisit.remove(link)
         url = self.currentURI  # Main Url (Current)
         try:
-            query = get(url)  # Open it (to check if it exists)
+            query = urllib.request.urlopen(url)  # Open it (to check if it exists)
             INTERNAL_URLS.append(url)  # We append it to the list of valid urls
 
-        except requests.exceptions as msg:  # Incase there isan exception connecting to Url
+        except urllib.error.HTTPError as msg:  # Incase there isan exception connecting to Url
             verbout(R,'HTTP Request Error: '+msg.__str__())
             if url in self.toVisit:
                 self.toVisit.remove(url)  # Remove non-existent / errored urls
@@ -73,15 +72,15 @@ class Handler():  # Main Crawler Handler
 
         # Making sure the content type is in HTML format, so that BeautifulSoup
         # can parse it...
-        if not re.search('html',query.headers['Content-Type']):
+        if not re.search('html',query.info()['Content-Type']):
             return
 
         # Just in case there is a redirection, we are supposed to follow it :D
         verbout(GR,'Making request to new location...')
-        if hasattr(query.headers,'Location'):
-            url=query.headers['Location']
+        if hasattr(query.info(), 'Location'):
+            url = query.info()['Location']
         verbout(O,'Reading response...')
-        response = query.text  # Read the response contents
+        response = query.read()  # Read the response contents
 
         try:
             verbout(O,'Trying to parse response...')
