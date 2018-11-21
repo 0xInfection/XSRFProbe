@@ -16,6 +16,7 @@ from files.config import *
 from files.dcodelist import *
 from bs4 import BeautifulSoup
 from core.verbout import verbout
+from core.request import Get
 from files.discovered import INTERNAL_URLS
 import urllib.request, urllib.error, urllib.parse
 
@@ -61,7 +62,7 @@ class Handler():  # Main Crawler Handler
                 self.toVisit.remove(link)
         url = self.currentURI  # Main Url (Current)
         try:
-            query = self.opener.open(url)  # Open it (to check if it exists)
+            query = Get(url)  # Open it (to check if it exists)
             INTERNAL_URLS.append(url)  # We append it to the list of valid urls
 
         except urllib.error.HTTPError as msg:  # Incase there isan exception connecting to Url
