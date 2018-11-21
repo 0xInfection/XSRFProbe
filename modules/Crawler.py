@@ -62,8 +62,7 @@ class Handler():  # Main Crawler Handler
                 self.toVisit.remove(link)
         url = self.currentURI  # Main Url (Current)
         try:
-            queri = Get(url)  # Open it (to check if it exists)
-            query = queri.text  # Converting query to content directive only
+            query = Get(url)  # Open it (to check if it exists)
             INTERNAL_URLS.append(url)  # We append it to the list of valid urls
 
         except urllib.error.HTTPError as msg:  # Incase there isan exception connecting to Url
@@ -74,15 +73,15 @@ class Handler():  # Main Crawler Handler
 
         # Making sure the content type is in HTML format, so that BeautifulSoup
         # can parse it...
-        if not re.search('html',query.info()['Content-Type']):
+        if not re.search('html',query.headers['Content-Type']):
             return
 
         # Just in case there is a redirection, we are supposed to follow it :D
         verbout(GR,'Making request to new location...')
-        if hasattr(query.info(),'Location'):
-            url=query.info()['Location']
+        if hasattr(query.headers,'Location'):
+            url=query.headers['Location']
         verbout(O,'Reading response...')
-        response = query.read()  # Read the response contents
+        response = query.text  # Read the response contents
 
         try:
             verbout(O,'Trying to parse response...')
