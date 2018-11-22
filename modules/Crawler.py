@@ -11,14 +11,14 @@
 
 import re, sys
 from . import Parser
+import urllib.error
 from core.colors import *
 from files.config import *
 from files.dcodelist import *
 from bs4 import BeautifulSoup
-from requests import get
+from core.request import Get
 from core.verbout import verbout
 from files.discovered import INTERNAL_URLS
-import urllib.request, urllib.error, urllib.parse
 
 class Handler():  # Main Crawler Handler
     '''
@@ -26,7 +26,7 @@ class Handler():  # Main Crawler Handler
         associated to the HTML page, and susequently
             crawl them and build checks for CSRFs.
     '''
-    def __init__(self, start,opener):
+    def __init__(self, start, opener):
         self.visited = []  # Visited stuff
         self.toVisit = []  # To visit
         self.uriPatterns = []  # Patterns to follow
@@ -62,14 +62,14 @@ class Handler():  # Main Crawler Handler
                 self.toVisit.remove(link)
         url = self.currentURI  # Main Url (Current)
         try:
-            query = get(url)  # Open it (to check if it exists)
-            if not str(query.status_code).startswith('40'):  # Avoiding 40x errors
+            query = Get(url)  # Open it (to check if it exists)
+            if query != None and not str(query.status_code).startswith('40'):  # Avoiding 40x errors
                 INTERNAL_URLS.append(url)  # We append it to the list of valid urls
             else:
                 if url in self.toVisit:
                     self.toVisit.remove(url)
 
-        except (urllib.error.HTTPError, urllib.exceptions.URLError) as msg:  # Incase there isan exception connecting to Url
+        except (urllib.error.HTTPError, urllib.error.URLError) as msg:  # Incase there isan exception connecting to Url
             verbout(R,'HTTP Request Error: '+msg.__str__())
             if url in self.toVisit:
                 self.toVisit.remove(url)  # Remove non-existent / errored urls
@@ -77,7 +77,7 @@ class Handler():  # Main Crawler Handler
 
         # Making sure the content type is in HTML format, so that BeautifulSoup
         # can parse it...
-        if not re.search('html',query.headers['Content-Type']):
+        if not query or not re.search('html', query.headers['Content-Type']):
             return
 
         # Just in case there is a redirection, we are supposed to follow it :D
@@ -101,8 +101,8 @@ class Handler():  # Main Crawler Handler
         for m in soup.findAll('a',href=True):  # find out all href^?://*
             app = ''
             # Making sure that href is not a function or doesn't begin with http://
-            if not re.match(r'javascript:',m['href']) or re.match('http://',m['href']):
-                app = Parser.buildUrl(url,m['href'])
+            if not re.match(r'javascript:', m['href']) or re.match('http://', m['href']):
+                app = Parser.buildUrl(url, m['href'])
 
             # If we get a valid link
             if app!='' and re.search(root, app):
@@ -116,7 +116,7 @@ class Handler():  # Main Crawler Handler
 
                 # Add new link to the queue only if its pattern has not been added yet
                 uriPattern=removeIDs(app)  # remove IDs
-                if self.notExist(uriPattern) and app!=url:
+                if self.notExist(uriPattern) and app != url:
                     verbout(G,'Added :> ' +color.BLUE+ app)  # display what we have got!
                     self.toVisit.append(app)  # add up urls to visit
                     self.uriPatterns.append(uriPattern)
@@ -132,10 +132,10 @@ class Handler():  # Main Crawler Handler
             return 1
         return 0  # else existent
 
-    def addUriPatterns(self,Parser):  # append patterns to follow
+    def addUriPatterns(self, Parser):  # append patterns to follow
         self.uriPatterns.append(Parser)
 
-    def addVisited(self,Parser):  # visited stuffs added
+    def addVisited(self, Parser):  # visited stuffs added
         self.visited.append(Parser)
 
 def removeIDs(Parser):
@@ -144,7 +144,7 @@ def removeIDs(Parser):
                     which are built.
     '''
     p = re.compile(NUM_SUB)
-    Parser = p.sub('=',Parser)
+    Parser = p.sub('=', Parser)
     p = re.compile(NUM_COM)
-    Parser = p.sub('\\1',Parser)
+    Parser = p.sub('\\1', Parser)
     return Parser
