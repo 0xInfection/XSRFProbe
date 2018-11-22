@@ -69,7 +69,7 @@ class Handler():  # Main Crawler Handler
                 if url in self.toVisit:
                     self.toVisit.remove(url)
 
-        except (urllib.exceptions.HTTPError, urllib.exceptions.URLError) as msg:  # Incase there isan exception connecting to Url
+        except (urllib.error.HTTPError, urllib.exceptions.URLError) as msg:  # Incase there isan exception connecting to Url
             verbout(R,'HTTP Request Error: '+msg.__str__())
             if url in self.toVisit:
                 self.toVisit.remove(url)  # Remove non-existent / errored urls
