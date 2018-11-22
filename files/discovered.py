@@ -20,3 +20,6 @@ REQUEST_TOKENS = []
 
 # List of all Urls that we found
 INTERNAL_URLS = []
+
+# Files discovered during crawling
+FILES_EXEC = []

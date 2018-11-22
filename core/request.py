@@ -15,7 +15,8 @@ from files.config import *
 from core.verbout import verbout
 from core.logger import pheaders
 from core.randua import RandomAgent
-from urllib.parse import urljoin  # import ends
+from urllib.parse import urljoin
+from files.discovered import FILES_EXEC  # import ends
 
 headers = HEADER_VALUES  # set the headers
 
@@ -44,15 +45,12 @@ def Post(url, action, data):
         if DISPLAY_HEADERS:
             pheaders(response.headers)
         return response  # read data content
-
     except requests.exceptions:  # if error
         verbout(R,"HTTP Error : "+action)
         return
-
     except ValueError:  # again if valuerror
         verbout(R,"Value Error : "+action)
         return
-
     except:
         return ''  # if at all nothing happens :(
 
@@ -62,9 +60,21 @@ def Get(url, headers=headers):
             Url Requester [GET].
     '''
     # We do not verify thr request while GET requests
-    verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
     time.sleep(DELAY_VALUE)  # We make requests after the time delay
-    req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, verify=False)
-    if DISPLAY_HEADERS:
-        pheaders(req.headers)
-    return req
+    # Making sure the url is not a file
+    if url.split('.')[-1].lower() in (FILE_EXTENSIONS or EXECUTABLES):
+        FILES_EXEC.append(url)
+        print(G+'Found File: '+color.BLUE+url)
+        return
+    try:
+        verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
+        req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, stream=False, verify=False)
+        # Displaying headers if DISPLAY_HEADERS is 'True'
+        if DISPLAY_HEADERS:
+            pheaders(req.headers)
+        # Return the object
+        return req
+    except requests.exceptions.MissingSchema as e:
+        print(R+'Exception at: '+color.GREY+url)
+        print(R+'Error: Invalid URL Format')
+        return

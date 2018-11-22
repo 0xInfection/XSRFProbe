@@ -70,8 +70,8 @@ def Engine():  # lets begin it!
     # For the cookies that we encounter during requests...
     Cookie0 = http.cookiejar.CookieJar()  # First as User1
     Cookie1 = http.cookiejar.CookieJar()  # Then as User2
-    resp1 = build_opener(HTTPCookieProcessor(Cookie0))  # Process cookies and do stuff
-    resp2 = build_opener(HTTPCookieProcessor(Cookie1))  # Process cookies and do stuff
+    resp1 = build_opener(HTTPCookieProcessor(Cookie0))  # Process cookies
+    resp2 = build_opener(HTTPCookieProcessor(Cookie1))  # Process cookies
 
     actionDone = []  # init to the done stuff
 
@@ -96,7 +96,7 @@ def Engine():  # lets begin it!
         while crawler.noinit():  # Until 0 urls left
             url = next(crawler)  # Go for next!
 
-            print(C+'Crawling :> ' +color.CYAN+ url)  # Display what url its crawling
+            print(C+'Crawling :> '+color.CYAN+url)  # Display what url its crawling
 
             try:
                 soup = crawler.process(web)  # Start the parser
