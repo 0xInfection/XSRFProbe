@@ -85,4 +85,3 @@ def subSequence(str1,str2):
 
     # If all characters of str1 matched, then j is equal to m
     return j==m
-

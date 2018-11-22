@@ -125,7 +125,7 @@ if args.randagent:
     # Turn off a single User-Agent mechanism
     config.USER_AGENT = ''
 
-if len(config.SITE_URL) != 0:
+if config.SITE_URL:
     if args.output:
         # If output directory is mentioned...
         config.OUTPUT_DIR = args.output + config.SITE_URL.split('//')[1]

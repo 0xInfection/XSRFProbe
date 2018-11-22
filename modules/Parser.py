@@ -63,5 +63,4 @@ def buildAction(url, action):
     verbout(O,'Parsing URL parameters...')
     if action and not re.match('#', action):  # make sure it is not a fragment (eg. http://site.tld/index.php#search)
         return buildUrl(url, action)  # get the url and reutrn it!
-    else:
-        return url  # return the url itself if buildAction didn't identify the action
+    return url  # return the url itself if buildAction didn't identify the action

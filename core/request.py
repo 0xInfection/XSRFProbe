@@ -46,12 +46,13 @@ def Post(url, action, data):
             pheaders(response.headers)
         return response  # read data content
     except requests.exceptions:  # if error
-        verbout(R,"HTTP Error : "+action)
+        verbout(R, "HTTP Error : "+action)
         return
     except ValueError:  # again if valuerror
-        verbout(R,"Value Error : "+action)
+        verbout(R, "Value Error : "+action)
         return
-    except:
+    except Exception as e:
+        verbout(R, "Exception Caught: "+e.__str__())
         return ''  # if at all nothing happens :(
 
 def Get(url, headers=headers):

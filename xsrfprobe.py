@@ -11,4 +11,3 @@
 
 from core import main  # import all stuff
 main.Engine()  # the true start of the program ;)
-

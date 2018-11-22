@@ -45,9 +45,8 @@ def Token(req):
             verbout(R,'Request Parsing Execption!')
             verbout(R,'Error: '+e.__str__())
 
-        if param != '':
+        if param:
             return query, param
-        else:
-            verbout(color.RED,' [-] The form was requested '+color.BR+' Without an Anti-CSRF Token '+color.END+color.RED+'...')
-            print(color.RED+' [-] Endpoint seems '+color.BR+' VULNERABLE '+color.END+color.RED+' to '+color.BR+' POST-Based Request Forgery '+color.END)
-            return '', ''
+        verbout(color.RED,' [-] The form was requested '+color.BR+' Without an Anti-CSRF Token '+color.END+color.RED+'...')
+        print(color.RED+' [-] Endpoint seems '+color.BR+' VULNERABLE '+color.END+color.RED+' to '+color.BR+' POST-Based Request Forgery '+color.END)
+        return '', ''

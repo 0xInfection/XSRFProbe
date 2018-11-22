@@ -30,8 +30,8 @@ class Handler():  # Main Crawler Handler
         self.visited = []  # Visited stuff
         self.toVisit = []  # To visit
         self.uriPatterns = []  # Patterns to follow
-        self.currentURI = '';  # What is it now?
-        self.opener = opener;  # Init build_opener
+        self.currentURI = ''  # What is it now?
+        self.opener = opener  # Init build_opener
         self.toVisit.append(start)  # Lets add up urls
 
     def __next__(self):
@@ -46,10 +46,9 @@ class Handler():  # Main Crawler Handler
         return self.toVisit
 
     def noinit(self):
-        if len(self.toVisit) > 0:  # Incase there are urls left
+        if self.toVisit:  # Incase there are urls left
             return True  # +1
-        else:
-            return False  # -1
+        return False  # -1
 
     def addToVisit(self,Parser):
         self.toVisit.append(Parser)  # Add what we have got

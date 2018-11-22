@@ -91,6 +91,5 @@ def Analysis():
                     print(color.GREY+' [+] Tokens '+color.GREEN+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
                 time.sleep(1)
             except KeyboardInterrupt:
-                continue;
+                continue
         print(C+'Post-Scan Analysis Completed!')
-
