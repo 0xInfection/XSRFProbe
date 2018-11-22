@@ -12,14 +12,12 @@
 import sys
 import socket
 from core.colors import *
-from files.config import *
+from files.config import SITE_URL
 
 def inputin():
 
-    if SITE_URL != '':
+    if SITE_URL:
         web = SITE_URL # If already assigned
-    else:
-        web = input(color.CYAN+' [$] Enter target address :> '+color.END) # take input
 
     if 'http' not in web: # add protocol to site
         web = 'http://' + web
@@ -36,4 +34,3 @@ def inputin():
     if not web.endswith('/'): # check
         web = web + '/' # make sure the site address ends with '/'
     return web
-
