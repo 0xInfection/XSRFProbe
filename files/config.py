@@ -120,8 +120,14 @@ OUTPUT_DIR = ''
 # This option is for displaying the headers received as response.
 # Turn this off if you don't want to see the headers on the
 # terminal, or if it feels irritating.
-DISPLAY_HEADERS = True
+DISPLAY_HEADERS = False
 
 # Option for controlling post-scan analysis. Turning it off
 # results in not analysing the tokens gathered.
 SCAN_ANALYSIS = True
+
+# A list of file extensions that might be come across while scanning
+# and crawling
+FILE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'pdf', 'js', 'css', 'ico', 'bmp', 'svg', 'json', 'xml', 'xls', 'csv', 'docx',]
+# These are a list of executable files that are found on the web
+EXECUTABLES = ['deb', 'bat', 'exe', 'msu', 'msi', 'apk', 'bin', 'csh', 'inf', 'ini', 'msc', 'osx' ,'out', 'vbe', 'ws', 'msp', 'jse']
