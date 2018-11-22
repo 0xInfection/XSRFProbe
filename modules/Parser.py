@@ -40,7 +40,7 @@ def buildUrl(url, href):  # receive form input type / url
         app = href  # Assigning the main netloc
 
     else:  # If the destination Url doesn't have a domain
-        if len(href_parts.netloc) == 0 and (len(href_parts.path) != 0 or len(href_parts.query) != 0):
+        if (href_parts.path or href_parts.query) and href_parts.netloc:
             domain = url_parts.netloc  # Assigning the main domain
             if href_parts.path.startswith('/'):  # If the href starts with a '/', it is an internal Url
                 app = 'http://' + domain + href_parts.path  # Startpage
