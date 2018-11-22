@@ -101,7 +101,7 @@ def Engine():  # lets begin it!
             try:
                 soup = crawler.process(web)  # Start the parser
                 if not soup:
-                    continue;  # Making sure not to end the program yet...
+                    continue  # Making sure not to end the program yet...
                 i = 0  # Set count = 0
                 if REFERER_ORIGIN_CHECKS:
                     # Referer Based Checks if True...
@@ -144,7 +144,7 @@ def Engine():  # lets begin it!
                                     form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                                 except IndexError:
                                     verbout(R, 'Form Error')
-                                    continue;  # making sure program won't end here (dirty fix :( )
+                                    continue  # making sure program won't end here (dirty fix :( )
                                 verbout(GR, 'Preparing form inputs...')
                                 contents2 = form.prepareFormInputs(form2)  # prepare for form 2 as user2
                                 r3 = Post(url,action,contents2).text  # make request as user3 with user2's form
@@ -165,7 +165,7 @@ def Engine():  # lets begin it!
                 verbout(R, 'Exception at : '+url)  # again exception -_-
                 time.sleep(0.4)
                 verbout(O, 'Moving on...')
-                continue;  # make sure it doesn't stop
+                continue  # make sure it doesn't stop
 
         print('\n'+G+"Scan completed!"+'\n')
         Analysis()  # For Post Scan Analysis
