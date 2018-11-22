@@ -81,7 +81,7 @@ class Form_Debugger():
 
         verbout(O,'Processing'+color.BOLD+' <select name="...')  # selection type inputs
         for m in form.findAll('select',{'name' : True}):
-            if len(m.findAll('option',value=True))>0:
+            if m.findAll('option', value=True):
                 name = m['name']  # assign passed on value
                 input[name] = m.findAll('option',value=True)[0]['value'].encode('utf8')  # find forms fields based on value
         verbout(GR,'Parsing final inputs...')
@@ -92,4 +92,4 @@ def randString():  # generate random strings
     return ''.join(Random().sample(string.ascii_letters, TOKEN_GENERATION_LENGTH))  # any 6 chars
 
 def getAllForms(soup):  # get all forms
-    return soup.findAll('form',action=True,method=re.compile("post", re.IGNORECASE))  # duh...
+    return soup.findAll('form',action=True, method=re.compile("post", re.IGNORECASE))  # duh...
