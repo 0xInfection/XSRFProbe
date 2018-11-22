@@ -48,8 +48,7 @@ class Handler():  # Main Crawler Handler
     def noinit(self):
         if self.toVisit:  # Incase there are urls left
             return True  # +1
-        else:
-            return False  # -1
+        return False  # -1
 
     def addToVisit(self,Parser):
         self.toVisit.append(Parser)  # Add what we have got
