@@ -77,6 +77,7 @@ Usage of XSRFProbe for testing websites without prior mutual consistency can be 
 - Associate multithreading for the better.
 - Include methods for detecting blind CSRF. 
 
-Thats it folks! Thank you...
+### Author's Words:
+This project is based entirely upon my own research and my own experience with Cross-Site Request Forgery attacks. Useful pull requests and issues are highly welcome. Thats it folks.
 
 > Copyright © [__Infected Drake__](https://www.twitter.com/0xInfection)
