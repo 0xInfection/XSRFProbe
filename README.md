@@ -78,6 +78,6 @@ Usage of XSRFProbe for testing websites without prior mutual consistency can be 
 - Include methods for detecting blind CSRF. 
 
 ### Author's Words:
-This project is based entirely upon my own research and my own experience with Cross-Site Request Forgery attacks. Useful pull requests and issues are highly welcome. Thats it folks.
+This project is based __entirely upon my own research and my own experience__ with Cross-Site Request Forgery attacks. Useful [pull requests](https://github.com/0xInfection/XSRFProbe/wiki/Contributing) and [issues](https://github.com/0xInfection/XSRFProbe/wiki/Contributing) are highly welcome. If you wish to see what how XSRFProbe is being developed, check out the [Development Board](https://github.com/0xInfection/XSRFProbe/projects/1) Thats it folks.
 
 > Copyright © [__Infected Drake__](https://www.twitter.com/0xInfection)
