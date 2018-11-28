@@ -71,7 +71,7 @@ Lets see some real-world scenarios of XSRFProbe in action:
 
 ### Version and License:
 XSRFProbe v2 is in beta phase and has been released for public testing.
-XSRFprobe is licensed under the GPLv3 license.
+It is licensed under the GPLv3 license.
 
 ### Disclaimer:
 Usage of XSRFProbe for testing websites without prior mutual consistency can be considered as an illegal activity. It is the final user's responsibility to obey all applicable local, state and federal laws. The author assumes no liability and is not exclusively responsible for any misuse or damage caused by this program.
