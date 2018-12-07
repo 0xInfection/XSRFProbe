@@ -21,12 +21,15 @@ COMMON_CSRF_NAMES = (
                     'anticsrf',                   # AntiCsrfParam.java
                     '__RequestVerificationToken', # AntiCsrfParam.java
                     'authenticity_token',         # Ruby on Rails
-                    'csrf_param'                  # Ruby on Rails
+                    'csrf_param',                 # Ruby on Rails
+                    'TransientKey',               # VanillaForums
                     'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
                     'yii_anticsrf'                # http://www.yiiframework.com/
                     '[_token]',                   # Symfony 2.x
                     '_csrf_token',                # Symfony 1.4
                     'csrfmiddlewaretoken',        # Django 1.5
+                    'ccm_token',                  # Concrete 5
+                    'XOOPS_TOKEN_REQUEST',        # Xoops CMS
 
                     # These are some other various token names I have seen in
                     # various websites.
