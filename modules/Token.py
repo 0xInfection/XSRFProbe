@@ -32,9 +32,9 @@ def Token(req):
             # Lets check for the request values. But before that lets encode and unquote the request :D
             con = unquote(urlencode(req)).split('&')
             for c in con:
-                for name in COMMON_CSRF_NAMES:
+                for name in COMMON_CSRF_NAMES:  # Iterate over the list
                     qu = c.split('=')
-                    if qu[0].lower() == name.lower():
+                    if name.lower() in qu[0].lower():  # Search if the token is there in request...
                         verbout(color.GREEN,' [+] The form was requested with a '+color.ORANGE+'Anti-CSRF Token'+color.GREEN+'...')
                         verbout(color.GREY,' [+] Token Parameter: '+color.CYAN+qu[0]+'='+qu[1]+' ...')
                         query, param = qu[0], qu[1]
