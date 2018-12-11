@@ -45,7 +45,7 @@ def Post(url, action, data):
         if DISPLAY_HEADERS:
             pheaders(response.headers)
         return response  # read data content
-    except requests.exceptions:  # if error
+    except requests.exceptions.HTTPError:  # if error
         verbout(R, "HTTP Error : "+action)
         return
     except ValueError:  # again if valuerror
