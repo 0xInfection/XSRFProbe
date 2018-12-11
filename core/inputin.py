@@ -11,6 +11,7 @@
 
 import sys
 import socket
+from tld import get_fld
 from core.colors import *
 from files.config import SITE_URL
 
@@ -22,7 +23,7 @@ def inputin():
     if 'http' not in web: # add protocol to site
         web = 'http://' + web
 
-    web0 = web.split('//')[1]
+    web0 = get_fld(web)
     try:
         print(O+'Testing site status...')
         socket.gethostbyname(web0) # test whether site is up or not
@@ -30,7 +31,7 @@ def inputin():
     except socket.gaierror: # if site is down
         print(R+'Site seems to be down...')
         sys.exit(0)
-        
-    if not web.endswith('/'): # check
-        web = web + '/' # make sure the site address ends with '/'
-    return web
+
+    if web.split('//')[1] == web0:
+        return web, ''
+    return web, web0
