@@ -34,12 +34,18 @@ def Token(req):
             for c in con:
                 for name in COMMON_CSRF_NAMES:  # Iterate over the list
                     qu = c.split('=')
-                    if name.lower() in qu[0].lower():  # Search if the token is there in request...
+                    # Search if the token is there in request...
+                    if name.lower() in qu[0].lower():
                         verbout(color.GREEN,' [+] The form was requested with a '+color.ORANGE+'Anti-CSRF Token'+color.GREEN+'...')
                         verbout(color.GREY,' [+] Token Parameter: '+color.CYAN+qu[0]+'='+qu[1]+' ...')
                         query, param = qu[0], qu[1]
-                        REQUEST_TOKENS.append(param)  # We are appending the token to a variable for further analysis
+                        # We are appending the token to a variable for further analysis
+                        REQUEST_TOKENS.append(param)
                         break  # Break execution if a Anti-CSRF token is found
+                        # Setting this to False since the form was requested with an Anti-CSRF token,
+                        # there is an unique id for every form. There are other checks token reuse and
+                        # other stuff, but we do not need the POST-Based Check for now, for this form.
+                        config.POST_BASED = False  # Clean fix ;)
 
         except Exception as e:
             verbout(R,'Request Parsing Execption!')
