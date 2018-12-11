@@ -9,7 +9,7 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import config
+from files import config
 from re import search, I
 from time import sleep
 from core.colors import *
