@@ -106,7 +106,7 @@ class Handler():  # Main Crawler Handler
             # If we get a valid link
             if app!='' and re.search(root, app):
                 # Getting rid of Urls starting with '../../../..'
-                while re.search(RID_DOUBLE,app):
+                while re.search(RID_DOUBLE, app):
                     p = re.compile(RID_COMPILE)
                     app = p.sub('/',app)
                 # Getting rid of Urls starting with './'
