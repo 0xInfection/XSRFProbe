@@ -69,7 +69,7 @@ def Get(url, headers=headers):
         return
     try:
         verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
-        req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, stream=False, verify=False)
+        req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, stream=False)
         # Displaying headers if DISPLAY_HEADERS is 'True'
         if DISPLAY_HEADERS:
             pheaders(req.headers)
