@@ -18,6 +18,9 @@ global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BA
 # Site Url to be scanned (Required)
 SITE_URL = ''
 
+# Switch for whether to crawl the site or not
+CRAWL_SITE = False
+
 # Print out verbose (turn it off for only brief outputs).
 # Turning off is Highly Discouraged, since you will miss what the tool is doing.
 DEBUG = True
