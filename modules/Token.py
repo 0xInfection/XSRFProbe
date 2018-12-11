@@ -9,9 +9,9 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
+import config
 from re import search, I
 from time import sleep
-from files.config import *
 from core.colors import *
 from core.verbout import verbout
 from files.discovered import REQUEST_TOKENS
@@ -26,7 +26,7 @@ def Token(req):
     param = ''  # Initializing param
     query = ''
     # First lets have a look at config.py and see if its set
-    if TOKEN_CHECKS:
+    if config.TOKEN_CHECKS:
         verbout(O,'Parsing request for detecting anti-csrf tokens...')
         try:
             # Lets check for the request values. But before that lets encode and unquote the request :D
