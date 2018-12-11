@@ -39,6 +39,8 @@ from core.forms import form10, form20
 from core.banner import banner, banabout
 
 # Imports from files
+from files import config
+# Necessary evil :(
 from files.config import *
 
 # Imports from modules
@@ -90,6 +92,7 @@ def Engine():  # lets begin it!
     try:
         if not CRAWL_SITE:
             url = web
+            config.DISPLAY_HEADERS = True
             response = Get(url).text
             try:
                 verbout(O,'Trying to parse response...')
