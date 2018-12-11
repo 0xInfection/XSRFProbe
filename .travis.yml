@@ -20,7 +20,7 @@ script:
   # Crawl entire www.webscantest.com and submit forms.
   - python xsrfprobe.py -u http://www.webscantest.com --crawl --timeout 5 --max-chars 3 --quiet
   # Test only a single endpoint vulnerability.
-  - python xsrfprobe.py -u http://www.webscantest.com/csrf/csrfpost.php 
+  - python xsrfprobe.py -u http://www.webscantest.com/csrf/csrfpost.php
 notifications:
   on_success: change
   on_failure: change  # `always` will be the setting once code changes slow down
