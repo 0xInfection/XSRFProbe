@@ -69,11 +69,11 @@ def Entropy(req, url, m_action, m_name=''):
     verbout(GR, 'Calculating Entropy...')
     verbout(color.BLUE, ' [+] Entropy Calculated: '+color.CYAN+str(entropy))
     if entropy >= min_entropy:
-        verbout(color.GREEN,' [+] Anti-CSRF Token Entropy Calculated is '+color.BY+'GREATER than 2.4'+color.END+'... ')
+        verbout(color.ORANGE,' [+] Anti-CSRF Token Entropy Calculated is '+color.BY+' GREATER than 2.4 '+color.END+'... ')
         print(color.ORANGE+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
         print(color.ORANGE+' [!] CSRF Mitigation Method: '+color.BG+' High Entropy Anti-CSRF Tokens '+color.END)
     else:
-        verbout(color.RED,' [-] Anti-CSRF Token Entropy Calculated is '+color.BY+'LESS than 2.4'+color.END+'... ')
+        verbout(color.RED,' [-] Anti-CSRF Token Entropy Calculated is '+color.BY+' LESS than 2.4 '+color.END+'... ')
         print(color.ORANGE+' [-] Endpoint likely '+color.BR+' VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks inspite of CSRF Tokens...')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Low Entropy Anti-CSRF Tokens '+color.END)
         if m_name:
@@ -97,7 +97,7 @@ def Entropy(req, url, m_action, m_name=''):
 def calcEntropy(data):
     """
     This function is used to calculate
-                Entropy.
+              Shannon Entropy.
     """
     if not data:
         return 0
