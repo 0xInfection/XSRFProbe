@@ -31,7 +31,8 @@ def inputin():
     except socket.gaierror: # if site is down
         print(R+'Site seems to be down...')
         sys.exit(0)
-
+    if not web0.endswith('/'):
+        web0 = web0 + '/'
     if web.split('//')[1] == web0:
         return web, ''
-    return web, web0
+    return (web, web0)
