@@ -23,7 +23,7 @@ __XSRFProbe__ is an advanced Cross Site Request Forgery Audit Toolkit. Equipped 
 
 > __NOTE:__
 > 
-> This tool is still in beta phase and might bug out. A stable release will be pushed once every feature has been added.
+> This tool is still in beta phase and might bug out. A stable release will be pushed once every feature has been added. If you're interested, have a look at [this pull request](https://github.com/0xInfection/XSRFProbe/pull/15).
 
 <img src="https://i.imgur.com/xYKpsYl.png" alt="xsrf-logo">
 <p align="center">
