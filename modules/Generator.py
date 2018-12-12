@@ -48,9 +48,3 @@ def GeneratePoC(action, fields, method='POST', encoding_type='application/x-www-
     m = content.prettify()
     for i in m.splitlines():
         print('  '+i)
-
-
-if __name__ == '__main__':
-    GeneratePoC('http://www.webscantest.com/csrf/csrfpost.php', "[{ 'type':'text', 'name':'property', 'label':'color', 'value':''}, { 'type':'text', 'name':'bullshit', 'label':'pun', 'value':''}]")
-# python Generator.py "POST" "application/x-www-form-urlencoded" "http://webscantest.com/csrf/csrfpost.php" "[{ 'type':'text', 'name':'property', 'label':'color', 'value':''}, { 'type':'text', 'name':'bullshit', 'label':'pun', 'value':''}]"
-

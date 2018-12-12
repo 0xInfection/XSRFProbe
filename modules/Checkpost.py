@@ -33,6 +33,9 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, m_name=''):
     for n in checkdiffx2:
         if re.match('\+|-',n):  # get regex matching stuff
             result13.append(n)  # append to existing list
+    # Make sure m_action has a / before it. (legitimate action).
+    if not m_action.startswith('/'):
+        m_action = '/' + m_action
     # This logic is based purely on the assumption on the difference of requests and
     # response body.
     # If the number of differences of result12 are less than the number of differences
@@ -50,13 +53,19 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, m_name=''):
             print(color.RED+' +-----------------+\n')
             print(color.BLUE+' [+] URL : ' +color.CYAN+url)  # url part
             print(color.CYAN+' [+] Name : ' +color.ORANGE+m_name)  # name
-            print(color.GREEN+' [+] Action : ' +color.END+'/'+m_action.rsplit('/', 1)[1])  # action
+            if m_action.count('/') > 1:
+                print(color.GREEN+' [+] Action : ' +color.END+'/'+m_action.rsplit('/', 1)[1])  # action
+            else:
+                print(color.GREEN+' [+] Action : ' +color.END+m_action)  # action
         else:  # if value m['name'] not there :(
             print(color.RED+'\n +-----------------+')
             print(color.RED+' |   Request PoC   |')
             print(color.RED+' +-----------------+\n')
             print(color.BLUE+' [+] URL : ' +color.CYAN+url)  # the url
-            print(color.GREEN+' [+] Action : ' +color.END+'/'+m_action.rsplit('/', 1)[1])  # action
+            if m_action.count('/') > 1:
+                print(color.GREEN+' [+] Action : ' +color.END+'/'+m_action.rsplit('/', 1)[1])  # action
+            else:
+                print(color.GREEN+' [+] Action : ' +color.END+m_action)  # action
         print(color.ORANGE+' [+] Query : '+color.GREY+ urlencode(result).strip())
         print(GR, 'Generating PoC Form...' )
         print(color.RED+'\n +--------------+')

@@ -3,3 +3,4 @@ bs4
 lxml
 request
 stringdist
+tld

@@ -15,8 +15,12 @@ before_script:
   # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
   - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --quiet
 script:
+  # Help message.
   - python xsrfprobe.py --help
-  - python xsrfprobe.py -u http://www.webscantest.com --timeout 5 --max-chars 3 --quiet
+  # Crawl entire www.webscantest.com and submit forms.
+  - python xsrfprobe.py -u http://www.webscantest.com --crawl --timeout 5 --max-chars 3 --quiet
+  # Test only a single endpoint vulnerability.
+  - python xsrfprobe.py -u http://www.webscantest.com/csrf/csrfpost.php
 notifications:
   on_success: change
   on_failure: change  # `always` will be the setting once code changes slow down
