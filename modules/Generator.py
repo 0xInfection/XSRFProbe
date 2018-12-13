@@ -9,7 +9,7 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-from core.colors import G
+from core.colors import *
 from ast import literal_eval
 from files.config import OUTPUT_DIR
 from bs4 import BeautifulSoup, Tag
@@ -49,6 +49,7 @@ def GeneratePoC(action, fields, method='POST', encoding_type='application/x-www-
     m = content.prettify()
     for i in m.splitlines():
         print('  '+i)
+    print('')
     fi = open(OUTPUT_DIR+'post-csrf-poc.html', 'w+')
     fi.write(m)
     fi.close()
