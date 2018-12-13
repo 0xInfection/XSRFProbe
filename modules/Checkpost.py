@@ -5,7 +5,7 @@
 #    XSRFProbe     #
 #-:-:-:-:-:-:-:-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -15,6 +15,7 @@ import difflib
 from core.colors import *
 from core.verbout import verbout
 from urllib.parse import urlencode
+from files.config import POC_GENERATION
 from modules.Generator import GeneratePoC
 
 def PostBased(url, r1, r2, r3, m_action, result, genpoc, m_name=''):
@@ -66,9 +67,10 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, m_name=''):
                 print(color.GREEN+' [+] Action : ' +color.END+'/'+m_action.rsplit('/', 1)[1])  # action
             else:
                 print(color.GREEN+' [+] Action : ' +color.END+m_action)  # action
-        print(color.ORANGE+' [+] Query : '+color.GREY+ urlencode(result).strip())
+        print(color.ORANGE+' [+] POST Query : '+color.GREY+ urlencode(result).strip())
         print(GR, 'Generating PoC Form...' )
         print(color.RED+'\n +--------------+')
         print(color.RED+' |   Form PoC   |')
         print(color.RED+' +--------------+\n'+color.CYAN)
-        GeneratePoC(url, str(genpoc))
+        if POC_GENERATION:
+            GeneratePoC(url, str(genpoc))
