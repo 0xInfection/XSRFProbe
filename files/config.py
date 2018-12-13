@@ -5,7 +5,7 @@
 #    XSRF Probe     #
 #-:-:-:-:-:-:-::-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -128,6 +128,10 @@ DISPLAY_HEADERS = False
 # Option for controlling post-scan analysis. Turning it off
 # results in not analysing the tokens gathered.
 SCAN_ANALYSIS = True
+
+# Option to skip PoC Form Generation of POST_BASED Request Forgeries.
+# The form will not be generated.
+POC_GENERATION = True
 
 # A list of file extensions that might be come across while scanning
 # and crawling

@@ -5,7 +5,7 @@
 #    XSRF Probe     #
 #-:-:-:-:-:-:-::-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -47,13 +47,16 @@ def Post(url, action, data):
         return response  # read data content
     except requests.exceptions.HTTPError:  # if error
         verbout(R, "HTTP Error : "+action)
-        return
+        return None
+    except requests.exceptions.ConnectionError:
+        verbout(R, 'Connection Aborted : '+action)
+        return None
     except ValueError:  # again if valuerror
         verbout(R, "Value Error : "+action)
-        return
+        return None
     except Exception as e:
         verbout(R, "Exception Caught: "+e.__str__())
-        return ''  # if at all nothing happens :(
+        return None  # if at all nothing happens :(
 
 def Get(url, headers=headers):
     '''
@@ -65,7 +68,7 @@ def Get(url, headers=headers):
     # Making sure the url is not a file
     if url.split('.')[-1].lower() in (FILE_EXTENSIONS or EXECUTABLES):
         FILES_EXEC.append(url)
-        print(G+'Found File: '+color.BLUE+url)
+        verbout(G, 'Found File: '+color.BLUE+url)
         return
     try:
         verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
@@ -76,6 +79,6 @@ def Get(url, headers=headers):
         # Return the object
         return req
     except requests.exceptions.MissingSchema as e:
-        print(R+'Exception at: '+color.GREY+url)
-        print(R+'Error: Invalid URL Format')
+        verbout(R, 'Exception at: '+color.GREY+url)
+        verbout(R, 'Error: Invalid URL Format')
         return

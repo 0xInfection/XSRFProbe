@@ -5,7 +5,7 @@
 #    XSRF Probe     #
 #-:-:-:-:-:-:-::-:-:#
 
-#Author: 0xInfection (@_tID)
+#Author: 0xInfection
 #This module requires XSRF-Probe
 #https://github.com/0xInfection/XSRF-Probe
 
@@ -33,7 +33,7 @@ def banner():
 
 def banabout(): # some fancy banner stuff :p
 
-    print(color.BLUE+'   [---]           '+color.GREY+'XSRF Probe |'+color.RED+' A'+color.ORANGE+' Cross Site Request Forgery '+color.RED+'Audit Toolkit          '+color.BLUE+'[---]')
+    print(color.BLUE+'   [---]            '+color.GREY+'XSRF Probe,'+color.RED+' A'+color.ORANGE+' Cross Site Request Forgery '+color.RED+'Audit Toolkit          '+color.BLUE+'[---]')
     time.sleep(0.2)
     print(color.BLUE+'   [---]                                                                            [---]')
     time.sleep(0.2)

@@ -5,15 +5,15 @@
 #    XSRFProbe     #
 #-:-:-:-:-:-:-:-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
 # This file contains various regex expressions for detecting the
 # encoding type of strings.
 
-# Token hash encoding detection
-hashes = (
+# Token hash encoding detection regex database
+HASH_DB = (
             ("Blowfish(Eggdrop)", r"^\+[a-zA-Z0-9\/\.]{12}$"),
             ("Blowfish(OpenBSD)", r"^\$2a\$[0-9]{0,2}?\$[a-zA-Z0-9\/\.]{53}$"),
             ("Blowfish Crypt", r"^\$2[axy]{0,1}\$[a-zA-Z0-9./]{8}\$[a-zA-Z0-9./]{1,}$"),

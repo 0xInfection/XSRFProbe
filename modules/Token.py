@@ -5,7 +5,7 @@
 #    XSRF Probe     #
 #-:-:-:-:-:-:-::-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -43,16 +43,16 @@ def Token(req):
                         REQUEST_TOKENS.append(param)
                         break  # Break execution if a Anti-CSRF token is found
                         # Setting this to False since the form was requested with an Anti-CSRF token,
-                        # there is an unique id for every form. There are other checks token reuse and
+                        # there is an unique id for every form. There are other checks like token reuse and
                         # other stuff, but we do not need the POST-Based Check for now, for this form.
-                        config.POST_BASED = False  # Clean fix ;)
+                        config.POST_BASED = False  # Clean hack ;)
 
         except Exception as e:
-            verbout(R,'Request Parsing Execption!')
+            verbout(R,'Request Parsing Exception!')
             verbout(R,'Error: '+e.__str__())
 
         if param:
-            return query, param
+            return (query, param)
         verbout(color.RED,' [-] The form was requested '+color.BR+' Without an Anti-CSRF Token '+color.END+color.RED+'...')
         print(color.RED+' [-] Endpoint seems '+color.BR+' VULNERABLE '+color.END+color.RED+' to '+color.BR+' POST-Based Request Forgery '+color.END)
-        return '', ''
+        return (None, None)

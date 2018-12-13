@@ -10,4 +10,4 @@
 # https://github.com/0xInfection/XSRFProbe
 
 from core import main  # import stuff
-main.Engine()  # start the Engine ;)
+main.Engine()  # start the Scanner Engine ;)

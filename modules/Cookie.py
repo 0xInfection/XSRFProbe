@@ -5,7 +5,7 @@
 #    XSRFProbe     #
 #-:-:-:-:-:-:-:-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -124,7 +124,7 @@ def SameSite(url):
             verbout(GR,'Examining Cookie...')
             for q in m:
                 if search('SameSite', q, I):
-                    verbout(G,'SameSite Flag '+color.ORANGE+' detected on cookie!')
+                    verbout(G,'SameSite Flag '+color.ORANGE+' detected on cookie on Cross Origin Request!')
                     foundx3 = 0x01
                     q = q.split('=')[1].strip()
                     verbout(C, 'Cookie: '+color.ORANGE+q)
@@ -145,4 +145,4 @@ def SameSite(url):
         verbout(R,'Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Not Present!')
         verbout(R,'Heuristic(s) reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to CSRFs...')
         print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No SameSite Flag on Cookies '+color.END)
+        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No SameSite Flag on Cookies On Cross Origin Requests '+color.END)

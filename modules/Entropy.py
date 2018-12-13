@@ -5,7 +5,7 @@
 #    XSRFProbe     #
 #-:-:-:-:-:-:-:-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -47,7 +47,7 @@ def Entropy(req, url, m_action, m_name=''):
 
     # Check for common CSRF token names
     _q, para = Token(req)
-    if (para and _q) == '':
+    if (para and _q) == None:
         return '', ''
     # Coverting the token to a raw string, cause some special
     # chars might fu*k with the Shannon Entropy operation.
@@ -63,7 +63,7 @@ def Entropy(req, url, m_action, m_name=''):
         print(color.ORANGE+' [+] Endpoint likely '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
         print(color.ORANGE+' [!] CSRF Mitigation Method: '+color.BG+' Long Anti-CSRF Tokens '+color.END)
 
-    # Calculate entropy
+    # Checking entropy
     verbout(O, 'Proceeding to calculate '+color.GREY+'Shannon Entropy'+color.END+' of Token audited...')
     entropy = calcEntropy(value)
     verbout(GR, 'Calculating Entropy...')
@@ -102,7 +102,7 @@ def calcEntropy(data):
     if not data:
         return 0
 
-    entropy = 0 # init
+    entropy = 0  # init
 
     for x in range(256):
         p_x = float(data.count(chr(x)))/len(data)

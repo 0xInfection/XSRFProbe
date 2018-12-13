@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 #-:-:-:-:-:-:-:-:-:#
 #    XSRFProbe     #
 #-:-:-:-:-:-:-:-:-:#
 
-#Author: @_tID
-#This module requires XSRFProbe
-#https://github.com/0xInfection/XSRFProbe
+# Author: 0xInfection
+# This module requires XSRFProbe
+# https://github.com/0xInfection/XSRFProbe
 
 from difflib import SequenceMatcher
 
@@ -18,7 +18,7 @@ def sameSequence(str1,str2):
     '''
     # Initialize SequenceMatcher object with
     # Input string
-    seqMatch = SequenceMatcher(None,str1,str2)
+    seqMatch = SequenceMatcher(None, str1, str2)
 
     # Find match of longest sub-string
     # Output will be like Match(a=0, b=0, size=5)

@@ -5,7 +5,7 @@
 #    XSRFProbe     #
 #-:-:-:-:-:-:-:-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -27,7 +27,7 @@ class Form_Debugger():
         cr_input = {}
         totcr = []
 
-        verbout(O,'Processing '+color.BOLD+'<input type="text" name="...')  # get name type inputs
+        verbout(GR, 'Processing '+color.BOLD+'<input type="text" name="...')  # get name type inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'text'}):
             if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
                 value=m['value'].encode('utf8')  # make sure no encoding errors there
@@ -41,7 +41,7 @@ class Form_Debugger():
             cr0['value'] = ''
             totcr.append(cr0)
 
-        verbout(O,'Processing'+color.BOLD+' <input type="password" name="...')  # get password inputs
+        verbout(GR, 'Processing'+color.BOLD+' <input type="password" name="...')  # get password inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'password'}):
             if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
                 value=m['value'].encode('utf8')  # make sure no encoding errors there
@@ -55,7 +55,7 @@ class Form_Debugger():
             cr1['value'] = ''
             totcr.append(cr1)
 
-        verbout(O,'Processing'+color.BOLD+' <input type="hidden" name="...')  # get hidden input types
+        verbout(GR, 'Processing'+color.BOLD+' <input type="hidden" name="...')  # get hidden input types
         for m in form.findAll('input', {'name' : True, 'type' : 'hidden'}):
             if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
                 value=m['value'].encode('utf8')  # make sure no encoding errors there
@@ -69,7 +69,7 @@ class Form_Debugger():
             cr2['value'] = m['value']
             totcr.append(cr2)
 
-        verbout(O,'Processing '+color.BOLD+'<input type="submit" name="...')  # get submit buttons :D
+        verbout(GR, 'Processing '+color.BOLD+'<input type="submit" name="...')  # get submit buttons :D
         for m in form.findAll('input', {'name' : True, 'type' : 'submit'}):
             if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
                 value=m['value'].encode('utf8')  # make sure no encoding errors there
@@ -77,7 +77,7 @@ class Form_Debugger():
                 value=randString()
             cr_input[m['name']] = value  # assign passed on value
 
-        verbout(O,'Processing'+color.BOLD+' <input type="checkbox" name="...')  # get checkbox type inputs
+        verbout(GR, 'Processing'+color.BOLD+' <input type="checkbox" name="...')  # get checkbox type inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'checkbox'}):
             if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
                 value=m['value'].encode('utf8')  # make sure no encoding errors there
@@ -91,7 +91,7 @@ class Form_Debugger():
             cr3['value'] = ''
             totcr.append(cr3)
 
-        verbout(O,'Processing'+color.BOLD+' <input type="radio" name="...')  # get radio buttons :D
+        verbout(GR, 'Processing'+color.BOLD+' <input type="radio" name="...')  # get radio buttons :D
         listRadio = []
         for m in form.findAll('input', {'name' : True,'type' : 'radio'}):
             if (not m['name'] in listRadio) and re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
@@ -104,7 +104,7 @@ class Form_Debugger():
                 cr4['value'] = ''
                 totcr.append(cr4)
 
-        verbout(O,'Processing'+color.BOLD+' <textarea name="...')  # get textarea input types
+        verbout(GR, 'Processing'+color.BOLD+' <textarea name="...')  # get textarea input types
         for m in form.findAll('textarea', {'name' : True}):
             if len(m.contents)==0:
                 m.contents.append(randString())  # get random strings
@@ -116,7 +116,7 @@ class Form_Debugger():
             cr5['value'] = ''
             totcr.append(cr5)
 
-        verbout(O,'Processing'+color.BOLD+' <select name="...')  # selection type inputs
+        verbout(GR, 'Processing'+color.BOLD+' <select name="...')  # selection type inputs
         for m in form.findAll('select', {'name' : True}):
             if m.findAll('option', value=True):
                 name = m['name']  # assign passed on value

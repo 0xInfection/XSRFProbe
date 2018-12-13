@@ -5,7 +5,7 @@
 #    XSRFProbe     #
 #-:-:-:-:-:-:-:-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -32,7 +32,7 @@ def Tamper(url, action, req, body, query, para):
     if para == '':
         return True
     # Coverting the token to a raw string, cause some special
-    # chars might fu*k with the Shannon Entropy operation.
+    # chars might fu*k with the operation.
     value = r'%s' % para
 
     # Alright lets start...
@@ -94,7 +94,7 @@ def Tamper(url, action, req, body, query, para):
     resp = Post(url, action, req)
 
     # If there is a 40x (Not Found) or a 50x (Internal Error) error,
-    # we assume that the tamper did not work :( But if there is a 20x
+    # we assume that the tamper did not work :(. But if there is a 20x
     # (Accepted) or a 30x (Redirection), then we know it worked.
     #
     # NOTE: This algorithm has lots of room for improvement.
@@ -104,12 +104,12 @@ def Tamper(url, action, req, body, query, para):
         flagx3 = 0x01
 
     # If any of the forgeries worked...
-    if flagx1 == 0x01 or flagx2 == 0x01 or flagx3 == 0x01:
+    if (flagx1 or flagx2 or flagx3) == 0x01:
         verbout(color.GREEN,' [+] The tampered token value works!')
         verbout(color.GREEN,' [-] The Tampered Anti-CSRF Token requested does NOT return a 40x or 50x response! ')
         print(color.ORANGE+' [-] Endpoint '+color.BR+' CONFIRMED VULNERABLE '+color.END+color.ORANGE+' to Request Forgery Attacks...')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BG+' Non-Unique Anti-CSRF Tokens in Requests '+color.END)
     else:
         print(color.RED+' [-] The Tampered Anti-CSRF Token requested returns a 40x or 50x response... ')
-        print(color.ORANGE+' [-] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
+        print(color.GREEN+' [-] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
         print(color.ORANGE+' [!] CSRF Mitigation Method: '+color.BG+' Unique Anti-CSRF Tokens '+color.END)

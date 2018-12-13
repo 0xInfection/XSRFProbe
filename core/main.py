@@ -5,7 +5,7 @@
 #    XSRFProbe     #
 #-:-:-:-:-:-:-:-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -116,7 +116,7 @@ def Engine():  # lets begin it!
             # Now lets get the forms...
             verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
             for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
-                verbout(O,'Using form:\n'+color.CYAN+' %s' % (m))
+                verbout(O,'Testing form:\n\n'+color.CYAN+' %s' % (m.prettify()))
                 try:
                     if m['action']:
                         pass
@@ -127,6 +127,7 @@ def Engine():  # lets begin it!
                     # If form submission is kept to True
                     if FORM_SUBMISSION:
                         try:
+                            # NOTE: Slow connections may cause read timeouts which may result in AttributeError
                             result, genpoc = form.prepareFormInputs(m)  # prepare inputs
                             r1 = Post(url, action, result).text  # make request with token values generated as user1
                             result, genpoc = form.prepareFormInputs(m)  # prepare the input types
@@ -137,6 +138,8 @@ def Engine():  # lets begin it!
                                     query, token = Entropy(result, url, m['action'], m['name'])
                             except KeyError:
                                 query, token = Entropy(result, url, m['action'])
+                            # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
+                            fnd = Encoding(token)
                             # Go for token parameter tamper checks.
                             if (query and token):
                                 Tamper(url, action, result, r2, query, token)
@@ -217,6 +220,8 @@ def Engine():  # lets begin it!
                                                 query, token = Entropy(result, url, m['action'], m['name'])
                                         except KeyError:
                                             query, token = Entropy(result, url, m['action'])
+                                        # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
+                                        fnd = Encoding(token)
                                         # Go for token parameter tamper checks.
                                         if (query and token):
                                             Tamper(url, action, result, r2, query, token)

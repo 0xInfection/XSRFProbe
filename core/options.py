@@ -5,15 +5,15 @@
 #    XSRF Probe     #
 #-:-:-:-:-:-:-::-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
 # Importing stuff
 import argparse, sys
-import urllib.parse
+import urllib.parse, os
 from files import config
-from core.colors import R
+from core.colors import R, G
 from core.updater import updater
 
 # Processing command line arguments
@@ -36,12 +36,13 @@ optional.add_argument('-q', '--quiet', help='Set the DEBUG mode to quiet. Report
 # Other Options
 # optional.add_argument('-h', '--help', help='Show this help message and exit', dest='disp', default=argparse.SUPPRESS, action='store_true')
 optional.add_argument('--user-agent', help='Custom user-agent to be used. Only one user-agent can be specified.', dest='user_agent', type=str)
-optional.add_argument('--headers', help='Comma separated list of custom headers you\'d want to use. For example: ``--headers Accept=text/php, DNT=1``.', dest='headers', type=str)
+optional.add_argument('--headers', help='Comma separated list of custom headers you\'d want to use. For example: ``--headers "Accept=text/php, X-Requested-With=Dumb"``.', dest='headers', type=str)
 optional.add_argument('--exclude', help='Comma separated list of paths or directories to be excluded which are not in scope. These paths/dirs won\'t be scanned. For example: `--exclude somepage/, sensitive-dir/, pleasedontscan/`', dest='exclude', type=str)
 optional.add_argument('--timeout', help='HTTP request timeout value in seconds. The entered value must be in floating point decimal. Example: ``--timeout 10.0``', dest='timeout', type=float)
 optional.add_argument('--max-chars', help='Maximum allowed character length for the custom token value to be generated. For example: `--max-chars 5`. Default value is 6.', dest='maxchars', type=int)
 optional.add_argument('--crawl', help="Crawl the whole site and simultaneously test all discovered endpoints for CSRF.", dest='crawl', action='store_true')
 optional.add_argument('--skip-analysis', help='Skip the Post-Scan Analysis of Tokens which were gathered during requests', dest='skipal', action='store_true')
+optional.add_argument('--skip-poc', help='Skip the PoC Form Generation of POST-Based Cross Site Request Forgeries.', dest='skippoc', action='store_true')
 optional.add_argument('--update', help='Update XSRFProbe to latest version on GitHub via git.', dest='update', action='store_true')
 optional.add_argument('--random-agent', help='Use random user-agents for making requests.', dest='randagent', action='store_true')
 optional.add_argument('--version', help='Display the version of XSRFProbe and exit.', dest='version', action='store_true')
@@ -75,6 +76,10 @@ if args.user_agent:
 # Option to skip analysis
 if args.skipal:
     config.SCAN_ANALYSIS = False
+
+# Option to skip poc generation
+if args.skippoc:
+    config.POC_GENERATION = False
 
 # Updating main root url
 if not args.version and not args.update:
@@ -131,11 +136,22 @@ if args.randagent:
     config.USER_AGENT = ''
 
 if config.SITE_URL:
+
     if args.output:
         # If output directory is mentioned...
-        config.OUTPUT_DIR = args.output + config.SITE_URL.split('//')[1]
+        try:
+            if not os.path.exists(args.output+config.SITE_URL.split('//')[1].replace('/', '-')):
+                os.makedirs(args.output)
+        except FileExistsError:
+            pass
+        config.OUTPUT_DIR = args.output+config.SITE_URL.split('//')[1].replace('/', '-') + '/'
+
     else:
-        config.OUTPUT_DIR = 'files' + config.SITE_URL.split('//')[1]
+        try:
+            os.makedirs(config.SITE_URL.split('//')[1].replace('/', '-'))
+        except FileExistsError:
+            pass
+        config.OUTPUT_DIR = config.SITE_URL.split('//')[1].replace('/', '-') + '/'
 
 if args.quiet:
     config.DEBUG = False
