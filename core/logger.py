@@ -39,10 +39,19 @@ def pheaders(tup):
         verbout('  ',color.CYAN+key+': '+color.ORANGE+val)
     verbout('','')
 
-def LinkLogger():
-    from files.discovered import INTERNAL_URLS
-    logger('internal-links', INTERNAL_URLS)
+def GetLogger():
+    from files.discovered import INTERNAL_URLS, FILES_EXEC, SCAN_ERRORS, FORMS_TESTED, REQUEST_TOKENS
+    if INTERNAL_URLS:
+        logger('internal-links', INTERNAL_URLS)
+    if SCAN_ERRORS:
+        logger('errored', SCAN_ERRORS)
+    if FILES_EXEC:
+        logger('files-found', FILES_EXEC)
+    if REQUEST_TOKENS:
+        logger('anti-csrf-tokens', REQUEST_TOKENS)
+    if FORMS_TESTED:
+        logger('forms-tested', FORMS_TESTED)
 
 def ErrorLogger(url, error):
-    content = '(i) '+url+' -> '+error.__str__()
-    logger('errors', content)
+    con = '(i) '+url+' -> '+error.__str__()
+    SCAN_ERRORS.append(con)

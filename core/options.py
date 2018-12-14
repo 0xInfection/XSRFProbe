@@ -10,7 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 # Importing stuff
-import argparse, sys
+import argparse, sys, tld
 import urllib.parse, os
 from files import config
 from core.colors import R, G
@@ -136,22 +136,20 @@ if args.randagent:
     config.USER_AGENT = ''
 
 if config.SITE_URL:
-
     if args.output:
         # If output directory is mentioned...
         try:
-            if not os.path.exists(args.output+config.SITE_URL.split('//')[1].replace('/', '-')):
-                os.makedirs(args.output)
+            if not os.path.exists(args.output+tld.get_fld(config.SITE_URL)):
+                os.makedirs(args.output+tld.get_fld(config.SITE_URL))
         except FileExistsError:
             pass
-        config.OUTPUT_DIR = args.output+config.SITE_URL.split('//')[1].replace('/', '-') + '/'
-
+        config.OUTPUT_DIR = args.output+tld.get_fld(config.SITE_URL) + '/'
     else:
         try:
-            os.makedirs(config.SITE_URL.split('//')[1].replace('/', '-'))
+            os.makedirs(tld.get_fld(config.SITE_URL))
         except FileExistsError:
             pass
-        config.OUTPUT_DIR = config.SITE_URL.split('//')[1].replace('/', '-') + '/'
+        config.OUTPUT_DIR = tld.get_fld(config.SITE_URL) + '/'
 
 if args.quiet:
     config.DEBUG = False

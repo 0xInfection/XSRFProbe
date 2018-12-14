@@ -37,12 +37,13 @@ from core.request import Get, Post
 from core.verbout import verbout
 from core.forms import form10, form20
 from core.banner import banner, banabout
-from core.logger import ErrorLogger, LinkLogger
+from core.logger import ErrorLogger, GetLogger
 
 # Imports from files
 from files import config
 # Necessary evil :(
 from files.config import *
+from files.discovered import FORMS_TESTED
 
 # Imports from modules
 from modules import Debugger
@@ -118,6 +119,7 @@ def Engine():  # lets begin it!
             verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
             for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
                 verbout(O,'Testing form:\n\n'+color.CYAN+' %s' % (m.prettify()))
+                FORMS_TESTED.append(m.prettify())
                 try:
                     if m['action']:
                         pass
@@ -269,7 +271,7 @@ def Engine():  # lets begin it!
                         verbout(R, 'Error Code : ' +O+ str(e.code))
                         ErrorLogger(url, e.__str__())
                         quit()
-            LinkLogger()  # The scanning has finished, so now we can log out all the links ;)
+            GetLogger()  # The scanning has finished, so now we can log out all the links ;)
         print('\n'+G+"Scan completed!"+'\n')
         Analysis()  # For Post Scan Analysis
     except KeyboardInterrupt as e:  # Incase user wants to exit :') (while crawling)
