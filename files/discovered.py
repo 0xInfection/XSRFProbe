@@ -23,3 +23,9 @@ INTERNAL_URLS = []
 
 # Files discovered during crawling
 FILES_EXEC = []
+
+# Forms that were tested
+FORMS_TESTED = []
+
+# Errors that were encountered
+SCAN_ERRORS = []
