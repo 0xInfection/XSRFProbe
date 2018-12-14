@@ -37,6 +37,7 @@ from core.request import Get, Post
 from core.verbout import verbout
 from core.forms import form10, form20
 from core.banner import banner, banabout
+from core.logger import ErrorLogger, LinkLogger
 
 # Imports from files
 from files import config
@@ -122,6 +123,7 @@ def Engine():  # lets begin it!
                         pass
                 except KeyError:
                     m['action'] = '/' + url.rsplit('/', 1)[1]
+                    ErrorLogger(url, 'No standard form "action".')
                 action = Parser.buildAction(url, m['action'])  # get all forms which have 'action' attribute
                 if not action in actionDone and action!='':  # if url returned is not a null value nor duplicate...
                     # If form submission is kept to True
@@ -148,6 +150,7 @@ def Engine():  # lets begin it!
                                 form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                             except IndexError:
                                 verbout(R, 'Form Error')
+                                ErrorLogger(url, 'Form Error')
                                 continue  # making sure program won't end here (dirty fix :( )
                             verbout(GR, 'Preparing form inputs...')
                             contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
@@ -163,6 +166,7 @@ def Engine():  # lets begin it!
                                 print(color.GREEN+' [=] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to POST-Based CSRF Attacks!')
                         except HTTPError as msg:  # if runtime exception...
                             verbout(R, 'Exception : '+msg.__str__())  # again exception :(
+                            ErrorLogger(url, msg.__str__())
 
                 actionDone.append(action)  # add the stuff done
                 i+=1  # Increase user iteration
@@ -171,102 +175,107 @@ def Engine():  # lets begin it!
             verbout(GR, "Initializing crawling and scanning...")
             crawler = Crawler.Handler(init1, resp1)  # Init to the Crawler handler
 
-            try:
-                while crawler.noinit():  # Until 0 urls left
-                    url = next(crawler)  # Go for next!
+            while crawler.noinit():  # Until 0 urls left
+                url = next(crawler)  # Go for next!
 
-                    print(C+'Testing :> '+color.CYAN+url)  # Display what url its crawling
+                print(C+'Testing :> '+color.CYAN+url)  # Display what url its crawling
 
-                    try:
-                        soup = crawler.process(fld)  # Start the parser
-                        if not soup:
-                            continue  # Making sure not to end the program yet...
-                        i = 0  # Set count = 0 (user number 0, which will be subsequently incremented)
-                        if REFERER_ORIGIN_CHECKS:
-                            # Referer Based Checks if True...
-                            verbout(O, 'Checking endpoint request validation via '+color.GREY+'Referer'+color.END+' Checks...')
-                            if Referer(url):
-                                ref_detect = 0x01
-                            verbout(O, 'Confirming the vulnerability...')
+                try:
+                    soup = crawler.process(fld)  # Start the parser
+                    if not soup:
+                        continue  # Making sure not to end the program yet...
+                    i = 0  # Set count = 0 (user number 0, which will be subsequently incremented)
+                    if REFERER_ORIGIN_CHECKS:
+                        # Referer Based Checks if True...
+                        verbout(O, 'Checking endpoint request validation via '+color.GREY+'Referer'+color.END+' Checks...')
+                        if Referer(url):
+                            ref_detect = 0x01
+                        verbout(O, 'Confirming the vulnerability...')
 
-                            # We have finished with Referer Based Checks, lets go for Origin Based Ones...
-                            verbout(O, 'Confirming endpoint request validation via '+color.GREY+'Origin'+color.END+' Checks...')
-                            if Origin(url):
-                                ori_detect = 0x01
+                        # We have finished with Referer Based Checks, lets go for Origin Based Ones...
+                        verbout(O, 'Confirming endpoint request validation via '+color.GREY+'Origin'+color.END+' Checks...')
+                        if Origin(url):
+                            ori_detect = 0x01
 
-                        if COOKIE_BASED:
-                            Cookie(url)
+                    if COOKIE_BASED:
+                        Cookie(url)
 
-                        # Now lets get the forms...
-                        verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
-                        for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
-                            try:
-                                if m['action']:
-                                    pass
-                            except KeyError:
-                                m['action'] = '/' + url.rsplit('/', 1)[1]
-                            action = Parser.buildAction(url,m['action'])  # get all forms which have 'action' attribute
-                            if not action in actionDone and action != '':  # if url returned is not a null value nor duplicate...
-                                # If form submission is kept to True
-                                if FORM_SUBMISSION:
+                    # Now lets get the forms...
+                    verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
+                    for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
+                        try:
+                            if m['action']:
+                                pass
+                        except KeyError:
+                            m['action'] = '/' + url.rsplit('/', 1)[1]
+                            ErrorLogger(url, 'No standard "action" attribute.')
+                        action = Parser.buildAction(url,m['action'])  # get all forms which have 'action' attribute
+                        if not action in actionDone and action != '':  # if url returned is not a null value nor duplicate...
+                            # If form submission is kept to True
+                            if FORM_SUBMISSION:
+                                try:
+                                    result, genpoc = form.prepareFormInputs(m)  # prepare inputs
+                                    r1 = Post(url, action, result).text  # make request with token values generated as user1
+                                    result, genpoc = form.prepareFormInputs(m)  # prepare the input types
+                                    r2 = Post(url, action, result).text  # again make request with token values generated as user2
+                                    # Go for token based entropy checks...
                                     try:
-                                        result, genpoc = form.prepareFormInputs(m)  # prepare inputs
-                                        r1 = Post(url, action, result).text  # make request with token values generated as user1
-                                        result, genpoc = form.prepareFormInputs(m)  # prepare the input types
-                                        r2 = Post(url, action, result).text  # again make request with token values generated as user2
-                                        # Go for token based entropy checks...
+                                        if m['name']:
+                                            query, token = Entropy(result, url, m['action'], m['name'])
+                                    except KeyError:
+                                        query, token = Entropy(result, url, m['action'])
+                                        ErrorLogger(url, 'No standard form "name".')
+                                    # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
+                                    fnd = Encoding(token)
+                                    # Go for token parameter tamper checks.
+                                    if (query and token):
+                                        Tamper(url, action, result, r2, query, token)
+                                    o2 = resp2.open(url).read()  # make request as user2
+                                    try:
+                                        form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
+                                    except IndexError:
+                                        verbout(R, 'Form Error')
+                                        ErrorLogger(url, 'Form Error')
+                                        continue  # making sure program won't end here (dirty fix :( )
+                                    verbout(GR, 'Preparing form inputs...')
+                                    contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
+                                    r3 = Post(url,action,contents2).text  # make request as user3 with user2's form
+                                    if POST_BASED:
                                         try:
                                             if m['name']:
-                                                query, token = Entropy(result, url, m['action'], m['name'])
+                                                PostBased(url, r1, r2, r3, m['action'], result, genpoc, m['name'])
                                         except KeyError:
-                                            query, token = Entropy(result, url, m['action'])
-                                        # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
-                                        fnd = Encoding(token)
-                                        # Go for token parameter tamper checks.
-                                        if (query and token):
-                                            Tamper(url, action, result, r2, query, token)
-                                        o2 = resp2.open(url).read()  # make request as user2
-                                        try:
-                                            form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
-                                        except IndexError:
-                                            verbout(R, 'Form Error')
-                                            continue  # making sure program won't end here (dirty fix :( )
-                                        verbout(GR, 'Preparing form inputs...')
-                                        contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
-                                        r3 = Post(url,action,contents2).text  # make request as user3 with user2's form
-                                        if POST_BASED:
-                                            try:
-                                                if m['name']:
-                                                    PostBased(url, r1, r2, r3, m['action'], result, genpoc, m['name'])
-                                            except KeyError:
-                                                PostBased(url, r1, r2, r3, m['action'], result, genpoc)
-                                        else:
-                                            print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
-                                            print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to P0ST-Based CSRF Attacks!')
-                                    except HTTPError as msg:  # if runtime exception...
-                                        verbout(color.RED, ' [-] Exception : '+color.END+msg.__str__())  # again exception :(
-                            actionDone.append(action)  # add the stuff done
-                            i+=1  # Increase user iteration
-                    except URLError:  # if again...
-                        verbout(R, 'Exception at : '+url)  # again exception -_-
-                        time.sleep(0.4)
-                        verbout(O, 'Moving on...')
-                        continue  # make sure it doesn't stop at exceptions
-
-            # This error usually happens when some sites are protected by some load balancer
-            # example Cloudflare. These domains return a 403 forbidden response in various
-            # contexts. For example when making reverse DNS queries.
-            except HTTPError as e:
-                if str(e.code) == '403':
-                    verbout(R, 'HTTP Authentication Error!')
-                    verbout(R, 'Error Code : ' +O+ str(e.code))
-                    quit()
-
+                                            PostBased(url, r1, r2, r3, m['action'], result, genpoc)
+                                    else:
+                                        print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
+                                        print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to P0ST-Based CSRF Attacks!')
+                                except HTTPError as msg:  # if runtime exception...
+                                    verbout(color.RED, ' [-] Exception : '+color.END+msg.__str__())  # again exception :(
+                                    ErrorLogger(url, msg.__str__())
+                        actionDone.append(action)  # add the stuff done
+                        i+=1  # Increase user iteration
+                except URLError as e:  # if again...
+                    verbout(R, 'Exception at : '+url)  # again exception -_-
+                    time.sleep(0.4)
+                    verbout(O, 'Moving on...')
+                    ErrorLogger(url, e.__str__())
+                    continue  # make sure it doesn't stop at exceptions
+                # This error usually happens when some sites are protected by some load balancer
+                # example Cloudflare. These domains return a 403 forbidden response in various
+                # contexts. For example when making reverse DNS queries.
+                except HTTPError as e:
+                    if str(e.code) == '403':
+                        verbout(R, 'HTTP Authentication Error!')
+                        verbout(R, 'Error Code : ' +O+ str(e.code))
+                        ErrorLogger(url, e.__str__())
+                        quit()
+            LinkLogger()  # The scanning has finished, so now we can log out all the links ;)
         print('\n'+G+"Scan completed!"+'\n')
         Analysis()  # For Post Scan Analysis
-    except KeyboardInterrupt:  # incase user wants to exit ;-; (while crawling)
+    except KeyboardInterrupt as e:  # Incase user wants to exit :') (while crawling)
         verbout(R, 'User Interrupt!')
         time.sleep(1.5)
         Analysis()  # For Post scan Analysis
         print(R+'Aborted!')  # say goodbye
+        ErrorLogger('KeyBoard Interrupt', 'Aborted')
         quit()

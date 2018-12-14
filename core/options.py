@@ -132,7 +132,7 @@ if args.exclude:
 if args.randagent:
     # If random-agent argument supplied...
     config.USER_AGENT_RANDOM = True
-    # Turn off a single User-Agent mechanism
+    # Turn off a single User-Agent mechanism...
     config.USER_AGENT = ''
 
 if config.SITE_URL:

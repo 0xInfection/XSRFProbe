@@ -13,10 +13,10 @@ import requests, time
 from core.colors import *
 from files.config import *
 from core.verbout import verbout
-from core.logger import pheaders
 from core.randua import RandomAgent
 from urllib.parse import urljoin
-from files.discovered import FILES_EXEC  # import ends
+from files.discovered import FILES_EXEC
+from core.logger import pheaders, ErrorLogger  # import ends
 
 headers = HEADER_VALUES  # set the headers
 
@@ -26,7 +26,7 @@ if COOKIE_VALUE:
         headers['Cookie'] = cookie
 
 # Set User-Agent
-if USER_AGENT_RANDOM:
+if USER_AGENT_RANDOM or not USER_AGENT:
     headers['User-Agent'] = RandomAgent()
 else:
     headers['User-Agent'] = USER_AGENT
@@ -38,24 +38,28 @@ def Post(url, action, data):
     '''
     time.sleep(DELAY_VALUE)  # If delay param has been supplied
     verbout(GR, 'Processing the '+color.GREY+'POST'+color.END+' Request...')
-    main_url = urljoin(url, action)  # encode stuff to make callable
+    main_url = urljoin(url, action)  # join url and action
     try:
         # Make the POST Request.
         response = requests.post(main_url, headers=headers, data=data, timeout=TIMEOUT_VALUE)
         if DISPLAY_HEADERS:
             pheaders(response.headers)
         return response  # read data content
-    except requests.exceptions.HTTPError:  # if error
-        verbout(R, "HTTP Error : "+action)
+    except requests.exceptions.HTTPError as e:  # if error
+        verbout(R, "HTTP Error : "+main_url)
+        ErrorLogger(main_url, e.__str__())
         return None
-    except requests.exceptions.ConnectionError:
-        verbout(R, 'Connection Aborted : '+action)
+    except requests.exceptions.ConnectionError as e:
+        verbout(R, 'Connection Aborted : '+main_url)
+        ErrorLogger(main_url, e.__str__())
         return None
-    except ValueError:  # again if valuerror
-        verbout(R, "Value Error : "+action)
+    except ValueError as e:  # again if valuerror
+        verbout(R, "Value Error : "+main_url)
+        ErrorLogger(main_url, e.__str__())
         return None
     except Exception as e:
         verbout(R, "Exception Caught: "+e.__str__())
+        ErrorLogger(main_url, e.__str__())
         return None  # if at all nothing happens :(
 
 def Get(url, headers=headers):
@@ -69,7 +73,7 @@ def Get(url, headers=headers):
     if url.split('.')[-1].lower() in (FILE_EXTENSIONS or EXECUTABLES):
         FILES_EXEC.append(url)
         verbout(G, 'Found File: '+color.BLUE+url)
-        return
+        return None
     try:
         verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
         req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, stream=False)
@@ -81,4 +85,5 @@ def Get(url, headers=headers):
     except requests.exceptions.MissingSchema as e:
         verbout(R, 'Exception at: '+color.GREY+url)
         verbout(R, 'Error: Invalid URL Format')
-        return
+        ErrorLogger(url, e.__str__())
+        return None
