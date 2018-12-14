@@ -13,6 +13,7 @@ import os
 from core.colors import *
 from files.config import *
 from core.verbout import verbout
+from files.discovered import INTERNAL_URLS, FILES_EXEC, SCAN_ERRORS, FORMS_TESTED, REQUEST_TOKENS
 
 def logger(filename, content):
     '''
@@ -40,7 +41,6 @@ def pheaders(tup):
     verbout('','')
 
 def GetLogger():
-    from files.discovered import INTERNAL_URLS, FILES_EXEC, SCAN_ERRORS, FORMS_TESTED, REQUEST_TOKENS
     if INTERNAL_URLS:
         logger('internal-links', INTERNAL_URLS)
     if SCAN_ERRORS:
