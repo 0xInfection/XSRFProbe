@@ -18,6 +18,7 @@ from files.dcodelist import *
 from bs4 import BeautifulSoup
 from core.request import Get
 from core.verbout import verbout
+from core.logger import ErrorLogger
 from files.discovered import INTERNAL_URLS
 
 class Handler():  # Main Crawler Handler
@@ -50,7 +51,7 @@ class Handler():  # Main Crawler Handler
             return True  # +1
         return False  # -1
 
-    def addToVisit(self,Parser):
+    def addToVisit(self, Parser):
         self.toVisit.append(Parser)  # Add what we have got
 
     def process(self, root):
@@ -69,35 +70,36 @@ class Handler():  # Main Crawler Handler
                     self.toVisit.remove(url)
 
         except (urllib.error.HTTPError, urllib.error.URLError) as msg:  # Incase there isan exception connecting to Url
-            verbout(R,'HTTP Request Error: '+msg.__str__())
+            verbout(R, 'HTTP Request Error: '+msg.__str__())
+            ErrorLogger(url, msg.__str__())
             if url in self.toVisit:
                 self.toVisit.remove(url)  # Remove non-existent / errored urls
-            return
+            return None
 
         # Making sure the content type is in HTML format, so that BeautifulSoup
         # can parse it...
         if not query or not re.search('html', query.headers['Content-Type']):
-            return
+            return None
 
         # Just in case there is a redirection, we are supposed to follow it :D
-        verbout(GR,'Making request to new location...')
+        verbout(GR, 'Making request to new location...')
         if hasattr(query.headers, 'Location'):
             url = query.headers['Location']
         verbout(O,'Reading response...')
         response = query.content  # Read the response contents
 
         try:
-            verbout(O,'Trying to parse response...')
+            verbout(O, 'Trying to parse response...')
             soup = BeautifulSoup(response)  # Parser init
 
         except HTMLParser.HTMLParseError:
-            verbout(R,'BeautifulSoup Error: '+url)
+            verbout(R, 'BeautifulSoup Error: '+url)
             self.visited.append(url)
             if url in self.toVisit:
                 self.toVisit.remove(url)
-            return
+            return None
 
-        for m in soup.findAll('a',href=True):  # find out all href^?://*
+        for m in soup.findAll('a', href=True):  # find out all href^?://*
             app = ''
             # Making sure that href is not a function or doesn't begin with http://
             if not re.match(r'javascript:', m['href']) or re.match('http://', m['href']):
@@ -108,15 +110,15 @@ class Handler():  # Main Crawler Handler
                 # Getting rid of Urls starting with '../../../..'
                 while re.search(RID_DOUBLE, app):
                     p = re.compile(RID_COMPILE)
-                    app = p.sub('/',app)
+                    app = p.sub('/', app)
                 # Getting rid of Urls starting with './'
                 p = re.compile(RID_SINGLE)
-                app = p.sub('',app)
+                app = p.sub('', app)
 
                 # Add new link to the queue only if its pattern has not been added yet
                 uriPattern=removeIDs(app)  # remove IDs
                 if self.notExist(uriPattern) and app != url:
-                    verbout(G,'Added :> ' +color.BLUE+ app)  # display what we have got!
+                    verbout(G, 'Added :> ' +color.BLUE+ app)  # display what we have got!
                     self.toVisit.append(app)  # add up urls to visit
                     self.uriPatterns.append(uriPattern)
 
