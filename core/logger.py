@@ -44,5 +44,5 @@ def LinkLogger():
     logger('internal-links', INTERNAL_URLS)
 
 def ErrorLogger(url, error):
-    content = '(i) 'url+' -> '+error
+    content = '(i) '+url+' -> '+error.__str__()
     logger('errors', content)
