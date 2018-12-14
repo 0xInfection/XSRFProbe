@@ -38,7 +38,7 @@ def Origin(url):
             gen_headers['Cookie'] = cookie
 
     # Make the request with different Origin header and get the content
-    verbout(O,'Making request with tampered headers...')
+    verbout(O,'Making request with '+color.CYAN+'Tampered Origin Header'+color.END+'...')
     req0x02 = Get(url, headers=gen_headers)
 
     # Comparing the length of the requests' responses. If both content

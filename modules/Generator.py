@@ -50,7 +50,7 @@ def GeneratePoC(action, fields, method='POST', encoding_type='application/x-www-
     for i in m.splitlines():
         print('  '+i)
     print('')
-    fi = open(OUTPUT_DIR+'post-csrf-poc.html', 'w+', encoding='utf8')
+    fi = open(OUTPUT_DIR+action+'-csrf-poc.html', 'w+', encoding='utf8')
     fi.write(m)
     fi.close()
-    print(G+'PoC successfully saved under '+color.ORANGE+OUTPUT_DIR+'post-csrf-poc.html')
+    print(G+'PoC successfully saved under '+color.ORANGE+OUTPUT_DIR+action+'-csrf-poc.html')

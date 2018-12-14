@@ -31,7 +31,6 @@ def Referer(url):
 
     # Set a fake Referer along with UA (pretending to be a
     # legitimate request from a browser)
-    verbout(GR,'Setting generic headers...')
     gen_headers['Referer'] = REFERER_URL
 
     # We put the cookie in request, if cookie supplied :D
@@ -40,7 +39,7 @@ def Referer(url):
             gen_headers['Cookie'] = cookie
 
     # Make the request with different referer header and get the content
-    verbout(O,'Making request with tampered headers...')
+    verbout(O,'Making request with '+color.CYAN+'Tampered Referer Header'+color.END+'...')
     req0x02 = Get(url, headers=gen_headers)
 
     # Comparing the length of the requests' responses. If both content
