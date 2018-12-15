@@ -32,6 +32,7 @@ optional.add_argument('-c', '--cookie', help='Cookie value to be requested with 
 optional.add_argument('-o', '--output', help='Output directory where files to be stored. Default is the`files` folder where all files generated will be stored.', dest='output')
 optional.add_argument('-d', '--delay', help='Time delay between requests in seconds. Default is zero.', dest='delay', type=float)
 optional.add_argument('-q', '--quiet', help='Set the DEBUG mode to quiet. Report only when vulnerabilities are found. Minimal output will be printed on screen. ', dest='quiet', action='store_true')
+optional.add_argument('-v', '--verbose', help='Increase the verbosity of the output (e.g., -vv is more than -v). ', dest='verbose', action='store_true')
 
 # Other Options
 # optional.add_argument('-h', '--help', help='Show this help message and exit', dest='disp', default=argparse.SUPPRESS, action='store_true')

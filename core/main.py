@@ -91,7 +91,11 @@ def Engine():  # lets begin it!
     resp1.open(init1)  # Makes request as User2
     resp2.open(init1)  # Make request as User1
 
+    # Now there are 2 different modes of scanning and crawling here.
+    # 1st -> Testing a single endpoint without the --crawl flag.
+    # 2nd -> Testing all endpoints with the --crawl flag.
     try:
+        # Implementing the first mode. [NO CRAWL]
         if not CRAWL_SITE:
             url = web
             config.DISPLAY_HEADERS = True
@@ -144,6 +148,8 @@ def Engine():  # lets begin it!
                                 query, token = Entropy(result, url, m['action'])
                             # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
                             fnd = Encoding(token)
+                            if fnd == 0x01:
+                                VulnLogger(url, 'Token is a string encoded value which can be probably decrypted.')
                             # Go for token parameter tamper checks.
                             if (query and token):
                                 Tamper(url, action, result, r2, query, token)
@@ -174,6 +180,7 @@ def Engine():  # lets begin it!
                 i+=1  # Increase user iteration
 
         else:
+            # Implementing the 2nd mode [CRAWLING AND SCANNING].
             verbout(GR, "Initializing crawling and scanning...")
             crawler = Crawler.Handler(init1, resp1)  # Init to the Crawler handler
 
@@ -211,7 +218,7 @@ def Engine():  # lets begin it!
                         except KeyError:
                             m['action'] = '/' + url.rsplit('/', 1)[1]
                             ErrorLogger(url, 'No standard "action" attribute.')
-                        action = Parser.buildAction(url,m['action'])  # get all forms which have 'action' attribute
+                        action = Parser.buildAction(url, m['action'])  # get all forms which have 'action' attribute
                         if not action in actionDone and action != '':  # if url returned is not a null value nor duplicate...
                             # If form submission is kept to True
                             if FORM_SUBMISSION:
@@ -229,6 +236,8 @@ def Engine():  # lets begin it!
                                         ErrorLogger(url, 'No standard form "name".')
                                     # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
                                     fnd = Encoding(token)
+                                    if fnd == 0x01:
+                                        VulnLogger(url, 'String encoded token value. Token might be decrypted.')
                                     # Go for token parameter tamper checks.
                                     if (query and token):
                                         Tamper(url, action, result, r2, query, token)

@@ -12,7 +12,7 @@
 from core.colors import *
 from files.config import DEBUG as verbose
 
-def verbout(stat,content_info):
+def verbout(stat, content_info):
     '''
     This module is for giving a verbose
                 output.
@@ -22,3 +22,7 @@ def verbout(stat,content_info):
     if verbose:
         # Concatenate the stat type and string value and print out
         print(stat+content_info)
+
+#def verbo_sity(*verb_args):
+#    if verb_args[0] > (3 - args.verbose):
+#        print verb_args[1]
