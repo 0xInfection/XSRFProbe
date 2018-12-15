@@ -15,6 +15,7 @@ from math import log
 from core.colors import *
 from .Token import Token
 from core.verbout import verbout
+from core.logger import VulnLogger
 
 def Entropy(req, url, m_action, m_name=''):
     """
@@ -48,6 +49,7 @@ def Entropy(req, url, m_action, m_name=''):
     # Check for common CSRF token names
     _q, para = Token(req)
     if (para and _q) == None:
+        VulnLogger(url, 'Form Requested Without Anti-CSRF Token.')
         return '', ''
     # Coverting the token to a raw string, cause some special
     # chars might fu*k with the Shannon Entropy operation.
@@ -58,6 +60,7 @@ def Entropy(req, url, m_action, m_name=''):
         print(color.RED+' [-] CSRF Token Length less than 5 bytes. '+color.ORANGE+'Token value can be guessed/bruteforced...')
         print(color.ORANGE+' [-] Endpoint likely '+color.BR+' VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BG+' Very Short/No Anti-CSRF Tokens '+color.END)
+        VulnLogger(url, 'Very Short/No Anti-CSRF Tokens.')
     if len(value) > max_length:
         print(color.GREEN+' [+] CSRF Token Length greater than 256 bytes. '+color.ORANGE+'Token value cannot be guessed/bruteforced...')
         print(color.ORANGE+' [+] Endpoint likely '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
@@ -76,6 +79,7 @@ def Entropy(req, url, m_action, m_name=''):
         verbout(color.RED,' [-] Anti-CSRF Token Entropy Calculated is '+color.BY+' LESS than 2.4 '+color.END+'... ')
         print(color.ORANGE+' [-] Endpoint likely '+color.BR+' VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks inspite of CSRF Tokens...')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Low Entropy Anti-CSRF Tokens '+color.END)
+        VulnLogger(url, 'Low Entropy Anti-CSRF Tokens.')
         if m_name:
             print(color.RED+'\n +---------+')
             print(color.RED+' |   PoC   |')

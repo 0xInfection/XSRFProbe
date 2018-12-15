@@ -15,6 +15,7 @@ from files.config import *
 from core.verbout import verbout
 from core.request import Get
 from core.randua import RandomAgent
+from core.logger import VulnLogger
 
 def Origin(url):
     """
@@ -64,4 +65,5 @@ def Origin(url):
         verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
         print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' Origin Based Request Forgery '+color.END)
+        VulnLogger(url, 'No Origin Header based request validation.')
         return False

@@ -14,6 +14,7 @@ from core.colors import *
 from core.request import Post
 from files.config import *
 from core.verbout import verbout
+from core.logger import VulnLogger
 from core.utils import replaceStrIndex
 from urllib.parse import urlencode, quote
 
@@ -64,6 +65,7 @@ def Tamper(url, action, req, body, query, para):
         verbout(color.RED,' [+] Token tamper from request causes a 50x Internal Error!')
     if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
         flagx1 = 0x01
+        VulnLogger(url, 'Anti-CSRF Token tamper by index replacement returns valid response.')
 
     # [Step 2]: Second we take the token and then remove a char
     # at a specific position and test the response body.
@@ -84,6 +86,7 @@ def Tamper(url, action, req, body, query, para):
         verbout(color.RED,' [+] Token tamper from request causes a 50x Internal Error!')
     if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
         flagx2 = 0x01
+        VulnLogger(url, 'Anti-CSRF Token tamper by index removal returns valid response.')
 
     # [Step 3]: Third we take the token and then remove the whole
     # anticsrf token and test the response body.
@@ -102,6 +105,7 @@ def Tamper(url, action, req, body, query, para):
         verbout(color.RED,' [+] Token removal from request causes a 50x Internal Error!')
     if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
         flagx3 = 0x01
+        VulnLogger(url, 'Anti-CSRF Token on removal returns valid response.')
 
     # If any of the forgeries worked...
     if (flagx1 or flagx2 or flagx3) == 0x01:

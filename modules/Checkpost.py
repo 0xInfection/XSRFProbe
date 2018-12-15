@@ -15,6 +15,7 @@ import difflib
 from core.colors import *
 from core.verbout import verbout
 from urllib.parse import urlencode
+from core.logger import VulnLogger
 from files.config import POC_GENERATION
 from modules.Generator import GeneratePoC
 
@@ -46,6 +47,7 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, m_name=''):
     if len(result12)<=len(result13):
         print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' POST-Based Request Forgery '+color.END)
+        VulnLogger(url, 'POST-Based Request Forgery on Forms.')
         time.sleep(0.3)
         verbout(O, 'PoC of response and request...')
         if m_name:

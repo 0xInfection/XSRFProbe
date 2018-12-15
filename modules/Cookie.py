@@ -17,6 +17,7 @@ from core.verbout import verbout
 from core.request import Get
 from core.randua import RandomAgent
 from .Persistence import Persistence
+from core.logger import VulnLogger
 from urllib.parse import urlencode, unquote, urlsplit
 
 resps = []
@@ -146,3 +147,4 @@ def SameSite(url):
         verbout(R,'Heuristic(s) reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to CSRFs...')
         print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
         print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No SameSite Flag on Cookies On Cross Origin Requests '+color.END)
+        VulnLogger(url, 'No SameSite Flag Set on Cookies on Cross-Origin Requests.')
