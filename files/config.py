@@ -25,6 +25,9 @@ CRAWL_SITE = False
 # Turning off is Highly Discouraged, since you will miss what the tool is doing.
 DEBUG = True
 
+# Debug level of the output (beta test feature)
+DEBUG_LEVEL = 3
+
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
 USER_AGENT_RANDOM = False
 
