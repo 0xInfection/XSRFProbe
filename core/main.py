@@ -40,8 +40,6 @@ from core.banner import banner, banabout
 from core.logger import ErrorLogger, GetLogger
 
 # Imports from files
-from files import config
-# Necessary evil :(
 from files.config import *
 from files.discovered import FORMS_TESTED
 
@@ -98,7 +96,6 @@ def Engine():  # lets begin it!
         # Implementing the first mode. [NO CRAWL]
         if not CRAWL_SITE:
             url = web
-            config.DISPLAY_HEADERS = True
             response = Get(url).text
             try:
                 verbout(O,'Trying to parse response...')
@@ -123,7 +120,7 @@ def Engine():  # lets begin it!
             verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
             for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
                 verbout(O,'Testing form:\n\n'+color.CYAN+' %s' % (m.prettify()))
-                FORMS_TESTED.append(m.prettify())
+                FORMS_TESTED.append('(i) '+url+':\n\n'+m.prettify()+'\n')
                 try:
                     if m['action']:
                         pass
@@ -163,7 +160,7 @@ def Engine():  # lets begin it!
                             verbout(GR, 'Preparing form inputs...')
                             contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
                             r3 = Post(url,action,contents2).text  # make request as user3 with user2's form
-                            if POST_BASED:
+                            if POST_BASED and not query and not token:
                                 try:
                                     if m['name']:
                                         PostBased(url, r1, r2, r3, m['action'], result, genpoc, m['name'])
@@ -212,6 +209,7 @@ def Engine():  # lets begin it!
                     # Now lets get the forms...
                     verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
                     for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
+                        FORMS_TESTED.append('(i) '+url+':\n\n'+m.prettify()+'\n')
                         try:
                             if m['action']:
                                 pass
@@ -246,12 +244,12 @@ def Engine():  # lets begin it!
                                         form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                                     except IndexError:
                                         verbout(R, 'Form Error')
-                                        ErrorLogger(url, 'Form Error')
+                                        ErrorLogger(url, 'Form Index Error')
                                         continue  # making sure program won't end here (dirty fix :( )
                                     verbout(GR, 'Preparing form inputs...')
                                     contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
                                     r3 = Post(url,action,contents2).text  # make request as user3 with user2's form
-                                    if POST_BASED:
+                                    if POST_BASED and not query and not token:
                                         try:
                                             if m['name']:
                                                 PostBased(url, r1, r2, r3, m['action'], result, genpoc, m['name'])
@@ -280,7 +278,7 @@ def Engine():  # lets begin it!
                         verbout(R, 'Error Code : ' +O+ str(e.code))
                         ErrorLogger(url, e.__str__())
                         quit()
-            GetLogger()  # The scanning has finished, so now we can log out all the links ;)
+        GetLogger()  # The scanning has finished, so now we can log out all the links ;)
         print('\n'+G+"Scan completed!"+'\n')
         Analysis()  # For Post Scan Analysis
     except KeyboardInterrupt as e:  # Incase user wants to exit :') (while crawling)

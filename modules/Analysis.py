@@ -67,7 +67,7 @@ def Analysis():
                     verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx2.replace(p,'')+color.END+' | Length: '+str(len(tokenx2.replace(p,''))))
                     if len(len(tokenx1)/2) <= 6:
                         verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BR+' VULNERABLE '+color.END+'!')
-                        print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
+                        print(color.RED+ ' [+] Possible CSRF Vulnerability Detected!')
                         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
                         print(color.GREY+' [+] Tokens can easily be '+color.RED+' Forged by Bruteforcing/Guessing '+color.END+'!')
                 elif n < 0.5 or m < len(tokenx1)/2:
@@ -86,10 +86,10 @@ def Analysis():
                     verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+str(len(p)))
                     verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx1.replace(p,'')+color.END+' | Length: '+str(len(tokenx1.replace(p,''))))
                     verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx2.replace(p,'')+color.END+' | Length: '+str(len(tokenx2.replace(p,''))))
-                    verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BG+' NOT VULNERABLE '+color.END+'!')
+                    verbout(color.GREEN,' [+] Post-Analysis reveals that token might be '+color.BG+' NOT VULNERABLE '+color.END+'!')
                     print(color.ORANGE+' [!] Vulnerability Mitigation: '+color.BG+' Strong Dynamic Part of Tokens '+color.END)
                     print(color.GREY+' [+] Tokens '+color.GREEN+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
                 time.sleep(1)
             except KeyboardInterrupt:
                 continue
-        print(C+'Post-Scan Analysis Completed!')
+        print('\n'+C+'Post-Scan Analysis Completed!')
