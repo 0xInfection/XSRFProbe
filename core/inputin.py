@@ -9,8 +9,7 @@
 #This module requires XSRF-Probe
 #https://github.com/0xInfection/XSRF-Probe
 
-import sys
-import socket
+import sys, socket
 from tld import get_fld
 from core.colors import *
 from files.config import SITE_URL
