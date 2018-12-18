@@ -44,6 +44,7 @@ optional.add_argument('--max-chars', help='Maximum allowed character length for 
 optional.add_argument('--crawl', help="Crawl the whole site and simultaneously test all discovered endpoints for CSRF.", dest='crawl', action='store_true')
 optional.add_argument('--skip-analysis', help='Skip the Post-Scan Analysis of Tokens which were gathered during requests', dest='skipal', action='store_true')
 optional.add_argument('--skip-poc', help='Skip the PoC Form Generation of POST-Based Cross Site Request Forgeries.', dest='skippoc', action='store_true')
+optional.add_argument('--display', help='Print out response headers of requests while making requests.', dest='disphead', action='store_true')
 optional.add_argument('--update', help='Update XSRFProbe to latest version on GitHub via git.', dest='update', action='store_true')
 optional.add_argument('--random-agent', help='Use random user-agents for making requests.', dest='randagent', action='store_true')
 optional.add_argument('--version', help='Display the version of XSRFProbe and exit.', dest='version', action='store_true')
@@ -95,6 +96,8 @@ if not args.version and not args.update:
 # Crawl the site if --crawl supplied.
 if args.crawl:
     config.CRAWL_SITE = True
+    # Turning off the display header feature due to too much log generation.
+    config.DISPLAY_HEADERS = False
 
 if args.cookie:
     # Assigning Cookie
@@ -106,6 +109,10 @@ if args.cookie:
             # from time to time, the remote site might trigger up
             # security mechanisms (or worse, perhaps block your ip?)
             config.USER_AGENT_RANDOM = False
+
+# Set the headers displayer to 1 (actively display headers)
+if args.disphead:
+    config.DISPLAY_HEADERS = True
 
 # Timeout value
 if args.timeout:
@@ -121,7 +128,7 @@ if args.headers:
     #
     #config.HEADER_VALUES = {}
     for m in args.headers.split(','):
-        config.HEADER_VALUES[m.split('=')[0]] = m.split('=')[1]
+        config.HEADER_VALUES[m.split('=')[0]] = m.split('=')[1]  # nice hack ;)
 
 if args.exclude:
     exc = args.exclude

@@ -60,10 +60,6 @@ def byteString(s, encoding='utf8'):
         s = str(s)
     return s
 
-# Iterative Python program to check if a string is subsequence of another string
-
-# Returns true if str1 is a subsequence of str2
-# m is length of str1, n is length of str2
 def subSequence(str1,str2):
     '''
     Returns whether 'str1' and 'str2' are subsequence

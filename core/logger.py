@@ -14,7 +14,7 @@ from core.colors import *
 from files.config import *
 from core.verbout import verbout
 from files.discovered import INTERNAL_URLS, FILES_EXEC, SCAN_ERRORS
-from files.discovered import VULN_LIST, FORMS_TESTED, REQUEST_TOKENS
+from files.discovered import VULN_LIST, FORMS_TESTED, REQUEST_TOKENS, STRENGTH_LIST
 
 def logger(filename, content):
     '''
@@ -54,6 +54,8 @@ def GetLogger():
         logger('forms-tested', FORMS_TESTED)
     if VULN_LIST:
         logger('vulnerabilities', VULN_LIST)
+    if STRENGTH_LIST:
+        logger('strengths', STRENGTH_LIST)
 
 def ErrorLogger(url, error):
     con = '(i) '+url+' -> '+error.__str__()
@@ -62,3 +64,7 @@ def ErrorLogger(url, error):
 def VulnLogger(url, vuln):
     tent = '[!] '+url+' -> '+vuln
     VULN_LIST.append(tent)
+
+def NovulLogger(url, strength):
+    tent = '[+] '+url+' -> '+strength
+    STRENGTH_LIST.append(tent)

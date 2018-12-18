@@ -38,6 +38,7 @@ from core.verbout import verbout
 from core.forms import form10, form20
 from core.banner import banner, banabout
 from core.logger import ErrorLogger, GetLogger
+from core.logger import VulnLogger, NovulLogger
 
 # Imports from files
 from files.config import *
@@ -147,6 +148,8 @@ def Engine():  # lets begin it!
                             fnd = Encoding(token)
                             if fnd == 0x01:
                                 VulnLogger(url, 'Token is a string encoded value which can be probably decrypted.')
+                            else:
+                                NovulLogger(url, 'Anti-CSRF token is not a string encoded value.')
                             # Go for token parameter tamper checks.
                             if (query and token):
                                 Tamper(url, action, result, r2, query, token)
@@ -155,7 +158,7 @@ def Engine():  # lets begin it!
                                 form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                             except IndexError:
                                 verbout(R, 'Form Error')
-                                ErrorLogger(url, 'Form Error')
+                                ErrorLogger(url, 'Form Index Error.')
                                 continue  # making sure program won't end here (dirty fix :( )
                             verbout(GR, 'Preparing form inputs...')
                             contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
@@ -168,10 +171,11 @@ def Engine():  # lets begin it!
                                     PostBased(url, r1, r2, r3, m['action'], result, genpoc)
                             else:
                                 print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
-                                print(color.GREEN+' [=] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to POST-Based CSRF Attacks!')
+                                print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to POST-Based CSRF Attacks!')
+                                NovulLogger(url, 'Not vulnerable to POST-Based CSRF Attacks.')
                         except HTTPError as msg:  # if runtime exception...
                             verbout(R, 'Exception : '+msg.__str__())  # again exception :(
-                            ErrorLogger(url, msg.__str__())
+                            ErrorLogger(url, msg)
 
                 actionDone.append(action)  # add the stuff done
                 i+=1  # Increase user iteration
@@ -236,6 +240,8 @@ def Engine():  # lets begin it!
                                     fnd = Encoding(token)
                                     if fnd == 0x01:
                                         VulnLogger(url, 'String encoded token value. Token might be decrypted.')
+                                    else:
+                                        NovulLogger(url, 'Anti-CSRF token is not a string encoded value.')
                                     # Go for token parameter tamper checks.
                                     if (query and token):
                                         Tamper(url, action, result, r2, query, token)
@@ -244,7 +250,7 @@ def Engine():  # lets begin it!
                                         form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                                     except IndexError:
                                         verbout(R, 'Form Error')
-                                        ErrorLogger(url, 'Form Index Error')
+                                        ErrorLogger(url, 'Form Index Error.')
                                         continue  # making sure program won't end here (dirty fix :( )
                                     verbout(GR, 'Preparing form inputs...')
                                     contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
@@ -258,16 +264,17 @@ def Engine():  # lets begin it!
                                     else:
                                         print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
                                         print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to P0ST-Based CSRF Attacks!')
+                                        NovulLogger(url, 'Not vulnerable to POST-Based CSRF Attacks.')
                                 except HTTPError as msg:  # if runtime exception...
                                     verbout(color.RED, ' [-] Exception : '+color.END+msg.__str__())  # again exception :(
-                                    ErrorLogger(url, msg.__str__())
+                                    ErrorLogger(url, msg)
                         actionDone.append(action)  # add the stuff done
                         i+=1  # Increase user iteration
                 except URLError as e:  # if again...
                     verbout(R, 'Exception at : '+url)  # again exception -_-
                     time.sleep(0.4)
                     verbout(O, 'Moving on...')
-                    ErrorLogger(url, e.__str__())
+                    ErrorLogger(url, e)
                     continue  # make sure it doesn't stop at exceptions
                 # This error usually happens when some sites are protected by some load balancer
                 # example Cloudflare. These domains return a 403 forbidden response in various
@@ -276,7 +283,7 @@ def Engine():  # lets begin it!
                     if str(e.code) == '403':
                         verbout(R, 'HTTP Authentication Error!')
                         verbout(R, 'Error Code : ' +O+ str(e.code))
-                        ErrorLogger(url, e.__str__())
+                        ErrorLogger(url, e)
                         quit()
         GetLogger()  # The scanning has finished, so now we can log out all the links ;)
         print('\n'+G+"Scan completed!"+'\n')
@@ -288,3 +295,6 @@ def Engine():  # lets begin it!
         print(R+'Aborted!')  # say goodbye
         ErrorLogger('KeyBoard Interrupt', 'Aborted')
         quit()
+    except Exception as e:
+        verbout(R, e.__str__())
+        ErrorLogger(url, e)
