@@ -35,6 +35,7 @@ from core.colors import *
 from core.inputin import inputin
 from core.request import Get, Post
 from core.verbout import verbout
+from core.prettify import formPrettify
 from core.forms import form10, form20
 from core.banner import banner, banabout
 from core.logger import ErrorLogger, GetLogger
@@ -120,7 +121,9 @@ def Engine():  # lets begin it!
             # Now lets get the forms...
             verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
             for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
-                verbout(O,'Testing form:\n\n'+color.CYAN+' %s' % (m.prettify()))
+                verbout(O,'Testing form:\n'+color.CYAN)
+                formPrettify(m.prettify())
+                verbout('', '')
                 FORMS_TESTED.append('(i) '+url+':\n\n'+m.prettify()+'\n')
                 try:
                     if m['action']:
