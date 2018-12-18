@@ -27,7 +27,7 @@ REQUEST_TOKENS = []
 # List of all Urls that we found
 INTERNAL_URLS = []
 
-# Files discovered during crawling
+# Files/executables discovered during crawling
 FILES_EXEC = []
 
 # Forms that were tested
