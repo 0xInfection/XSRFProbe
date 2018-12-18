@@ -15,6 +15,7 @@ from core.colors import *
 from core.verbout import verbout
 from core.utils import sameSequence, byteString
 from files.discovered import REQUEST_TOKENS
+from core.logger import VulnLogger, NovulLogger
 
 def Analysis():
     '''
@@ -54,7 +55,7 @@ def Analysis():
                 # is composed of two parts, one of them remains static while the other one dynamic.
                 #
                 # For example, if the Anti CSRF Tokens “837456mzy29jkd911139” for one request, the
-                # other time “837456mzy29jkd337221”, “837456mzy29jkd” part of the token remains same
+                # other is “837456mzy29jkd337221”, “837456mzy29jkd” part of the token remains same
                 # in both requests.
                 #
                 # The main idea behind this is to detect the static and dynamic part via DL Algorithm
@@ -70,6 +71,7 @@ def Analysis():
                         print(color.RED+ ' [+] Possible CSRF Vulnerability Detected!')
                         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
                         print(color.GREY+' [+] Tokens can easily be '+color.RED+' Forged by Bruteforcing/Guessing '+color.END+'!')
+                        VulnLogger('Analysis', 'Tokens can easily be Forged by Bruteforcing/Guessing.')
                 elif n < 0.5 or m < len(tokenx1)/2:
                     verbout(R, 'Token distance calculated is '+color.RED+'less than 0.5!')
                     p = sameSequence(tokenx1, tokenx2)
@@ -80,6 +82,7 @@ def Analysis():
                     print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                     print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
                     print(color.GREY+' [+] Tokens can easily be '+color.RED+' Forged by Bruteforcing/Guessing '+color.END+'!')
+                    VulnLogger('Analysis', 'Tokens can easily be Forged by Bruteforcing/Guessing.')
                 else:
                     verbout(R, 'Token distance calculated is '+color.GREEN+'greater than 0.5!')
                     p = sameSequence(tokenx1, tokenx2)
@@ -89,6 +92,7 @@ def Analysis():
                     verbout(color.GREEN,' [+] Post-Analysis reveals that token might be '+color.BG+' NOT VULNERABLE '+color.END+'!')
                     print(color.ORANGE+' [!] Vulnerability Mitigation: '+color.BG+' Strong Dynamic Part of Tokens '+color.END)
                     print(color.GREY+' [+] Tokens '+color.GREEN+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
+                    NovulLogger('Analysis', 'Tokens cannot be Forged by Bruteforcing/Guessing.')
                 time.sleep(1)
             except KeyboardInterrupt:
                 continue

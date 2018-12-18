@@ -14,7 +14,7 @@ from core.colors import *
 from files.config import *
 from core.verbout import verbout
 from core.request import Get
-from core.logger import VulnLogger
+from core.logger import VulnLogger, NovulLogger
 
 def Referer(url):
     """
@@ -60,11 +60,12 @@ def Referer(url):
         print(color.GREEN+' [+] Endoint '+color.ORANGE+'Referer Validation'+color.GREEN+' Present!')
         print(color.GREEN+' [-] Heuristics reveal endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+'...')
         print(color.ORANGE+' [+] Mitigation Method: '+color.BG+' Referer Based Request Validation '+color.END)
+        NovulLogger(url, 'Presence of Referer Header based Request Validation.')
         return True
     else:
         verbout(R,'Endpoint '+color.ORANGE+'Referer Validation Not Present'+color.END+'!')
         verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
         print(color.ORANGE+' [+] Possible Vulnerability Type: '+color.BY+' Referer Based Request Forgery '+color.END)
-        VulnLogger(url, 'No Referer Header based request validation.')
+        VulnLogger(url, 'No Referer Header based Request Validation presence.')
         return False

@@ -53,6 +53,6 @@ def Token(req):
 
         if param:
             return (query, param)
-        verbout(color.RED,' [-] The form was requested '+color.BR+' Without an Anti-CSRF Token '+color.END+color.RED+'...')
+        verbout(color.ORANGE,' [-] The form was requested '+color.RED+' Without an Anti-CSRF Token '+color.END+color.ORANGE+'...')
         print(color.RED+' [-] Endpoint seems '+color.BR+' VULNERABLE '+color.END+color.RED+' to '+color.BR+' POST-Based Request Forgery '+color.END)
         return (None, None)
