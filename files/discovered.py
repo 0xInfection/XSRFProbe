@@ -15,6 +15,9 @@
 # Vulnerabilities which were noticed
 VULN_LIST = []
 
+# Strengths or positive sides of the application
+STRENGTH_LIST = []
+
 # This is for storing the various tokens which got discovered
 # during making the requests. This will be used for various
 # analysis of token generation prototypes and logic used in
