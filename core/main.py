@@ -25,7 +25,7 @@ except ImportError:  # Throws exception in Case of Python2
     print("\033[1;91m [-] \033[1;93mXSRFProbe\033[0m isn't compatible with Python 2.x versions.\n\033[1;91m [-] \033[0mUse Python 3.x to run \033[1;93mXSRFProbe.")
     quit()
 try:
-    import requests, stringdist, lxml, bs4
+    import requests, stringdist, bs4
 except ImportError:
     print(' [-] Required dependencies are not installed.\n [-] Run \033[1;93mpip3 install -r requirements.txt\033[0m to fix it.')
 
