@@ -15,7 +15,7 @@
 global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALUE
 global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
 global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR
-global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS
+global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS, GEN_MALICIOUS
 
 # Site Url to be scanned (Required)
 SITE_URL = ''
@@ -137,6 +137,10 @@ SCAN_ANALYSIS = True
 # Option to skip PoC Form Generation of POST_BASED Request Forgeries.
 # The form will not be generated.
 POC_GENERATION = True
+
+# Option whether or not to generate a malicious CSRF form with all
+# hidden fields.
+GEN_MALICIOUS = False
 
 # A list of file extensions that might be come across while scanning
 # and crawling
