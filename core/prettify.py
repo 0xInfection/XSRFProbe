@@ -19,32 +19,29 @@ def formPrettify(response):
     '''
     highlighted = []
     response = response.splitlines()
-    try:
-        for newLine in response:
-            line = newLine
-            # Find starting tags
-            pattern = re.findall(r"""(<+\w+>)""", line)
-            for grp in pattern:
-                starttag = ''.join(grp)
-                if starttag:
-                    line = line.replace(starttag, color.BLUE + starttag + color.END)
-            # Find attributes
-            pattern = re.findall(r'''(\s\w+=)''', line)
-            for grp in pattern:
-                stu = ''.join(grp)
-                if stu:
-                    line = line.replace(stu, color.CYAN + stu + color.END)
-            # Find ending tags
-            pattern = re.findall(r'''(</.*>)''', line)
-            for grp in pattern:
-                endtag = ''.join(grp)
-                if endtag:
-                    line = line.replace(endtag, color.CYAN + endtag + color.END)
-            if line != newLine:
-                highlighted.append(line)
-            else:
-                highlighted.append(color.GREY+newLine)
-    except MemoryError:
-        pass
+    for newLine in response:
+        line = newLine
+        # Find starting tags
+        pattern = re.findall(r"""(<+\w+>)""", line)
+        for grp in pattern:
+            starttag = ''.join(grp)
+            if starttag:
+                line = line.replace(starttag, color.BLUE + starttag + color.END)
+        # Find attributes
+        pattern = re.findall(r'''(\s\w+=)''', line)
+        for grp in pattern:
+            stu = ''.join(grp)
+            if stu:
+                line = line.replace(stu, color.CYAN + stu + color.END)
+        # Find ending tags
+        pattern = re.findall(r'''(</.*>)''', line)
+        for grp in pattern:
+            endtag = ''.join(grp)
+            if endtag:
+                line = line.replace(endtag, color.CYAN + endtag + color.END)
+        if line != newLine:
+            highlighted.append(line)
+        else:
+            highlighted.append(color.GREY+newLine)
     for h in highlighted:
         print('  '+h)

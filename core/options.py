@@ -43,6 +43,7 @@ optional.add_argument('--timeout', help='HTTP request timeout value in seconds. 
 optional.add_argument('--max-chars', help='Maximum allowed character length for the custom token value to be generated. For example: `--max-chars 5`. Default value is 6.', dest='maxchars', type=int)
 optional.add_argument('--crawl', help="Crawl the whole site and simultaneously test all discovered endpoints for CSRF.", dest='crawl', action='store_true')
 optional.add_argument('--no-analysis', help='Skip the Post-Scan Analysis of Tokens which were gathered during requests', dest='skipal', action='store_true')
+optional.add_argument('--malicious', help='Generate a malicious CSRF Form which can be used in real-world exploits.', dest='malicious', action='store_true')
 optional.add_argument('--skip-poc', help='Skip the PoC Form Generation of POST-Based Cross Site Request Forgeries.', dest='skippoc', action='store_true')
 optional.add_argument('--display', help='Print out response headers of requests while making requests.', dest='disphead', action='store_true')
 optional.add_argument('--update', help='Update XSRFProbe to latest version on GitHub via git.', dest='update', action='store_true')
@@ -82,6 +83,10 @@ if args.skipal:
 # Option to skip poc generation
 if args.skippoc:
     config.POC_GENERATION = False
+
+# Option to generate malicious form
+if args.malicious:
+    config.GEN_MALICIOUS = True
 
 # Updating main root url
 if not args.version and not args.update:
