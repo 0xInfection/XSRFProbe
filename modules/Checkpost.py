@@ -16,28 +16,29 @@ from core.colors import *
 from core.verbout import verbout
 from urllib.parse import urlencode
 from core.logger import VulnLogger
-from files.config import POC_GENERATION
-from modules.Generator import GeneratePoC
+from files.config import POC_GENERATION, GEN_MALICIOUS
+from modules.Generator import GenNormalPoC, GenMalicious
 
 def PostBased(url, r1, r2, r3, m_action, result, genpoc, m_name=''):
     '''
     This method is for detecting POST-Based Request Forgeries
         on basis of fuzzy string matching and comparison
-            based on Radcliff-Obershelp Algorithm.
+            based on Ratcliff-Obershelp Algorithm.
     '''
-    checkdiffx1 = difflib.ndiff(r1.splitlines(1),r2.splitlines(1))  # check the diff noted
-    checkdiffx2 = difflib.ndiff(r1.splitlines(1),r3.splitlines(1))  # check the diff noted
+    checkdiffx1 = difflib.ndiff(r1.splitlines(1), r2.splitlines(1))  # check the diff noted
+    checkdiffx2 = difflib.ndiff(r1.splitlines(1), r3.splitlines(1))  # check the diff noted
     result12 = []  # an init
     for n in checkdiffx1:
-        if re.match('\+|-',n):  # get regex matching stuff
+        if re.match('\+|-', n):  # get regex matching stuff
             result12.append(n)  # append to existing list
     result13 = []  # an init
     for n in checkdiffx2:
-        if re.match('\+|-',n):  # get regex matching stuff
+        if re.match('\+|-', n):  # get regex matching stuff
             result13.append(n)  # append to existing list
     # Make sure m_action has a / before it. (legitimate action).
     if not m_action.startswith('/'):
         m_action = '/' + m_action
+
     # This logic is based purely on the assumption on the difference of requests and
     # response body.
     # If the number of differences of result12 are less than the number of differences
@@ -70,9 +71,11 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, m_name=''):
             else:
                 print(color.GREEN+' [+] Action : ' +color.END+m_action)  # action
         print(color.ORANGE+' [+] POST Query : '+color.GREY+ urlencode(result).strip())
-        print(GR, 'Generating PoC Form...' )
-        print(color.RED+'\n +--------------+')
-        print(color.RED+' |   Form PoC   |')
-        print(color.RED+' +--------------+\n'+color.CYAN)
+        # If option --skip-poc hasn't been supplied...
         if POC_GENERATION:
-            GeneratePoC(url, str(genpoc))
+            if GEN_MALICIOUS:
+                # Generates a malicious CSRF form
+                GenMalicious(url, str(genpoc))
+            else:
+                # Generates a normal PoC
+                GenNormalPoC(url, str(genpoc))
