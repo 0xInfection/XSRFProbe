@@ -51,7 +51,7 @@ def Entropy(req, url, form, m_action, m_name=''):
     if (para and _q) == None:
         VulnLogger(url,
                     'Form Requested Without Anti-CSRF Token.',
-                    '[i] Form Requested: '+form+'\n[i] Request Query: '+req)
+                    '[i] Form Requested: '+form+'\n[i] Request Query: '+req.__str__())
         return '', ''
     # Coverting the token to a raw string, cause some special
     # chars might fu*k with the Shannon Entropy operation.

@@ -48,7 +48,7 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
     if len(result12)<=len(result13):
         print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' POST-Based Request Forgery '+color.END)
-        VulnLogger(url, 'POST-Based Request Forgery on Forms.', '[i] Form: '+form'\n[i] POST Query: '+str(result)+'\n')
+        VulnLogger(url, 'POST-Based Request Forgery on Forms.', '[i] Form: '+form.__str__()+'\n[i] POST Query: '+result.__str__()+'\n')
         time.sleep(0.3)
         verbout(O, 'PoC of response and request...')
         if m_name:
@@ -75,7 +75,7 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
         if POC_GENERATION:
             if GEN_MALICIOUS:
                 # Generates a malicious CSRF form
-                GenMalicious(url, str(genpoc))
+                GenMalicious(url, genpoc.__str__())
             else:
                 # Generates a normal PoC
-                GenNormalPoC(url, str(genpoc))
+                GenNormalPoC(url, genpoc.__str__())

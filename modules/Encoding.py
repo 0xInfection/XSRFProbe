@@ -21,8 +21,6 @@ def Encoding(val):
             Anti-CSRF tokens based on pre-defined
                     regular expressions.
     '''
-    if not val:
-        return None
     verbout(GR, 'Proceeding to detect encoding of Anti-CSRF Token...')
     found = 0x00
     # So the idea right here is to detect whether the Anti-CSRF tokens
