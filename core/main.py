@@ -144,13 +144,13 @@ def Engine():  # lets begin it!
                             # Go for token based entropy checks...
                             try:
                                 if m['name']:
-                                    query, token = Entropy(result, url, m['action'], m['name'])
+                                    query, token = Entropy(result, url, m.prettify(), m['action'], m['name'])
                             except KeyError:
-                                query, token = Entropy(result, url, m['action'])
+                                query, token = Entropy(result, url, m.prettify(), m['action'])
                             # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
-                            fnd = Encoding(token)
-                            if fnd == 0x01:
-                                VulnLogger(url, 'Token is a string encoded value which can be probably decrypted.')
+                            fnd, detct = Encoding(token)
+                            if fnd == 0x01 and detct:
+                                VulnLogger(url, 'Token is a string encoded value which can be probably decrypted.', '[i] Encoding: '+detct)
                             else:
                                 NovulLogger(url, 'Anti-CSRF token is not a string encoded value.')
                             # Go for token parameter tamper checks.
@@ -169,9 +169,9 @@ def Engine():  # lets begin it!
                             if POST_BASED and not query and not token:
                                 try:
                                     if m['name']:
-                                        PostBased(url, r1, r2, r3, m['action'], result, genpoc, m['name'])
+                                        PostBased(url, r1, r2, r3, m['action'], result, genpoc, m.prettify(), m['name'])
                                 except KeyError:
-                                    PostBased(url, r1, r2, r3, m['action'], result, genpoc)
+                                    PostBased(url, r1, r2, r3, m['action'], result, genpoc, m.prettify())
                             else:
                                 print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
                                 print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to POST-Based CSRF Attacks!')
@@ -235,14 +235,14 @@ def Engine():  # lets begin it!
                                     # Go for token based entropy checks...
                                     try:
                                         if m['name']:
-                                            query, token = Entropy(result, url, m['action'], m['name'])
+                                            query, token = Entropy(result, url, m.prettify(), m['action'], m['name'])
                                     except KeyError:
-                                        query, token = Entropy(result, url, m['action'])
+                                        query, token = Entropy(result, url, m.prettify(), m['action'])
                                         ErrorLogger(url, 'No standard form "name".')
                                     # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
-                                    fnd = Encoding(token)
-                                    if fnd == 0x01:
-                                        VulnLogger(url, 'String encoded token value. Token might be decrypted.')
+                                    fnd, detct = Encoding(token)
+                                    if fnd == 0x01 and detct:
+                                        VulnLogger(url, 'String encoded token value. Token might be decrypted.', '[i] Encoding: '+detct)
                                     else:
                                         NovulLogger(url, 'Anti-CSRF token is not a string encoded value.')
                                     # Go for token parameter tamper checks.
@@ -261,9 +261,9 @@ def Engine():  # lets begin it!
                                     if POST_BASED and not query and not token:
                                         try:
                                             if m['name']:
-                                                PostBased(url, r1, r2, r3, m['action'], result, genpoc, m['name'])
+                                                PostBased(url, r1, r2, r3, m['action'], result, genpoc, m.prettify(), m['name'])
                                         except KeyError:
-                                            PostBased(url, r1, r2, r3, m['action'], result, genpoc)
+                                            PostBased(url, r1, r2, r3, m['action'], result, genpoc, m.prettify())
                                     else:
                                         print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
                                         print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to P0ST-Based CSRF Attacks!')

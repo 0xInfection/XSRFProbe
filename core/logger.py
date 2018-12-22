@@ -61,8 +61,8 @@ def ErrorLogger(url, error):
     con = '(i) '+url+' -> '+error.__str__()
     SCAN_ERRORS.append(con)
 
-def VulnLogger(url, vuln):
-    tent = '[!] '+url+' -> '+vuln
+def VulnLogger(url, vuln, content=''):
+    tent = '[!] '+url+' -> '+vuln+'\n\n'+content
     VULN_LIST.append(tent)
 
 def NovulLogger(url, strength):
