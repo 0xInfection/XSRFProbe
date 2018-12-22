@@ -17,7 +17,7 @@ from .Token import Token
 from core.verbout import verbout
 from core.logger import VulnLogger, NovulLogger
 
-def Entropy(req, url, m_action, m_name=''):
+def Entropy(req, url, form, m_action, m_name=''):
     """
     This function has the work of comparing and
       calculating Shannon Entropy and related
@@ -49,7 +49,9 @@ def Entropy(req, url, m_action, m_name=''):
     # Check for common CSRF token names
     _q, para = Token(req)
     if (para and _q) == None:
-        VulnLogger(url, 'Form Requested Without Anti-CSRF Token.')
+        VulnLogger(url,
+                    'Form Requested Without Anti-CSRF Token.',
+                    '[i] Form Requested: '+form+'\n[i] Request Query: '+req)
         return '', ''
     # Coverting the token to a raw string, cause some special
     # chars might fu*k with the Shannon Entropy operation.
@@ -60,7 +62,7 @@ def Entropy(req, url, m_action, m_name=''):
         print(color.RED+' [-] CSRF Token Length less than 5 bytes. '+color.ORANGE+'Token value can be guessed/bruteforced...')
         print(color.ORANGE+' [-] Endpoint likely '+color.BR+' VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BG+' Very Short/No Anti-CSRF Tokens '+color.END)
-        VulnLogger(url, 'Very Short/No Anti-CSRF Tokens.')
+        VulnLogger(url, 'Very Short Anti-CSRF Tokens.', 'Token: '+value)
     if len(value) >= max_length:
         print(color.ORANGE+' [+] CSRF Token Length greater than '+color.CYAN+'256 bytes. '+color.GREEN+'Token value cannot be guessed/bruteforced...')
         print(color.GREEN+' [+] Endpoint likely '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
@@ -81,7 +83,7 @@ def Entropy(req, url, m_action, m_name=''):
         verbout(color.RED,' [-] Anti-CSRF Token Entropy Calculated is '+color.BY+' LESS than 2.4 '+color.END+'... ')
         print(color.RED+' [-] Endpoint likely '+color.BR+' VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks inspite of CSRF Tokens...')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Low Entropy Anti-CSRF Tokens '+color.END)
-        VulnLogger(url, 'Low Entropy Anti-CSRF Tokens.')
+        VulnLogger(url, 'Low Entropy Anti-CSRF Tokens.', 'Token: '+value)
         if m_name:
             print(color.RED+'\n +---------+')
             print(color.RED+' |   PoC   |')

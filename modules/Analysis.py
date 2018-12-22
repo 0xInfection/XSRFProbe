@@ -46,7 +46,7 @@ def Analysis():
                 n = stringdist.rdlevenshtein_norm(tokenx1, tokenx2)
                 verbout(color.CYAN, ' [+] Alignment Ratio Calculated: '+color.GREY+str(n))
                 # If both tokens are same, then
-                if tokenx1 == tokenx2:
+                if len(tokenx1) == len(tokenx2):
                     verbout(C, 'Token length calculated is same: '+color.ORANGE+'Each %s bytes' % len(byteString(tokenx1)))
                 else:
                     verbout(C, 'Token length calculated is different: '+color.ORANGE+'By %s bytes' % (len(byteString(tokenx1)) - len(byteString(tokenx2))))
@@ -71,7 +71,7 @@ def Analysis():
                         print(color.RED+ ' [+] Possible CSRF Vulnerability Detected!')
                         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
                         print(color.GREY+' [+] Tokens can easily be '+color.RED+' Forged by Bruteforcing/Guessing '+color.END+'!')
-                        VulnLogger('Analysis', 'Tokens can easily be Forged by Bruteforcing/Guessing.')
+                        VulnLogger('Analysis', 'Tokens can easily be Forged by Bruteforcing/Guessing.', '[i] Token 1: '+tokenx1+'\n[i] Token 2: '+tokenx2)
                 elif n < 0.5 or m < len(tokenx1)/2:
                     verbout(R, 'Token distance calculated is '+color.RED+'less than 0.5!')
                     p = sameSequence(tokenx1, tokenx2)
@@ -82,7 +82,7 @@ def Analysis():
                     print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                     print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
                     print(color.GREY+' [+] Tokens can easily be '+color.RED+' Forged by Bruteforcing/Guessing '+color.END+'!')
-                    VulnLogger('Analysis', 'Tokens can easily be Forged by Bruteforcing/Guessing.')
+                    VulnLogger('Analysis', 'Tokens can easily be Forged by Bruteforcing/Guessing.', '[i] Token 1: '+tokenx1+'\n[i] Token 2: '+tokenx2)
                 else:
                     verbout(R, 'Token distance calculated is '+color.GREEN+'greater than 0.5!')
                     p = sameSequence(tokenx1, tokenx2)

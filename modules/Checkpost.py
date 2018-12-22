@@ -19,7 +19,7 @@ from core.logger import VulnLogger
 from files.config import POC_GENERATION, GEN_MALICIOUS
 from modules.Generator import GenNormalPoC, GenMalicious
 
-def PostBased(url, r1, r2, r3, m_action, result, genpoc, m_name=''):
+def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
     '''
     This method is for detecting POST-Based Request Forgeries
         on basis of fuzzy string matching and comparison
@@ -48,7 +48,7 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, m_name=''):
     if len(result12)<=len(result13):
         print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' POST-Based Request Forgery '+color.END)
-        VulnLogger(url, 'POST-Based Request Forgery on Forms.')
+        VulnLogger(url, 'POST-Based Request Forgery on Forms.', '[i] Form: '+form'\n[i] POST Query: '+str(result)+'\n')
         time.sleep(0.3)
         verbout(O, 'PoC of response and request...')
         if m_name:

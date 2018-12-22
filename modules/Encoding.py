@@ -51,7 +51,7 @@ def Encoding(val):
     if found == 0x00:
         print(color.RED+' [-] '+color.BR+' No Token Encoding Detected. '+color.END)
     sleep(0.8)
-    return found
+    return (found, txt)
 
 def hashcheck(hashtype, regexstr, data):
     try:

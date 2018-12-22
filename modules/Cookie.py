@@ -157,8 +157,8 @@ def SameSite(url):
         print(color.GREEN+' [+] Type: '+color.BG+' No Cookie Set while Cross Origin Requests '+color.END)
         NovulLogger(url, 'No cookie set on Cross-Origin Requests.')
     else:
-        verbout(R,'Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Not Present!')
+        verbout(R,'Endpoint '+color.ORANGE+'Cross Origin Cookie Validation'+color.END+' Not Present!')
         verbout(R,'Heuristic(s) reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to CSRFs...')
         print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No SameSite Flag on Cookies On Cross Origin Requests '+color.END)
-        VulnLogger(url, 'No SameSite Flag Set on Cookies on Cross-Origin Requests.')
+        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No Cross Origin Cookie Validation Presence '+color.END)
+        VulnLogger(url, 'No Cookie Validation on Cross-Origin Requests.', '[i] Headers: '+str(head))

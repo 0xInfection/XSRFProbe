@@ -66,5 +66,5 @@ def Origin(url):
         verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
         print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' Origin Based Request Forgery '+color.END)
-        VulnLogger(url, 'No Origin Header based request validation presence.')
+        VulnLogger(url, 'No Origin Header based request validation presence.', '[i] Response Headers: '+str(req0x02.headers))
         return False

@@ -35,7 +35,7 @@ def Tamper(url, action, req, body, query, para):
     # Coverting the token to a raw string, cause some special
     # chars might fu*k with the operation.
     value = r'%s' % para
-
+    copy = req
     # Alright lets start...
     # [Step 1]: First we take the token and then replace a char
     # at a specific position and test the response body.
@@ -66,7 +66,7 @@ def Tamper(url, action, req, body, query, para):
         NovulLogger(url, 'Anti-CSRF Token tamper by index replacement does not return valid response.')
     if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
         flagx1 = 0x01
-        VulnLogger(url, 'Anti-CSRF Token tamper by index replacement returns valid response.')
+        VulnLogger(url, 'Anti-CSRF Token tamper by index replacement returns valid response.', '[i] POST Query: '+req)
 
     # [Step 2]: Second we take the token and then remove a char
     # at a specific position and test the response body.
@@ -88,11 +88,12 @@ def Tamper(url, action, req, body, query, para):
         NovulLogger(url, 'Anti-CSRF Token tamper by index removal does not return valid response.')
     if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
         flagx2 = 0x01
-        VulnLogger(url, 'Anti-CSRF Token tamper by index removal returns valid response.')
+        VulnLogger(url, 'Anti-CSRF Token tamper by index removal returns valid response.', '[i] POST Query: '+req)
 
     # [Step 3]: Third we take the token and then remove the whole
     # anticsrf token and test the response body.
     verbout(GR, 'Tampering Token by '+color.GREY+'Token removal'+color.END+'...')
+    # Removing the anti-csrf token from request
     del req[query]
     verbout(G, 'Removed token from request!')
     # Lets build up the request...
@@ -108,7 +109,7 @@ def Tamper(url, action, req, body, query, para):
         NovulLogger(url, 'Anti-CSRF Token on removal does not return valid response.')
     if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) and (len(body) == len(resp.text)):
         flagx3 = 0x01
-        VulnLogger(url, 'Anti-CSRF Token on removal returns valid response.')
+        VulnLogger(url, 'Anti-CSRF Token on removal returns valid response.', '[i] POST Query: '+req)
 
     # If any of the forgeries worked...
     if (flagx1 or flagx2 or flagx3) == 0x01:
@@ -116,7 +117,7 @@ def Tamper(url, action, req, body, query, para):
         verbout(color.GREEN,' [-] The Tampered Anti-CSRF Token requested does NOT return a 40x or 50x response! ')
         print(color.ORANGE+' [-] Endpoint '+color.BR+' CONFIRMED VULNERABLE '+color.END+color.ORANGE+' to Request Forgery Attacks...')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BG+' Non-Unique Anti-CSRF Tokens in Requests '+color.END)
-        VulnLogger(url, 'Anti-CSRF Tokens are not Unique. Token Reuse detected.')
+        VulnLogger(url, 'Anti-CSRF Tokens are not Unique. Token Reuse detected.', '[i] Request: '+copy)
     else:
         print(color.RED+' [-] The Tampered Anti-CSRF Token requested returns a 40x or 50x response... ')
         print(color.GREEN+' [-] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')

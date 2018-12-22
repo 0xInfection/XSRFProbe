@@ -67,5 +67,5 @@ def Referer(url):
         verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
         print(color.ORANGE+' [+] Possible Vulnerability Type: '+color.BY+' Referer Based Request Forgery '+color.END)
-        VulnLogger(url, 'No Referer Header based Request Validation presence.')
+        VulnLogger(url, 'No Referer Header based Request Validation presence.', '[i] Response Headers: '+str(req0x02.headers))
         return False
