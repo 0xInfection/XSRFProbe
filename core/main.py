@@ -298,6 +298,6 @@ def Engine():  # lets begin it!
         print(R+'Aborted!')  # say goodbye
         ErrorLogger('KeyBoard Interrupt', 'Aborted')
         quit()
-    except Exception as e:
-        verbout(R, e.__str__())
-        ErrorLogger(url, e)
+#    except Exception as e:
+ #       verbout(R, e.__str__())
+  #      ErrorLogger(url, e)
