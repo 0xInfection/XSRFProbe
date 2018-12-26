@@ -19,7 +19,8 @@ COMMON_CSRF_NAMES = (
                     'CSRFName',                   # OWASP CSRF_Guard
                     'CSRFToken',                  # OWASP CSRF_Guard
                     'anticsrf',                   # AntiCsrfParam.java
-                    '__RequestVerificationToken', # AntiCsrfParam.java
+                    '__RequestVerificationToken', # ASP.NET TokenParam
+                    'wpnonce',                    # WordPress
                     'authenticity_token',         # Ruby on Rails
                     'csrf_param',                 # Ruby on Rails
                     'TransientKey',               # VanillaForums
