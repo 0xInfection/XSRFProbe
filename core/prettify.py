@@ -45,3 +45,30 @@ def formPrettify(response):
             highlighted.append(color.GREY+newLine)
     for h in highlighted:
         print('  '+h)
+
+def indentPrettify(soup, indent=2):
+    # where desired_indent is number of spaces as an int()
+	pretty_soup = str()
+	previous_indent = 0
+	# iterate over each line of a prettified soup
+	for line in soup.prettify().split("\n"):
+	    # returns the index for the opening html tag '<'
+		current_indent = str(line).find("<")
+		# which is also represents the number of spaces in the lines indentation
+		if current_indent == -1 or current_indent > previous_indent + 2:
+			current_indent = previous_indent + 1
+			# str.find() will equal -1 when no '<' is found. This means the line is some kind
+			# of text or script instead of an HTML element and should be treated as a child
+			# of the previous line. also, current_indent should never be more than previous + 1.
+		previous_indent = current_indent
+		pretty_soup += writeOut(line, current_indent, indent)
+	return pretty_soup
+
+def writeOut(line, current_indent, desired_indent):
+	new_line = ""
+	spaces_to_add = (current_indent * desired_indent) - current_indent
+	if spaces_to_add > 0:
+	    for i in range(spaces_to_add):
+	        new_line += " "
+	new_line += str(line) + "\n"
+	return new_line
