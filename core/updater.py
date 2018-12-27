@@ -14,6 +14,9 @@ from core.colors import *
 from requests import get
 
 def updater():
+    '''
+    Function to update XSRFProbe seamlessly.
+    '''
     print(GR+'Checking for updates...')
     vno = get('https://raw.githubusercontent.com/0xInfection/XSRFProbe/master/files/VersionNum').text
     print(GR+'Version on GitHub: '+color.CYAN+vno.strip())
