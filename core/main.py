@@ -70,23 +70,18 @@ def Engine():  # lets begin it!
     web, fld = inputin()  # Take the input
     form1 = form10()  # Get the form 1 ready
     form2 = form20()  # Get the form 2 ready
-
     # For the cookies that we encounter during requests...
     Cookie0 = http.cookiejar.CookieJar()  # First as User1
     Cookie1 = http.cookiejar.CookieJar()  # Then as User2
     resp1 = build_opener(HTTPCookieProcessor(Cookie0))  # Process cookies
     resp2 = build_opener(HTTPCookieProcessor(Cookie1))  # Process cookies
-
     actionDone = []  # init to the done stuff
-
     csrf = ''  # no token initialise / invalid token
     ref_detect = 0x00  # Null Char Flag
     ori_detect = 0x00  # Null Char Flags
     form = Debugger.Form_Debugger()  # init to the form parser+token generator
-
-    bs1 = BeautifulSoup(form1).findAll('form',action=True)[0]  # make sure the stuff works properly
-    bs2 = BeautifulSoup(form2).findAll('form',action=True)[0]  # same as above
-
+    bs1 = BeautifulSoup(form1).findAll('form', action=True)[0]  # make sure the stuff works properly
+    bs2 = BeautifulSoup(form2).findAll('form', action=True)[0]  # same as above
     init1 = web  # First init
     resp1.open(init1)  # Makes request as User2
     resp2.open(init1)  # Make request as User1
@@ -111,13 +106,10 @@ def Engine():  # lets begin it!
                 if Referer(url):
                     ref_detect = 0x01
                 verbout(O, 'Confirming the vulnerability...')
-
                 # We have finished with Referer Based Checks, lets go for Origin Based Ones...
                 verbout(O, 'Confirming endpoint request validation via '+color.GREY+'Origin'+color.END+' Checks...')
                 if Origin(url):
                     ori_detect = 0x01
-            if COOKIE_BASED:
-                Cookie(url)
             # Now lets get the forms...
             verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
             for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
@@ -138,15 +130,18 @@ def Engine():  # lets begin it!
                         try:
                             # NOTE: Slow connections may cause read timeouts which may result in AttributeError
                             result, genpoc = form.prepareFormInputs(m)  # prepare inputs
-                            r1 = Post(url, action, result).text  # make request with token values generated as user1
+                            r1 = Post(url, action, result)  # make request with token values generated as user1
                             result, genpoc = form.prepareFormInputs(m)  # prepare the input types
-                            r2 = Post(url, action, result).text  # again make request with token values generated as user2
+                            r2 = Post(url, action, result)  # again make request with token values generated as user2
+                            # Go for cookie based checks
+                            if COOKIE_BASED:
+                                Cookie(url, r1)
                             # Go for token based entropy checks...
                             try:
                                 if m['name']:
-                                    query, token = Entropy(result, url, m.prettify(), m['action'], m['name'])
+                                    query, token = Entropy(result, url, r1.headers, m.prettify(), m['action'], m['name'])
                             except KeyError:
-                                query, token = Entropy(result, url, m.prettify(), m['action'])
+                                query, token = Entropy(result, url, r1.headers, m.prettify(), m['action'])
                             # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
                             fnd, detct = Encoding(token)
                             if fnd == 0x01 and detct:
@@ -155,23 +150,23 @@ def Engine():  # lets begin it!
                                 NovulLogger(url, 'Anti-CSRF token is not a string encoded value.')
                             # Go for token parameter tamper checks.
                             if (query and token):
-                                Tamper(url, action, result, r2, query, token)
+                                Tamper(url, action, result, r2.text, query, token)
                             o2 = resp2.open(url).read()  # make request as user2
                             try:
                                 form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                             except IndexError:
                                 verbout(R, 'Form Error')
                                 ErrorLogger(url, 'Form Index Error.')
-                                continue  # making sure program won't end here (dirty fix :( )
+                                continue  # Making sure program won't end here (dirty fix :( )
                             verbout(GR, 'Preparing form inputs...')
                             contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
-                            r3 = Post(url,action,contents2).text  # make request as user3 with user2's form
+                            r3 = Post(url, action, contents2)  # make request as user3 with user2's form
                             if POST_BASED and not query and not token:
                                 try:
                                     if m['name']:
-                                        PostBased(url, r1, r2, r3, m['action'], result, genpoc, m.prettify(), m['name'])
+                                        PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify(), m['name'])
                                 except KeyError:
-                                    PostBased(url, r1, r2, r3, m['action'], result, genpoc, m.prettify())
+                                    PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify())
                             else:
                                 print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
                                 print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to POST-Based CSRF Attacks!')
@@ -179,20 +174,15 @@ def Engine():  # lets begin it!
                         except HTTPError as msg:  # if runtime exception...
                             verbout(R, 'Exception : '+msg.__str__())  # again exception :(
                             ErrorLogger(url, msg)
-
                 actionDone.append(action)  # add the stuff done
                 i+=1  # Increase user iteration
-
         else:
             # Implementing the 2nd mode [CRAWLING AND SCANNING].
             verbout(GR, "Initializing crawling and scanning...")
             crawler = Crawler.Handler(init1, resp1)  # Init to the Crawler handler
-
             while crawler.noinit():  # Until 0 urls left
                 url = next(crawler)  # Go for next!
-
                 print(C+'Testing :> '+color.CYAN+url)  # Display what url its crawling
-
                 try:
                     soup = crawler.process(fld)  # Start the parser
                     if not soup:
@@ -204,15 +194,12 @@ def Engine():  # lets begin it!
                         if Referer(url):
                             ref_detect = 0x01
                         verbout(O, 'Confirming the vulnerability...')
-
                         # We have finished with Referer Based Checks, lets go for Origin Based Ones...
                         verbout(O, 'Confirming endpoint request validation via '+color.GREY+'Origin'+color.END+' Checks...')
                         if Origin(url):
                             ori_detect = 0x01
-
                     if COOKIE_BASED:
                         Cookie(url)
-
                     # Now lets get the forms...
                     verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
                     for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
@@ -229,9 +216,9 @@ def Engine():  # lets begin it!
                             if FORM_SUBMISSION:
                                 try:
                                     result, genpoc = form.prepareFormInputs(m)  # prepare inputs
-                                    r1 = Post(url, action, result).text  # make request with token values generated as user1
+                                    r1 = Post(url, action, result)  # make request with token values generated as user1
                                     result, genpoc = form.prepareFormInputs(m)  # prepare the input types
-                                    r2 = Post(url, action, result).text  # again make request with token values generated as user2
+                                    r2 = Post(url, action, result)  # again make request with token values generated as user2
                                     # Go for token based entropy checks...
                                     try:
                                         if m['name']:
@@ -247,7 +234,7 @@ def Engine():  # lets begin it!
                                         NovulLogger(url, 'Anti-CSRF token is not a string encoded value.')
                                     # Go for token parameter tamper checks.
                                     if (query and token):
-                                        Tamper(url, action, result, r2, query, token)
+                                        Tamper(url, action, result, r2.text, query, token)
                                     o2 = resp2.open(url).read()  # make request as user2
                                     try:
                                         form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
@@ -257,13 +244,13 @@ def Engine():  # lets begin it!
                                         continue  # making sure program won't end here (dirty fix :( )
                                     verbout(GR, 'Preparing form inputs...')
                                     contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
-                                    r3 = Post(url,action,contents2).text  # make request as user3 with user2's form
+                                    r3 = Post(url, action, contents2)  # make request as user3 with user2's form
                                     if POST_BASED and not query and not token:
                                         try:
                                             if m['name']:
-                                                PostBased(url, r1, r2, r3, m['action'], result, genpoc, m.prettify(), m['name'])
+                                                PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify(), m['name'])
                                         except KeyError:
-                                            PostBased(url, r1, r2, r3, m['action'], result, genpoc, m.prettify())
+                                            PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify())
                                     else:
                                         print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
                                         print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to P0ST-Based CSRF Attacks!')
@@ -297,6 +284,7 @@ def Engine():  # lets begin it!
         Analysis()  # For Post scan Analysis
         print(R+'Aborted!')  # say goodbye
         ErrorLogger('KeyBoard Interrupt', 'Aborted')
+        GetLogger()  # The scanning has interrupted, so now we can log out all the links ;)
         quit()
 #    except Exception as e:
  #       verbout(R, e.__str__())
