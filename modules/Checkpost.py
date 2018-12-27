@@ -29,7 +29,7 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
     checkdiffx2 = difflib.ndiff(r1.splitlines(1), r3.splitlines(1))  # check the diff noted
     result12 = []  # an init
     for n in checkdiffx1:
-        if re.match('\+|-', n):  # get regex matching stuff
+        if re.match('\+|-', n):  # get regex matching stuff only +/-
             result12.append(n)  # append to existing list
     result13 = []  # an init
     for n in checkdiffx2:
@@ -39,13 +39,13 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
     if not m_action.startswith('/'):
         m_action = '/' + m_action
 
-    # This logic is based purely on the assumption on the difference of requests and
-    # response body.
+    # This logic is based purely on the assumption on the difference of various requests
+    # and response body.
     # If the number of differences of result12 are less than the number of differences
     # than result13 then we have the vulnerability. (very basic check)
     #
     # NOTE: The algorithm has lots of scopes of improvement...
-    if len(result12)<=len(result13):
+    if len(result12) <= len(result13):
         print(color.GREEN+ ' [+] CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' POST-Based Request Forgery '+color.END)
         VulnLogger(url, 'POST-Based Request Forgery on Forms.', '[i] Form: '+form.__str__()+'\n[i] POST Query: '+result.__str__()+'\n')
@@ -73,6 +73,7 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
         print(color.ORANGE+' [+] POST Query : '+color.GREY+ urlencode(result).strip())
         # If option --skip-poc hasn't been supplied...
         if POC_GENERATION:
+            # If --malicious has been supplied
             if GEN_MALICIOUS:
                 # Generates a malicious CSRF form
                 GenMalicious(url, genpoc.__str__())
