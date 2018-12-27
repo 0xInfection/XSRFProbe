@@ -22,7 +22,7 @@ from urllib.parse import urlencode, unquote, urlsplit
 
 resps = []
 
-def Cookie(url):
+def Cookie(url, request):
     '''
     This module is for checking the varied HTTP Cookies
             and the related security on them to
@@ -30,7 +30,7 @@ def Cookie(url):
     '''
     print(color.GREY+' [+] Proceeding for cookie based checks...')
     SameSite(url)
-    Persistence(url)
+    Persistence(url, request)
 
 def SameSite(url):
     '''
@@ -130,7 +130,7 @@ def SameSite(url):
             m = cookieval.split(';')
             verbout(GR,'Examining Cookie...')
             for q in m:
-                if search('SameSite', q, I):
+                if search('samesite', q.lower(), I):
                     verbout(G,'SameSite Flag '+color.ORANGE+' detected on cookie on Cross Origin Request!')
                     foundx3 = 0x01
                     q = q.split('=')[1].strip()
@@ -140,7 +140,7 @@ def SameSite(url):
             foundx3 = 0x02
 
     if foundx1 == 0x01:
-        verbout(R,'Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' Present!')
+        verbout(R,'Endpoint '+color.ORANGE+'SameSite Flag Cookie Validation'+color.END+' is Present!')
 
     if (foundx1 == 0x01 and foundx3 == 0x00) and (foundx2 == 0x00 or foundx2 == 0x01):
         print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE to ANY type of CSRF attacks! '+color.END)
