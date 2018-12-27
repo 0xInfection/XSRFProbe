@@ -17,7 +17,7 @@ from .Token import Token
 from core.verbout import verbout
 from core.logger import VulnLogger, NovulLogger
 
-def Entropy(req, url, form, m_action, m_name=''):
+def Entropy(req, url, headers, form, m_action, m_name=''):
     """
     This function has the work of comparing and
       calculating Shannon Entropy and related
@@ -47,7 +47,7 @@ def Entropy(req, url, form, m_action, m_name=''):
     min_entropy = 2.4
 
     # Check for common CSRF token names
-    _q, para = Token(req)
+    _q, para = Token(req, headers)
     if (para and _q) == None:
         VulnLogger(url,
                     'Form Requested Without Anti-CSRF Token.',
