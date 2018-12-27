@@ -16,15 +16,16 @@ from core.colors import *
 from core.verbout import verbout
 from files.discovered import REQUEST_TOKENS
 from urllib.parse import urlencode, unquote
-from files.paramlist import COMMON_CSRF_NAMES
+from files.paramlist import COMMON_CSRF_NAMES, COMMON_CSRF_HEADERS
 
-def Token(req):
+def Token(req, headers):
     '''
     This method checks for whether Anti-CSRF Tokens are
                present in the request.
     '''
     param = ''  # Initializing param
     query = ''
+    found = False
     # First lets have a look at config.py and see if its set
     if config.TOKEN_CHECKS:
         verbout(O,'Parsing request for detecting anti-csrf tokens...')
@@ -36,21 +37,28 @@ def Token(req):
                     qu = c.split('=')
                     # Search if the token is there in request...
                     if name.lower() in qu[0].lower():
-                        verbout(color.GREEN,' [+] The form was requested with an '+color.BG+' Anti-CSRF Token '+color.GREEN+'!')
-                        verbout(color.GREY,' [+] Token Parameter: '+color.CYAN+qu[0]+'='+qu[1]+' ...')
+                        verbout(color.GREEN, ' [+] The form was requested with an '+color.BG+' Anti-CSRF Token '+color.END+color.GREEN+'!')
+                        verbout(color.GREY, ' [+] Token Parameter: '+color.CYAN+qu[0]+'='+qu[1]+' ...')
                         query, param = qu[0], qu[1]
                         # We are appending the token to a variable for further analysis
                         REQUEST_TOKENS.append(param)
+                        found = True
                         break  # Break execution if a Anti-CSRF token is found
-                        # Setting this to False since the form was requested with an Anti-CSRF token,
-                        # there is an unique id for every form. There are other checks like token reuse and
-                        # other stuff, but we do not need the POST-Based Check for now, for this form.
-                        config.POST_BASED = False  # Clean hack ;)
-
+            # If we haven't found the Anti-CSRF token in query, we'll search for it in headers :)
+            if not found:
+                for key, value in headers.items():
+                    for name in COMMON_CSRF_HEADERS:  # Iterate over the list
+                        # Search if the token is there in request...
+                        if name.lower() in key.lower():
+                            verbout(color.GREEN, ' [+] The form was requested with an '+color.BG+' Anti-CSRF Token Header '+color.END+color.GREEN+'!')
+                            verbout(color.GREY, ' [+] Token Parameter: '+color.CYAN+qu[0]+'='+qu[1]+' ...')
+                            query, param = key, value
+                            # We are appending the token to a variable for further analysis
+                            REQUEST_TOKENS.append(param)
+                            break  # Break execution if a Anti-CSRF token is found
         except Exception as e:
-            verbout(R,'Request Parsing Exception!')
-            verbout(R,'Error: '+e.__str__())
-
+            verbout(R, 'Request Parsing Exception!')
+            verbout(R, 'Error: '+e.__str__())
         if param:
             return (query, param)
         verbout(color.ORANGE,' [-] The form was requested '+color.RED+' Without an Anti-CSRF Token '+color.END+color.ORANGE+'...')
