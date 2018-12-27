@@ -20,17 +20,20 @@ COMMON_CSRF_NAMES = (
                     'CSRFToken',                  # OWASP CSRF_Guard
                     'anticsrf',                   # AntiCsrfParam.java
                     '__RequestVerificationToken', # ASP.NET TokenParam
-                    'wpnonce',                    # WordPress
+                    'VerificationToken',          # AntiCSRFParam.java
+                    'form_build-id',              # Drupal CMS AntiCSRF
+                    'nonce',                      # WordPress Nonce
                     'authenticity_token',         # Ruby on Rails
                     'csrf_param',                 # Ruby on Rails
-                    'TransientKey',               # VanillaForums
+                    'TransientKey',               # VanillaForums Param
                     'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
                     'yii_anticsrf'                # http://www.yiiframework.com/
                     '[_token]',                   # Symfony 2.x
                     '_csrf_token',                # Symfony 1.4
                     'csrfmiddlewaretoken',        # Django 1.5
-                    'ccm_token',                  # Concrete 5
+                    'ccm_token',                  # Concrete 5 CMS
                     'XOOPS_TOKEN_REQUEST',        # Xoops CMS
+                    '_csrf',                      # Express JS Default Anti-CSRF
 
                     # These are some other various token names I have seen in
                     # various websites.
@@ -42,13 +45,11 @@ COMMON_CSRF_NAMES = (
                     'auth_token',
                     'auth',
                     'anti_csrf',
-                    'auth_value',
+                    'debug_token',
                     'csrf_value',
                     '_debugval',
                     'csrf_token',
-                    'VerificationToken',
                     '__authvalue',
-                    'authenticity_value',
                     '__token',
                     '__auth',
                     'secret',
@@ -65,6 +66,19 @@ COMMON_CSRF_NAMES = (
                     '_sessionid',
                     'debug_id',
                     'vtoken'
+                )
+
+COMMON_CSRF_HEADERS = (
+                    # These are a list of HTTP Headers often found in requests
+                    # of web applications using various frameworks.
+                    'CSRF-Token',               # Express JS CSURF Middleware
+                    'XSRF-Token',               # Node JS/ Express JS
+                    'X-CSRF-Token',             # Ruby on Rails
+                    'X-XSRF-Token',             # Express JS CSURF Middleware
+                    # Some other probabilties
+                    'X-CSRF-Header',
+                    'X-XSRF-Header',
+                    'X-CSRF-Protection'
                 )
 
 # TODO: Add and replace with more valid and arguable exclusion lists
