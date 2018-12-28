@@ -129,9 +129,14 @@ def Engine():  # lets begin it!
                     if FORM_SUBMISSION:
                         try:
                             # NOTE: Slow connections may cause read timeouts which may result in AttributeError
-                            result, genpoc = form.prepareFormInputs(m)  # prepare inputs
+                            # So the idea here is tp make requests pretending to be 3 different users.
+                            # Now a series of requests will be targeted against the site with different
+                            # identities. Refer to XSRFProbe wiki for more info.
+                            #
+                            # NOTE: Slow connections may cause read timeouts which may result in AttributeError
+                            result, genpoc = form.prepareFormInputs(m)  # prepare inputs as user 1
                             r1 = Post(url, action, result)  # make request with token values generated as user1
-                            result, genpoc = form.prepareFormInputs(m)  # prepare the input types
+                            result, genpoc = form.prepareFormInputs(m)  # prepare inputs as user 2
                             r2 = Post(url, action, result)  # again make request with token values generated as user2
                             # Go for cookie based checks
                             if COOKIE_BASED:
@@ -155,12 +160,12 @@ def Engine():  # lets begin it!
                             try:
                                 form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                             except IndexError:
-                                verbout(R, 'Form Error')
+                                verbout(R, 'Form Index Error')
                                 ErrorLogger(url, 'Form Index Error.')
                                 continue  # Making sure program won't end here (dirty fix :( )
                             verbout(GR, 'Preparing form inputs...')
-                            contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
-                            r3 = Post(url, action, contents2)  # make request as user3 with user2's form
+                            contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 3 as user3
+                            r3 = Post(url, action, contents2)  # make request as user3 with user3's form
                             if POST_BASED and not query and not token:
                                 try:
                                     if m['name']:
@@ -215,9 +220,9 @@ def Engine():  # lets begin it!
                             # If form submission is kept to True
                             if FORM_SUBMISSION:
                                 try:
-                                    result, genpoc = form.prepareFormInputs(m)  # prepare inputs
+                                    result, genpoc = form.prepareFormInputs(m)  # prepare inputs as user 1
                                     r1 = Post(url, action, result)  # make request with token values generated as user1
-                                    result, genpoc = form.prepareFormInputs(m)  # prepare the input types
+                                    result, genpoc = form.prepareFormInputs(m)  # prepare inputs as user 2
                                     r2 = Post(url, action, result)  # again make request with token values generated as user2
                                     # Go for token based entropy checks...
                                     try:
@@ -239,12 +244,12 @@ def Engine():  # lets begin it!
                                     try:
                                         form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                                     except IndexError:
-                                        verbout(R, 'Form Error')
+                                        verbout(R, 'Form Index Error')
                                         ErrorLogger(url, 'Form Index Error.')
                                         continue  # making sure program won't end here (dirty fix :( )
                                     verbout(GR, 'Preparing form inputs...')
-                                    contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 2 as user2
-                                    r3 = Post(url, action, contents2)  # make request as user3 with user2's form
+                                    contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 3 as user3
+                                    r3 = Post(url, action, contents2)  # make request as user3 with user3's form
                                     if POST_BASED and not query and not token:
                                         try:
                                             if m['name']:

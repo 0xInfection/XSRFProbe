@@ -12,6 +12,7 @@
 import stringdist
 import itertools, time
 from core.colors import *
+from .Entropy import calcEntropy
 from core.verbout import verbout
 from core.utils import sameSequence, byteString
 from files.discovered import REQUEST_TOKENS
@@ -37,8 +38,10 @@ def Analysis():
         for tokenx1, tokenx2 in itertools.combinations(REQUEST_TOKENS, 2):
             try:
                 verbout(GR, 'Analysing 2 Anti-CSRF Tokens from gathered requests...')
-                verbout(C, 'First Token: '+color.ORANGE+str(tokenx1))
-                verbout(C, 'Second Token: '+color.ORANGE+str(tokenx2))
+                verbout(C, 'First Token: '+color.ORANGE+tokenx1)
+                verbout(color.GREEN, ' [+] Shannon Entropy: %s' % (calcEntropy(tokenx1)))
+                verbout(C, 'Second Token: '+color.ORANGE+tokenx2)
+                verbout(color.GREEN, ' [+] Shannon Entropy: %s' % (calcEntropy(tokenx2)))
                 # Calculating the edit distance via Damerau Levenshtein algorithm
                 m = stringdist.rdlevenshtein(tokenx1, tokenx2)
                 verbout(color.CYAN, ' [+] Edit Distance Calculated: '+color.GREY+str(m)+'%')
@@ -60,40 +63,40 @@ def Analysis():
                 #
                 # The main idea behind this is to detect the static and dynamic part via DL Algorithm
                 # as discussed above by calculating edit distance.
+                p = sameSequence(tokenx1, tokenx2)
+                tokenx01 = tokenx1.replace(p,'')
+                tokenx02 = tokenx2.replace(p,'')
                 if n == 0.5 or m == len(tokenx1)/2:
                     verbout(GR, 'The tokens are composed of 2 parts (one static and other dynamic)... ')
-                    p = sameSequence(tokenx1, tokenx2)
-                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+str(len(p)))
-                    verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx1.replace(p,'')+color.END+' | Length: '+str(len(tokenx1.replace(p,''))))
-                    verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx2.replace(p,'')+color.END+' | Length: '+str(len(tokenx2.replace(p,''))))
+                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+color.CYAN+str(len(p)))
+                    verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx01+color.END+' | Length: '+color.CYAN+str(len(tokenx01)))
+                    verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx02+color.END+' | Length: '+color.CYAN+str(len(tokenx02)))
                     if len(len(tokenx1)/2) <= 6:
                         verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BR+' VULNERABLE '+color.END+'!')
                         print(color.RED+ ' [+] Possible CSRF Vulnerability Detected!')
                         print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
-                        print(color.GREY+' [+] Tokens can easily be '+color.RED+' Forged by Bruteforcing/Guessing '+color.END+'!')
+                        print(color.GREY+' [+] Tokens can easily be '+color.RED+'Forged by Bruteforcing/Guessing'+color.END+'!\n')
                         VulnLogger('Analysis', 'Tokens can easily be Forged by Bruteforcing/Guessing.', '[i] Token 1: '+tokenx1+'\n[i] Token 2: '+tokenx2)
                 elif n < 0.5 or m < len(tokenx1)/2:
                     verbout(R, 'Token distance calculated is '+color.RED+'less than 0.5!')
-                    p = sameSequence(tokenx1, tokenx2)
-                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+str(len(p)))
-                    verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx1.replace(p,'')+color.END+' | Length: '+str(len(tokenx1.replace(p,''))))
-                    verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx2.replace(p,'')+color.END+' | Length: '+str(len(tokenx2.replace(p,''))))
+                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+color.CYAN+str(len(p)))
+                    verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx01+color.END+' | Length: '+color.CYAN+str(len(tokenx01)))
+                    verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx02+color.END+' | Length: '+color.CYAN+str(len(tokenx02)))
                     verbout(color.RED,' [-] Post-Analysis reveals that token might be '+color.BR+' VULNERABLE '+color.END+'!')
                     print(color.GREEN+ ' [+] Possible CSRF Vulnerability Detected!')
                     print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' Weak Dynamic Part of Tokens '+color.END)
-                    print(color.GREY+' [+] Tokens can easily be '+color.RED+' Forged by Bruteforcing/Guessing '+color.END+'!')
+                    print(color.GREY+' [+] Tokens can easily be '+color.RED+'Forged by Bruteforcing/Guessing'+color.END+'!\n')
                     VulnLogger('Analysis', 'Tokens can easily be Forged by Bruteforcing/Guessing.', '[i] Token 1: '+tokenx1+'\n[i] Token 2: '+tokenx2)
                 else:
                     verbout(R, 'Token distance calculated is '+color.GREEN+'greater than 0.5!')
-                    p = sameSequence(tokenx1, tokenx2)
-                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+str(len(p)))
-                    verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx1.replace(p,'')+color.END+' | Length: '+str(len(tokenx1.replace(p,''))))
-                    verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx2.replace(p,'')+color.END+' | Length: '+str(len(tokenx2.replace(p,''))))
-                    verbout(color.GREEN,' [+] Post-Analysis reveals that token might be '+color.BG+' NOT VULNERABLE '+color.END+'!')
+                    verbout(C, 'Static Part : '+color.GREY+p+color.END+' | Length: '+color.CYAN+str(len(p)))
+                    verbout(O, 'Dynamic Part of Token 0x1: '+color.GREY+tokenx01+color.END+' | Length: '+color.CYAN+str(len(tokenx01)))
+                    verbout(O, 'Dynamic Part of Token 0x2: '+color.GREY+tokenx02+color.END+' | Length: '+color.CYAN+str(len(tokenx02)))
+                    verbout(color.GREEN,' [+] Post-Analysis reveals that tokens are '+color.BG+' NOT VULNERABLE '+color.END+'!')
                     print(color.ORANGE+' [!] Vulnerability Mitigation: '+color.BG+' Strong Dynamic Part of Tokens '+color.END)
-                    print(color.GREY+' [+] Tokens '+color.GREEN+' Cannot be Forged by Bruteforcing/Guessing '+color.END+'!')
+                    print(color.GREY+' [+] Tokens '+color.GREEN+'Cannot be Forged by Bruteforcing/Guessing'+color.END+'!\n')
                     NovulLogger('Analysis', 'Tokens cannot be Forged by Bruteforcing/Guessing.')
                 time.sleep(1)
             except KeyboardInterrupt:
                 continue
-        print('\n'+C+'Post-Scan Analysis Completed!')
+        print(C+'Post-Scan Analysis Completed!')
