@@ -23,6 +23,9 @@ def Token(req, headers):
     This method checks for whether Anti-CSRF Tokens are
                present in the request.
     '''
+    print(color.RED+'\n +---------------------------+')
+    print(color.RED+' |   Anti-CSRF Token Check   |')
+    print(color.RED+' +---------------------------+\n')
     param = ''  # Initializing param
     query = ''
     found = False
@@ -38,7 +41,7 @@ def Token(req, headers):
                     # Search if the token is there in request...
                     if name.lower() in qu[0].lower():
                         verbout(color.GREEN, ' [+] The form was requested with an '+color.BG+' Anti-CSRF Token '+color.END+color.GREEN+'!')
-                        verbout(color.GREY, ' [+] Token Parameter: '+color.CYAN+qu[0]+'='+qu[1]+' ...')
+                        verbout(color.GREY, ' [+] Token Parameter: '+color.CYAN+qu[0]+'='+color.ORANGE+qu[1])
                         query, param = qu[0], qu[1]
                         # We are appending the token to a variable for further analysis
                         REQUEST_TOKENS.append(param)
@@ -51,7 +54,7 @@ def Token(req, headers):
                         # Search if the token is there in request...
                         if name.lower() in key.lower():
                             verbout(color.GREEN, ' [+] The form was requested with an '+color.BG+' Anti-CSRF Token Header '+color.END+color.GREEN+'!')
-                            verbout(color.GREY, ' [+] Token Parameter: '+color.CYAN+qu[0]+'='+qu[1]+' ...')
+                            verbout(color.GREY, ' [+] Token Parameter: '+color.CYAN+qu[0]+'='+color.ORANGE+qu[1])
                             query, param = key, value
                             # We are appending the token to a variable for further analysis
                             REQUEST_TOKENS.append(param)
