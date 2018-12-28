@@ -13,6 +13,7 @@ from core.colors import *
 from ast import literal_eval
 from bs4 import BeautifulSoup
 from yattag import Doc, indent
+from core.verbout import verbout
 from files.config import OUTPUT_DIR
 from core.prettify import formPrettify
 from core.prettify import indentPrettify
