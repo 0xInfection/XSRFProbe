@@ -28,7 +28,7 @@ def Cookie(url, request):
             and the related security on them to
                     prevent CSRF attacks.
     '''
-    print(color.GREY+' [+] Proceeding for cookie based checks...')
+    verbout(GR, 'Proceeding for cookie based checks...')
     SameSite(url)
     Persistence(url, request)
 
@@ -37,6 +37,9 @@ def SameSite(url):
     This function parses and verifies the cookies with
                     SameSite Flags.
     '''
+    print(color.RED+'\n +------------------------------------+')
+    print(color.RED+' |   Cross Origin Cookie Validation   |')
+    print(color.RED+' +------------------------------------+\n')
     # Some Flags we'd need later...
     foundx1 = 0x00
     foundx2 = 0x00
