@@ -24,6 +24,9 @@ def Tamper(url, action, req, body, query, para):
           found and check the content length for related
                       vulnerabilities.
     '''
+    print(color.RED+'\n +---------------------------------------+')
+    print(color.RED+' |   Anti-CSRF Token Tamper Validation   |')
+    print(color.RED+' +---------------------------------------+\n')
     # Null char flags (hex)
     flagx1 = 0x00
     flagx2 = 0x00
@@ -95,7 +98,7 @@ def Tamper(url, action, req, body, query, para):
     verbout(GR, 'Tampering Token by '+color.GREY+'Token removal'+color.END+'...')
     # Removing the anti-csrf token from request
     del req[query]
-    verbout(G, 'Removed token from request!')
+    verbout(color.GREEN, ' [+] Removed token parameter from request!')
     # Lets build up the request...
     resp = Post(url, action, req)
 
