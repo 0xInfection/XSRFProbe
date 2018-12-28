@@ -203,8 +203,6 @@ def Engine():  # lets begin it!
                         verbout(O, 'Confirming endpoint request validation via '+color.GREY+'Origin'+color.END+' Checks...')
                         if Origin(url):
                             ori_detect = 0x01
-                    if COOKIE_BASED:
-                        Cookie(url)
                     # Now lets get the forms...
                     verbout(O, 'Retrieving all forms on ' +color.GREY+url+color.END+'...')
                     for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
@@ -224,12 +222,14 @@ def Engine():  # lets begin it!
                                     r1 = Post(url, action, result)  # make request with token values generated as user1
                                     result, genpoc = form.prepareFormInputs(m)  # prepare inputs as user 2
                                     r2 = Post(url, action, result)  # again make request with token values generated as user2
+                                    if COOKIE_BASED:
+                                        Cookie(url, r1)
                                     # Go for token based entropy checks...
                                     try:
                                         if m['name']:
-                                            query, token = Entropy(result, url, m.prettify(), m['action'], m['name'])
+                                            query, token = Entropy(result, url, r1.headers, m.prettify(), m['action'], m['name'])
                                     except KeyError:
-                                        query, token = Entropy(result, url, m.prettify(), m['action'])
+                                        query, token = Entropy(result, url, r1.headers, m.prettify(), m['action'])
                                         ErrorLogger(url, 'No standard form "name".')
                                     # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
                                     fnd, detct = Encoding(token)

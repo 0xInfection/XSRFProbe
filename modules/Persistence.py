@@ -28,9 +28,9 @@ def Persistence(url, postq):
     The main idea behind this is to check for Cookie
                     Persistence.
     '''
-    print(color.RED+'\n +-----------------------------------+')
-    print(color.RED+' |   Cookie Persistence Validation   |')
-    print(color.RED+' +-----------------------------------+\n')
+    verbout(color.RED, '\n +-----------------------------------+')
+    verbout(color.RED, ' |   Cookie Persistence Validation   |')
+    verbout(color.RED, ' +-----------------------------------+\n')
     # Checking if user has supplied a value.
     verbout(GR,'Proceeding to test for '+color.GREY+'Cookie Persistence'+color.END+'...')
     time.sleep(0.7)

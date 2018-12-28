@@ -24,9 +24,9 @@ def Encoding(val):
     found = 0x00
     if not val:
         return(found, None)
-    print(color.RED+'\n +------------------------------+')
-    print(color.RED+' |   Token Encoding Detection   |')
-    print(color.RED+' +------------------------------+\n')
+    verbout(color.RED, '\n +------------------------------+')
+    verbout(color.RED, ' |   Token Encoding Detection   |')
+    verbout(color.RED, ' +------------------------------+\n')
     verbout(GR, 'Proceeding to detect encoding of Anti-CSRF Token...')
     # So the idea right here is to detect whether the Anti-CSRF tokens
     # are encoded in some form or the other.

@@ -23,9 +23,9 @@ def Token(req, headers):
     This method checks for whether Anti-CSRF Tokens are
                present in the request.
     '''
-    print(color.RED+'\n +---------------------------+')
-    print(color.RED+' |   Anti-CSRF Token Check   |')
-    print(color.RED+' +---------------------------+\n')
+    verbout(color.RED, '\n +---------------------------+')
+    verbout(color.RED, ' |   Anti-CSRF Token Check   |')
+    verbout(color.RED, ' +---------------------------+\n')
     param = ''  # Initializing param
     query = ''
     found = False

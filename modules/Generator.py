@@ -24,9 +24,9 @@ def GenNormalPoC(action, fields, method='POST', encoding_type='application/x-www
      Generate a normal CSRF PoC using basic form data
     """
     print(GR, 'Generating normal PoC Form...' )
-    print(color.RED+'\n +---------------------+')
-    print(color.RED+' |   Normal Form PoC   |')
-    print(color.RED+' +---------------------+\n'+color.CYAN)
+    verbout(color.RED, '\n +---------------------+')
+    verbout(color.RED, ' |   Normal Form PoC   |')
+    verbout(color.RED, ' +---------------------+\n'+color.CYAN)
     # Main starting which we will use to generate form.
     with tag('html'):
         with tag('title'):
@@ -63,9 +63,9 @@ def GenMalicious(action, fields, method='POST', encoding_type='application/x-www
      Generate a malicious CSRF PoC using basic form data
     """
     print(GR, 'Generating malicious PoC Form...' )
-    print(color.RED+'\n +------------------------+')
-    print(color.RED+' |   Malicious Form PoC   |')
-    print(color.RED+' +------------------------+\n'+color.CYAN)
+    verbout(color.RED, '\n +------------------------+')
+    verbout(color.RED, ' |   Malicious Form PoC   |')
+    verbout(color.RED, ' +------------------------+\n'+color.CYAN)
     # Main starting which we will use to generate form.
     with tag('html'):
         with tag('title'):

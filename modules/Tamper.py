@@ -24,9 +24,9 @@ def Tamper(url, action, req, body, query, para):
           found and check the content length for related
                       vulnerabilities.
     '''
-    print(color.RED+'\n +---------------------------------------+')
-    print(color.RED+' |   Anti-CSRF Token Tamper Validation   |')
-    print(color.RED+' +---------------------------------------+\n')
+    verbout(color.RED, '\n +---------------------------------------+')
+    verbout(color.RED, ' |   Anti-CSRF Token Tamper Validation   |')
+    verbout(color.RED, ' +---------------------------------------+\n')
     # Null char flags (hex)
     flagx1 = 0x00
     flagx2 = 0x00

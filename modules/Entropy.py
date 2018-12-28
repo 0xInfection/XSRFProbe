@@ -54,6 +54,9 @@ def Entropy(req, url, headers, form, m_action, m_name=''):
                     'Form Requested Without Anti-CSRF Token.',
                     '[i] Form Requested: '+form+'\n[i] Request Query: '+req.__str__())
         return '', ''
+    verbout(color.RED, '\n +------------------------------+')
+    verbout(color.RED, ' |   Token Strength Detection   |')
+    verbout(color.RED, ' +------------------------------+\n')
     for para in REQUEST_TOKENS:
         # Coverting the token to a raw string, cause some special
         # chars might fu*k with the Shannon Entropy operation.

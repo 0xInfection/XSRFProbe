@@ -25,9 +25,9 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
         on basis of fuzzy string matching and comparison
             based on Ratcliff-Obershelp Algorithm.
     '''
-    print(color.RED+'\n +------------------------------+')
-    print(color.RED+' |   POST-Based Forgery Check   |')
-    print(color.RED+' +------------------------------+\n')
+    verbout(color.RED, '\n +------------------------------+')
+    verbout(color.RED, ' |   POST-Based Forgery Check   |')
+    verbout(color.RED, ' +------------------------------+\n')
     verbout(O, 'Matching response query differences...')
     checkdiffx1 = difflib.ndiff(r1.splitlines(1), r2.splitlines(1))  # check the diff noted
     checkdiffx2 = difflib.ndiff(r1.splitlines(1), r3.splitlines(1))  # check the diff noted

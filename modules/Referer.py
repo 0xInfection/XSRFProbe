@@ -21,9 +21,9 @@ def Referer(url):
     Check if the remote web application verifies the Referer before
                     processing the HTTP request.
     """
-    print(color.RED+'\n +--------------------------------------+')
-    print(color.RED+' |   Referer Based Request Validation   |')
-    print(color.RED+' +--------------------------------------+\n')
+    verbout(color.RED, '\n +--------------------------------------+')
+    verbout(color.RED, ' |   Referer Based Request Validation   |')
+    verbout(color.RED, ' +--------------------------------------+\n')
     # Make the request normally and get content
     verbout(O,'Making request on normal basis...')
     req0x01 = Get(url)

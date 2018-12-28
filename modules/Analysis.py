@@ -27,9 +27,9 @@ def Analysis():
     ctr = 0  # Counter variable set to 0
     # Checking if the no of tokens is greater than 1
     if len(REQUEST_TOKENS) > 1:
-        print(color.RED+'\n +--------------+')
-        print(color.RED+' |   Analysis   |')
-        print(color.RED+' +--------------+\n')
+        verbout(color.RED, '\n +--------------+')
+        verbout(color.RED, ' |   Analysis   |')
+        verbout(color.RED, ' +--------------+\n')
         print(GR+'Proceeding for post-scan analysis of tokens gathered...')
         verbout(G, 'A total of %s tokens was discovered during the scan' % (len(REQUEST_TOKENS)))
         # The idea behind this is to generate all possible combinations (not

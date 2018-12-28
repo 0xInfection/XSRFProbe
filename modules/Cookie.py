@@ -37,9 +37,9 @@ def SameSite(url):
     This function parses and verifies the cookies with
                     SameSite Flags.
     '''
-    print(color.RED+'\n +------------------------------------+')
-    print(color.RED+' |   Cross Origin Cookie Validation   |')
-    print(color.RED+' +------------------------------------+\n')
+    verbout(color.RED, '\n +------------------------------------+')
+    verbout(color.RED, ' |   Cross Origin Cookie Validation   |')
+    verbout(color.RED, ' +------------------------------------+\n')
     # Some Flags we'd need later...
     foundx1 = 0x00
     foundx2 = 0x00
