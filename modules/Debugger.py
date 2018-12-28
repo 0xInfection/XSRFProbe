@@ -55,19 +55,22 @@ class Form_Debugger():
             cr1['value'] = ''
             totcr.append(cr1)
 
-        verbout(GR, 'Processing'+color.BOLD+' <input type="hidden" name="...')  # get hidden input types
-        for m in form.findAll('input', {'name' : True, 'type' : 'hidden'}):
-            if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
-                value=m['value'].encode('utf8')  # make sure no encoding errors there
-            else:
-                value=randString()
-            cr_input[m['name']] = value  # assign passed on value
-            cr2={}
-            cr2['type'] = 'hidden'
-            cr2['name'] = m['name']
-            cr2['label'] = ''  # Nothing since its a hidden field
-            cr2['value'] = m['value']
-            totcr.append(cr2)
+        try:
+            verbout(GR, 'Processing'+color.BOLD+' <input type="hidden" name="...')  # get hidden input types
+            for m in form.findAll('input', {'name' : True, 'type' : 'hidden'}):
+                if re.search('value=', m.__str__(), re.IGNORECASE):   # Ignore case while searching for a match
+                    value=m['value']  # make sure no encoding errors there
+                else:
+                    value=randString()
+                cr_input[m['name']] = value  # assign passed on value
+                cr2={}
+                cr2['type'] = 'hidden'
+                cr2['name'] = m['name']
+                cr2['label'] = ''  # Nothing since its a hidden field
+                cr2['value'] = value
+                totcr.append(cr2)
+        except KeyboardInterrupt:
+            cr2['value'] = ''
 
         verbout(GR, 'Processing '+color.BOLD+'<input type="submit" name="...')  # get submit buttons :D
         for m in form.findAll('input', {'name' : True, 'type' : 'submit'}):
@@ -79,7 +82,7 @@ class Form_Debugger():
 
         verbout(GR, 'Processing'+color.BOLD+' <input type="checkbox" name="...')  # get checkbox type inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'checkbox'}):
-            if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
+            if re.search('value=', m.__str__(), re.IGNORECASE):   # Ignore case while searching for a match
                 value=m['value'].encode('utf8')  # make sure no encoding errors there
             else:
                 value=randString()  # assign passed on value

@@ -10,7 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 from time import sleep
-from re import finditer
+from re import search
 from core.colors import *
 from core.verbout import verbout
 from files.dcodelist import HASH_DB
@@ -21,8 +21,13 @@ def Encoding(val):
             Anti-CSRF tokens based on pre-defined
                     regular expressions.
     '''
-    verbout(GR, 'Proceeding to detect encoding of Anti-CSRF Token...')
     found = 0x00
+    if not val:
+        return(found, None)
+    print(color.RED+'\n +------------------------------+')
+    print(color.RED+' |   Token Encoding Detection   |')
+    print(color.RED+' +------------------------------+\n')
+    verbout(GR, 'Proceeding to detect encoding of Anti-CSRF Token...')
     # So the idea right here is to detect whether the Anti-CSRF tokens
     # are encoded in some form or the other.
     #
@@ -40,26 +45,26 @@ def Encoding(val):
         txt = hashcheck(h[0], h[1], val)
         if txt is not None:
             found = 0x01
-            verbout(color.RED, ' [+] Anti-CSRF Token is detected to be String Encoded!')
+            verbout(color.RED, '\n [+] Anti-CSRF Token is detected to be String Encoded!')
             print(color.GREEN+' [+] Token Encoding Detected: '+color.BG+' '+txt+' '+color.END)
             print(color.ORANGE+' [-] Endpoint likely '+color.BR+' VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks inspite of CSRF Tokens.')
             print(color.ORANGE+' [!] Vulnerability Type: '+color.BR+' String Encoded Anti-CSRF Tokens '+color.END)
             print(color.RED+' [-] The Tokens might be easily Decrypted and can be Forged!')
             break  # Break the execution if token encoding detected
     if found == 0x00:
-        print(color.RED+' [-] '+color.BR+' No Token Encoding Detected. '+color.END)
+        print(color.RED+'\n [-] '+color.BR+' No Token Encoding Detected. '+color.END, end='\n\n')
     sleep(0.8)
     return (found, txt)
 
 def hashcheck(hashtype, regexstr, data):
     try:
-        valid_hash = finditer(regexstr, data)
-        result = [match.group(0) for match in valid_hash]
-        if result:
+        print(O, 'Matching Encoding Type: %s' % (hashtype), end='\r', flush=True)
+        sleep(0.1)
+        if search(regexstr, data):
             return hashtype
-    except Exception:
+    except KeyboardInterrupt:
         pass
     return None
 
 #if __name__ == '__main__':
-#    Encoding('38c4658d5308897a92cef9e113aefc3a')
+ #   Encoding('38c4658d5308897a92cef9e113aefc3a')
