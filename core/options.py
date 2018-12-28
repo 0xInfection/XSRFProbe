@@ -159,10 +159,10 @@ if config.SITE_URL:
         config.OUTPUT_DIR = args.output+tld.get_fld(config.SITE_URL) + '/'
     else:
         try:
-            os.makedirs(tld.get_fld(config.SITE_URL))
+            os.makedirs('output/'+tld.get_fld(config.SITE_URL))
         except FileExistsError:
             pass
-        config.OUTPUT_DIR = tld.get_fld(config.SITE_URL) + '/'
+        config.OUTPUT_DIR = 'output/'+tld.get_fld(config.SITE_URL) + '/'
 
 if args.quiet:
     config.DEBUG = False
