@@ -22,17 +22,19 @@ from core.logger import VulnLogger, NovulLogger
 from urllib.parse import urlencode, unquote, urlsplit
 # Response storing list init
 resps = []
-found = 0x00
 
 def Persistence(url, postq):
     '''
     The main idea behind this is to check for Cookie
                     Persistence.
     '''
+    print(color.RED+'\n +-----------------------------------+')
+    print(color.RED+' |   Cookie Persistence Validation   |')
+    print(color.RED+' +-----------------------------------+\n')
     # Checking if user has supplied a value.
     verbout(GR,'Proceeding to test for '+color.GREY+'Cookie Persistence'+color.END+'...')
     time.sleep(0.7)
-
+    found = 0x00
     # Now let the real test begin...
     #
     # [Step 1]: Lets examine now whether cookies set by server are persistent or not.
@@ -42,6 +44,7 @@ def Persistence(url, postq):
     # First its time for GET type requests. Lets prepare our request.
     cookies = []
     verbout(C, 'Proceeding to test cookie persistence via '+color.CYAN+'Prepared GET Requests'+color.END+'...')
+    gen_headers = HEADER_VALUES
     gen_headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36'
     if COOKIE_VALUE:
         for cookie in COOKIE_VALUE:
@@ -58,8 +61,16 @@ def Persistence(url, postq):
                 # convert it a human readable format.
                 print(color.GREEN+' [+] Cookie Expiry Period: '+color.ORANGE+datetime.fromtimestamp(cook.expires).__str__())
                 found = 0x01
+                VulnLogger(url, 'Persistent Session Cookies Found.', '[i] Cookie: '+req.headers.get('Set-Cookie'))
+            else:
+                NovulLogger(url, 'No Persistent Session Cookies.')
+    if found == 0x00:
+        verbout(R, 'No persistent session cookies identified on GET Type Requests!')
     verbout(C, 'Proceeding to test cookie persistence on '+color.CYAN+'POST Requests'+color.END+'...')
     # Now its time for POST Based requests.
+    #
+    # NOTE: As a standard method, every web application should supply a cookie upon a POST query.
+    # It might or might not be in case of GET requests.
     if postq.cookies:
         for cookie in postq.cookies:
             if cookie.expires:
@@ -68,6 +79,14 @@ def Persistence(url, postq):
                 # So to decode this, we'd need to convert it a human readable format.
                 print(color.GREEN+' [+] Cookie Expiry Period: '+color.ORANGE+datetime.fromtimestamp(cookie.expires).__str__())
                 found = 0x01
+                VulnLogger(url, 'Persistent Session Cookies Found.', '[i] Cookie: '+req.headers.get('Set-Cookie'))
+                print(color.ORANGE+' [!] Probable Insecure Practice: '+color.BR+' Persistent Session Cookies '+color.END)
+            else:
+                NovulLogger(url, 'No Persistent Cookies.')
+    if found == 0x00:
+        verbout(R, 'No persistent session cookies identified upon POST Requests!')
+        print(color.GREEN+' [+] Endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to CSRF attacks!')
+        print(color.GREEN+' [+] Detected : '+color.BG+' No Persistent Cookies '+color.END)
 
     # [Step 2]: The idea here is to try to identify cookie persistence on basis of observing
     # variations in cases of using different user-agents. For this test we have chosen 5 different
@@ -104,6 +123,6 @@ def Persistence(url, postq):
         else:
             verbout(G,'Set-Cookie header changes with varied User-Agents...')
             verbout(R,'No possible persistent session cookies found...')
-            print(color.GREEN+' [+] Endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to CSRF attacks!')
-            print(color.GREEN+' [+] Protection Method Detected : '+color.BG+' No Persistent Cookies '+color.END)
+            print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to CSRF attacks!')
+            print(color.GREEN+' [+] Application Practice Method Detected : '+color.BG+' No Persistent Cookies '+color.END)
             NovulLogger(url, 'No Persistent Cookies.')

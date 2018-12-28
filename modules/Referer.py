@@ -21,7 +21,9 @@ def Referer(url):
     Check if the remote web application verifies the Referer before
                     processing the HTTP request.
     """
-
+    print(color.RED+'\n +--------------------------------------+')
+    print(color.RED+' |   Referer Based Request Validation   |')
+    print(color.RED+' +--------------------------------------+\n')
     # Make the request normally and get content
     verbout(O,'Making request on normal basis...')
     req0x01 = Get(url)
@@ -63,9 +65,9 @@ def Referer(url):
         NovulLogger(url, 'Presence of Referer Header based Request Validation.')
         return True
     else:
-        verbout(R,'Endpoint '+color.ORANGE+'Referer Validation Not Present'+color.END+'!')
+        verbout(R,'Endpoint '+color.RED+'Referer Validation Not Present'+color.END+'!')
         verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
-        print(color.ORANGE+' [+] Possible Vulnerability Type: '+color.BY+' Referer Based Request Forgery '+color.END)
+        print(color.ORANGE+' [+] Possible Vulnerability Type: '+color.BY+' No Referer Based Request Validation '+color.END)
         VulnLogger(url, 'No Referer Header based Request Validation presence.', '[i] Response Headers: '+str(req0x02.headers))
         return False
