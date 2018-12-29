@@ -38,9 +38,9 @@ def Analysis():
         for tokenx1, tokenx2 in itertools.combinations(REQUEST_TOKENS, 2):
             try:
                 verbout(GR, 'Analysing 2 Anti-CSRF Tokens from gathered requests...')
-                verbout(color.CYAN, 'First Token: '+color.BLUE+tokenx1)
+                verbout(color.CYAN, ' [+] First Token: '+color.BLUE+tokenx1)
                 verbout(color.ORANGE, ' [+] Shannon Entropy: '+color.GREEN+'%s' % (calcEntropy(tokenx1)))
-                verbout(color.CYAN, 'Second Token: '+color.BLUE+tokenx2)
+                verbout(color.CYAN, ' [+] Second Token: '+color.BLUE+tokenx2)
                 verbout(color.ORANGE, ' [+] Shannon Entropy: '+color.GREEN+'%s' % (calcEntropy(tokenx2)))
                 # Calculating the edit distance via Damerau Levenshtein algorithm
                 m = stringdist.rdlevenshtein(tokenx1, tokenx2)

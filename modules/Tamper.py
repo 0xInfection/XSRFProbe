@@ -15,6 +15,7 @@ from core.request import Post
 from files.config import *
 from core.verbout import verbout
 from core.utils import replaceStrIndex
+from files.paramlist import TOKEN_ERRORS
 from urllib.parse import urlencode, quote
 from core.logger import VulnLogger, NovulLogger
 
@@ -65,13 +66,14 @@ def Tamper(url, action, req, body, query, para):
     # request, then we have the vulnerability.
     #
     # NOTE: This algorithm has lots of room for improvement.
-    if str(resp.status_code).startswith('50'):
-        verbout(color.GREEN,' [+] Token tamper from request causes a 50x Internal Error!')
-        NovulLogger(url, 'Anti-CSRF Token tamper by index replacement does not return valid response.')
-    if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) or (len(body) == len(resp.text)):
+    if ((str(resp.status_code).startswith('2') and not any(search(s, resp.text, I) for s in TOKEN_ERRORS))
+        or (len(body) == len(resp.text))):
         verbout(color.RED,' [-] Anti-CSRF Token tamper by index replacement returns valid response!')
         flagx1 = 0x01
-        VulnLogger(url, 'Anti-CSRF Token tamper by index replacement returns valid response.', '[i] POST Query: '+str(req))
+        VulnLogger(url, 'Anti-CSRF Token tamper by index replacement returns valid response.', '[i] POST Query: '+req.__str__())
+    else:
+        verbout(color.RED,' [+] Token tamper in request does not return valid response!')
+        NovulLogger(url, 'Anti-CSRF Token tamper by index replacement does not return valid response.')
 
     # [Step 2]: Second we take the token and then remove a character
     # at a specific position and test the response body.
@@ -88,13 +90,14 @@ def Tamper(url, action, req, body, query, para):
     # (Accepted) or a 30x (Redirection), then we know it worked.
     #
     # NOTE: This algorithm has lots of room for improvement.
-    if str(resp.status_code).startswith('50'):
-        verbout(color.RED,' [+] Token tamper from request causes a 50x Internal Error!')
-        NovulLogger(url, 'Anti-CSRF Token tamper by index removal does not return valid response.')
-    if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) or (len(body) == len(resp.text)):
+    if ((str(resp.status_code).startswith('2') and not any(search(s, resp.text, I) for s in TOKEN_ERRORS))
+        or (len(body) == len(resp.text))):
         verbout(color.RED,' [-] Anti-CSRF Token tamper by index removal returns valid response!')
         flagx2 = 0x01
-        VulnLogger(url, 'Anti-CSRF Token tamper by index removal returns valid response.', '[i] POST Query: '+str(req))
+        VulnLogger(url, 'Anti-CSRF Token tamper by index removal returns valid response.', '[i] POST Query: '+req.__str__())
+    else:
+        verbout(color.RED,' [+] Token tamper in request does not return valid response!')
+        NovulLogger(url, 'Anti-CSRF Token tamper by index removal does not return valid response.')
 
     # [Step 3]: Third we take the token and then remove the whole
     # anticsrf token and test the response body.
@@ -110,13 +113,14 @@ def Tamper(url, action, req, body, query, para):
     # (Accepted) or a 30x (Redirection), then we know it worked.
     #
     # NOTE: This algorithm has lots of room for improvement.
-    if str(resp.status_code).startswith('50'):
-        verbout(color.RED,' [+] Token removal from request causes a 50x Internal Error!')
-        NovulLogger(url, 'Anti-CSRF Token on removal does not return valid response.')
-    if (str(resp.status_code).startswith('2') and str(resp.status_code).startswith('3')) or (len(body) == len(resp.text)):
-        verbout(color.RED,' [-] Anti-CSRF Token removal from request returns valid response!')
+    if ((str(resp.status_code).startswith('2') and not any(search(s, resp.text, I) for s in TOKEN_ERRORS))
+        or (len(body) == len(resp.text))):
+        verbout(color.RED,' [-] Anti-CSRF Token removal returns valid response!')
         flagx3 = 0x01
-        VulnLogger(url, 'Anti-CSRF Token on removal returns valid response.', '[i] POST Query: '+str(req))
+        VulnLogger(url, 'Anti-CSRF Token removal returns valid response.', '[i] POST Query: '+req.__str__())
+    else:
+        verbout(color.RED,' [+] Token tamper in request does not return valid response!')
+        NovulLogger(url, 'Anti-CSRF Token removal does not return valid response.')
 
     # If any of the forgeries worked...
     if (flagx1 or flagx2 or flagx3) == 0x01:
