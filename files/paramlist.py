@@ -18,6 +18,7 @@ COMMON_CSRF_NAMES = (
                     # These are a list of known common tokens parameters
                     'CSRFName',                   # OWASP CSRF_Guard
                     'CSRFToken',                  # OWASP CSRF_Guard
+                    'csrf_token',                 # PHP NoCSRF Class
                     'anticsrf',                   # AntiCsrfParam.java
                     '__RequestVerificationToken', # ASP.NET TokenParam
                     'VerificationToken',          # AntiCSRFParam.java
@@ -26,6 +27,8 @@ COMMON_CSRF_NAMES = (
                     'authenticity_token',         # Ruby on Rails
                     'csrf_param',                 # Ruby on Rails
                     'TransientKey',               # VanillaForums Param
+                    'csrf',                       # PHP CSRFProtect
+                    'AntiCSURF',                  # Anti CSURF (PHP)
                     'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
                     'yii_anticsrf'                # http://www.yiiframework.com/
                     '[_token]',                   # Symfony 2.x
@@ -40,7 +43,6 @@ COMMON_CSRF_NAMES = (
                     #
                     # TODO: Add more similar csrf token parameters
                     'token',
-                    'csrf',
                     'authenticity',
                     'auth_token',
                     'auth',
@@ -91,3 +93,27 @@ EXCLUSIONS_LIST = (
                     'osCsid',
                     'action=logout',
                 )
+
+# List of common errors shown when token is tampered.
+TOKEN_ERRORS = (
+                    'the required form field',
+                    'token could not be decrypted',
+                    'invalid token',
+                    'wrong',
+                    'error',
+                    'not valid',
+                    'please check your request',
+                    'your browser did something unexpected',
+                    'clearing your cookies',
+                    'tampered token',
+                    'null',
+                    'unacceptable',
+                    'false',
+                    'void',
+                    'incorrect',
+                    'inoperative',
+                    'faulty',
+                    'absurd',
+                    'inconsistent',
+                    'not acceptable',
+            )
