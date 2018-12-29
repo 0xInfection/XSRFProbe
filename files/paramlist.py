@@ -22,7 +22,7 @@ COMMON_CSRF_NAMES = (
                     'anticsrf',                   # AntiCsrfParam.java
                     '__RequestVerificationToken', # ASP.NET TokenParam
                     'VerificationToken',          # AntiCSRFParam.java
-                    'form_build-id',              # Drupal CMS AntiCSRF
+                    'form_build_id',              # Drupal CMS AntiCSRF
                     'nonce',                      # WordPress Nonce
                     'authenticity_token',         # Ruby on Rails
                     'csrf_param',                 # Ruby on Rails
