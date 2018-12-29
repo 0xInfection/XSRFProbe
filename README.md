@@ -50,7 +50,7 @@ Lets see some real-world scenarios of XSRFProbe in action:
 
 <img src="https://i.imgur.com/AAE1HrE.gif" width=50% /><img src="https://i.imgur.com/TJt103P.gif" width=50% />
 <img src="https://i.imgur.com/yzyvXHX.gif" />
-<img src="https://i.imgur.com/99ylYPC.gif" width=50% /><img src="https://i.imgur.com/gcfZ9zQ.gif" width=50% />
+<img src="https://i.imgur.com/MhTucgI.gif" width=50% /><img src="https://i.imgur.com/gcfZ9zQ.gif" width=50% />
 
 ### Version and License:
 XSRFProbe v2 release is a stable release and is licensed under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
