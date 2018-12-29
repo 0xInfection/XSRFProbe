@@ -61,7 +61,7 @@ def Entropy(req, url, headers, form, m_action, m_name=''):
         # Coverting the token to a raw string, cause some special
         # chars might fu*k with the Shannon Entropy operation.
         value = r'%s' % para
-        verbout(color.CYAN, ' [!] Testing Anti-CSRF Token: %s' % (value))
+        verbout(color.CYAN, ' [!] Testing Anti-CSRF Token: '+color.ORANGE+'%s' % (value))
         # Check length
         if len(value) <= min_length:
             print(color.RED+' [-] CSRF Token Length less than 5 bytes. '+color.ORANGE+'Token value can be guessed/bruteforced...')
@@ -81,7 +81,7 @@ def Entropy(req, url, headers, form, m_action, m_name=''):
         verbout(color.BLUE, ' [+] Entropy Calculated: '+color.CYAN+str(entropy))
         if entropy >= min_entropy:
             verbout(color.ORANGE,' [+] Anti-CSRF Token Entropy Calculated is '+color.BY+' GREATER than 2.4 '+color.END+'... ')
-            print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to CSRF Attacks...')
+            print(color.GREEN+' [+] Endpoint '+color.BG+' PROBABLY NOT VULNERABLE '+color.END+color.GREEN+' to CSRF Attacks...')
             print(color.GREEN+' [!] CSRF Mitigation Method: '+color.BG+' High Entropy Anti-CSRF Tokens '+color.END)
             NovulLogger(url, 'High Entropy Anti-CSRF Tokens.')
             found = 0x01
@@ -107,7 +107,7 @@ def Entropy(req, url, headers, form, m_action, m_name=''):
         # Print out the params
         print(color.ORANGE+' [+] Query : '+color.GREY+urllib.parse.urlencode(result))
         print('')
-    return _q, para  # Return the query paramter and anti-csrf token
+    return (_q, para)  # Return the query paramter and anti-csrf token
 
 def calcEntropy(data):
     """
