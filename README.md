@@ -21,7 +21,7 @@
 ### About XSRFProbe
 __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)) (CSRF/XSRF) Audit and Exploitation Toolkit. Equipped with a Powerful Crawling Engine and Numerous Systematic Checks, it is now able to detect most cases of CSRF vulnerabilities, their related bypasses and futher generate (maliciously) exploitable proof of concepts with each found vulnerability. For more info on how XSRFProbe works, see [XSRFProbe Internals](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals) on [wiki](https://github.com/0xInfection/XSRFProbe/wiki/). This release is a stable release.
 
-<img src="https://i.imgur.com/zY5INSF.png" alt="xsrf-logo">
+<img src="https://i.imgur.com/xTrfWSt.gif" alt="xsrf-logo">
 <p align="center">
   <a href="https://github.com/0xinfection/xsrfprobe/wiki">Wiki</a> •
   <a href="https://github.com/0xinfection/xsrfprobe/wiki/Getting-Started">Getting Started</a> •
@@ -48,9 +48,9 @@ __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/
 ### Gallery:
 Lets see some real-world scenarios of XSRFProbe in action:
 
-<img src="https://i.imgur.com/nstnADG.png" width=50% /><img src="https://i.imgur.com/kCWW1eH.png" width=50% />
-<img src="https://i.imgur.com/BsfYN2v.png"/>
-<img src="https://i.imgur.com/wBDju0z.png" width=50% /><img src="https://i.imgur.com/IDImFZm.png" width=50% />
+<img src="https://i.imgur.com/AAE1HrE.gif" width=50% /><img src="https://i.imgur.com/TJt103P.gif" width=50% />
+<img src="https://i.imgur.com/yzyvXHX.gif" />
+<img src="https://i.imgur.com/99ylYPC.gif" width=50% /><img src="https://i.imgur.com/gcfZ9zQ.gif" width=50% />
 
 ### Version and License:
 XSRFProbe v2 release is a stable release and is licensed under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
