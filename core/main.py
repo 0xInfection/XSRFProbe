@@ -36,8 +36,8 @@ from core.inputin import inputin
 from core.request import Get, Post
 from core.verbout import verbout
 from core.prettify import formPrettify
-from core.forms import form10, form20
 from core.banner import banner, banabout
+from core.forms import testFormx1, testFormx2
 from core.logger import ErrorLogger, GetLogger
 from core.logger import VulnLogger, NovulLogger
 
@@ -68,8 +68,8 @@ def Engine():  # lets begin it!
     banner()  # Print the banner
     banabout()  # The second banner
     web, fld = inputin()  # Take the input
-    form1 = form10()  # Get the form 1 ready
-    form2 = form20()  # Get the form 2 ready
+    form1 = testFormx1()  # Get the form 1 ready
+    form2 = testFormx2()  # Get the form 2 ready
     # For the cookies that we encounter during requests...
     Cookie0 = http.cookiejar.CookieJar()  # First as User1
     Cookie1 = http.cookiejar.CookieJar()  # Then as User2
@@ -155,7 +155,7 @@ def Engine():  # lets begin it!
                                 NovulLogger(url, 'Anti-CSRF token is not a string encoded value.')
                             # Go for token parameter tamper checks.
                             if (query and token):
-                                Tamper(url, action, result, r2.text, query, token)
+                                txor = Tamper(url, action, result, r2.text, query, token)
                             o2 = resp2.open(url).read()  # make request as user2
                             try:
                                 form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
@@ -166,7 +166,7 @@ def Engine():  # lets begin it!
                             verbout(GR, 'Preparing form inputs...')
                             contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 3 as user3
                             r3 = Post(url, action, contents2)  # make request as user3 with user3's form
-                            if POST_BASED and not query and not token:
+                            if (POST_BASED) and ((not query) or (txor)):
                                 try:
                                     if m['name']:
                                         PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify(), m['name'])
@@ -239,7 +239,7 @@ def Engine():  # lets begin it!
                                         NovulLogger(url, 'Anti-CSRF token is not a string encoded value.')
                                     # Go for token parameter tamper checks.
                                     if (query and token):
-                                        Tamper(url, action, result, r2.text, query, token)
+                                        txor = Tamper(url, action, result, r2.text, query, token)
                                     o2 = resp2.open(url).read()  # make request as user2
                                     try:
                                         form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
@@ -250,7 +250,7 @@ def Engine():  # lets begin it!
                                     verbout(GR, 'Preparing form inputs...')
                                     contents2, genpoc = form.prepareFormInputs(form2)  # prepare for form 3 as user3
                                     r3 = Post(url, action, contents2)  # make request as user3 with user3's form
-                                    if POST_BASED and not query and not token:
+                                    if (POST_BASED) and ((query == '') or (txor == True)):
                                         try:
                                             if m['name']:
                                                 PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify(), m['name'])
