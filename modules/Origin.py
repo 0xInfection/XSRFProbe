@@ -60,13 +60,13 @@ def Origin(url):
     if len(req0x01.content) != len(req0x02.content):
         verbout(color.GREEN,' [+] Endoint '+color.ORANGE+'Origin Validation'+color.GREEN+' Present!')
         print(color.GREEN+' [-] Heuristics reveal endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+'...')
-        print(color.ORANGE+' [+] Mitigation Method: '+color.BG+' Origin Based Request Validation '+color.END)
+        print(color.ORANGE+' [+] Mitigation Method: '+color.BG+' Origin Based Request Validation '+color.END+'\n')
         NovulLogger(url, 'Presence of Origin Header based request Validation.')
         return True
     else:
         verbout(R,'Endpoint '+color.RED+'Origin Validation Not Present'+color.END+'!')
         verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
-        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No Origin Based Request Validation '+color.END)
+        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No Origin Based Request Validation '+color.END+'\n')
         VulnLogger(url, 'No Origin Header based request validation presence.', '[i] Response Headers: '+str(req0x02.headers))
         return False
