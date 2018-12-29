@@ -5,9 +5,9 @@
 #    XSRF Probe     #
 #-:-:-:-:-:-:-::-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-from core import main  # import all stuff
-main.Engine()  # the true start of the program ;)
+from core import main  # import stuff
+main.Engine()  # start the Scanner Engine ;)

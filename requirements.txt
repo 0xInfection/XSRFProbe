@@ -1,5 +1,6 @@
 requests
 bs4
-lxml
 request
 stringdist
+tld
+yattag

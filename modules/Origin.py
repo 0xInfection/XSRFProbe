@@ -5,7 +5,7 @@
 #    XSRF Probe     #
 #-:-:-:-:-:-:-::-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -15,13 +15,16 @@ from files.config import *
 from core.verbout import verbout
 from core.request import Get
 from core.randua import RandomAgent
+from core.logger import VulnLogger, NovulLogger
 
 def Origin(url):
     """
     Check if the remote web application verifies the Origin before
                     processing the HTTP request.
     """
-
+    verbout(color.RED, '\n +-------------------------------------+')
+    verbout(color.RED, ' |   Origin Based Request Validation   |')
+    verbout(color.RED, ' +-------------------------------------+\n')
     # Make the request normally and get content
     verbout(O,'Making request on normal basis...')
     req0x01 = Get(url)
@@ -38,7 +41,7 @@ def Origin(url):
             gen_headers['Cookie'] = cookie
 
     # Make the request with different Origin header and get the content
-    verbout(O,'Making request with tampered headers...')
+    verbout(O,'Making request with '+color.CYAN+'Tampered Origin Header'+color.END+'...')
     req0x02 = Get(url, headers=gen_headers)
 
     # Comparing the length of the requests' responses. If both content
@@ -57,11 +60,13 @@ def Origin(url):
     if len(req0x01.content) != len(req0x02.content):
         verbout(color.GREEN,' [+] Endoint '+color.ORANGE+'Origin Validation'+color.GREEN+' Present!')
         print(color.GREEN+' [-] Heuristics reveal endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+'...')
-        print(color.ORANGE+' [+] Mitigation Method: '+color.BG+' Origin Based Request Validation '+color.END)
+        print(color.ORANGE+' [+] Mitigation Method: '+color.BG+' Origin Based Request Validation '+color.END+'\n')
+        NovulLogger(url, 'Presence of Origin Header based request Validation.')
         return True
     else:
-        verbout(R,'Endpoint '+color.ORANGE+'Origin Validation Not Present'+color.END+'!')
+        verbout(R,'Endpoint '+color.RED+'Origin Validation Not Present'+color.END+'!')
         verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
-        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' Origin Based Request Forgery '+color.END)
+        print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No Origin Based Request Validation '+color.END+'\n')
+        VulnLogger(url, 'No Origin Header based request validation presence.', '[i] Response Headers: '+str(req0x02.headers))
         return False

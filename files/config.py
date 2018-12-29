@@ -5,7 +5,7 @@
 #    XSRF Probe     #
 #-:-:-:-:-:-:-::-:-:#
 
-# Author: @_tID
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
@@ -14,13 +14,21 @@
 # Lets assign some global variables...
 global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALUE
 global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
+global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR
+global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS, GEN_MALICIOUS
 
 # Site Url to be scanned (Required)
 SITE_URL = ''
 
+# Switch for whether to crawl the site or not
+CRAWL_SITE = False
+
 # Print out verbose (turn it off for only brief outputs).
 # Turning off is Highly Discouraged, since you will miss what the tool is doing.
 DEBUG = True
+
+# Debug level of the output (beta test feature)
+DEBUG_LEVEL = 3
 
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
 USER_AGENT_RANDOM = False
@@ -125,6 +133,14 @@ DISPLAY_HEADERS = False
 # Option for controlling post-scan analysis. Turning it off
 # results in not analysing the tokens gathered.
 SCAN_ANALYSIS = True
+
+# Option to skip PoC Form Generation of POST_BASED Request Forgeries.
+# The form will not be generated.
+POC_GENERATION = True
+
+# Option whether or not to generate a malicious CSRF form with all
+# hidden fields.
+GEN_MALICIOUS = False
 
 # A list of file extensions that might be come across while scanning
 # and crawling

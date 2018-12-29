@@ -9,42 +9,42 @@
 #This module requires XSRF-Probe
 #https://github.com/0xInfection/XSRF-Probe
 
-def form10(): # an example form to make sure the stuff works properly ;)
+def testFormx1(): # an example xsrfprobe-test-form to make sure the stuff works properly ;)
 
-    form0x01 = """<form action="/drupal/?q=node&amp;destination=node"  accept-charset="UTF-8" method="post" id="user-login-form">
-    <div><div class="form-item" id="edit-name-wrapper">
-     <label for="edit-name">Username: <span class="form-required" title="This field is required.">*</span></label>
-     <input type="text" maxlength="60" name="name" id="edit-name" size="15" value="test1" class="form-text required" />
+    test_form_0x01 = """<form action="/somendpoint" method="post" id="xsrfprobe-xsrfprobe-test-form">
+    <div><div class="xsrfprobe-test-form-item" id="edit-name-wrapper">
+     <label for="edit-name">Username: <span class="xsrfprobe-test-form-required" title="This field is required.">*</span></label>
+     <input type="text" maxlength="60" name="name" id="edit-name" size="15" value="test1" class="xsrfprobe-test-form-text required" />
     </div>
-    <div class="form-item" id="edit-pass-wrapper">
-     <label for="edit-pass">Password: <span class="form-required" title="This field is required.">*</span></label>
-     <input type="password" value="a9z8e7" name="pass" id="edit-pass"  maxlength="60"  size="15"  class="form-text required" />
+    <div class="xsrfprobe-test-form-item" id="edit-pass-wrapper">
+     <label for="edit-pass">Password: <span class="xsrfprobe-test-form-required" title="This field is required.">*</span></label>
+     <input type="password" value="a9z8e7" name="pass" id="edit-pass"  maxlength="60"  class="xsrfprobe-test-form-text required" />
     </div>
-    <input type="submit" name="op" id="edit-submit" value="Log in"  class="form-submit" />
-    <div class="item-list"><ul><li class="first"><a href="/drupal/?q=user/register" title="Create a new user account.">Create new account</a></li>
-    <li class="last"><a href="/drupal/?q=user/password" title="Request new password via e-mail.">Request new password</a></li>
-    </ul></div><input type="hidden" name="form_build_id" id="form-6a060c0861888b7321fab4f5ac6cb908" value="form-6a060c0861888b7321fab4f5ac6cb908"  />
-    <input type="hidden" name="form_id" id="edit-user-login-block" value="user_login_block"  />
+    <input type="submit" name="op" id="edit-submit" value="Log in"  class="xsrfprobe-test-form-submit" />
+    <div class="item-list"><ul><li class="first"><a href="/somednpoint/register" title="Create a new user account.">Create new account</a></li>
+    <li class="last"><a href="/somendpoint/tho" title="Request new password via e-mail.">Request new password</a></li>
+    </ul></div><input type="hidden" name="xsrfprobe-test-form_build_id" id="xsrfprobe-test-form-6ab908" value="xsrfprobe-test-form-6a060cc6cb908"  />
+    <input type="hidden" name="xsrfprobe-test-form_id" id="edit-xsrfprobe-block" value="user_login_block"  />
     </div></form> """
 
-    return form0x01
+    return test_form_0x01
 
-def form20(): # an example of a form (used drupal)
+def testFormx2(): # an example of a xsrfprobe-test-form (used drupal)
 
-    form0x02 = """<form action="/drupal/?q=node&amp;destination=node"  accept-charset="UTF-8" method="post" id="user-login-form">
-    <div><div class="form-item" id="edit-name-wrapper">
-     <label for="edit-name">Username: <span class="form-required" title="This field is required.">*</span></label>
-     <input type="text" maxlength="60" name="name" id="edit-name" size="15" value="test2" class="form-text required" />
+    test_form_0x02 = """<form action="/somendpoint" method="post" id="xsrfprobe-xsrfprobe-test-form">
+    <div><div class="xsrfprobe-test-form-item" id="edit-name-wrapper">
+     <label for="edit-name">Username: <span class="xsrfprobe-test-form-required" title="This field is required.">*</span></label>
+     <input type="text" maxlength="60" name="name" id="edit-name" size="15" value="test2" class="xsrfprobe-test-form-text required" />
     </div>
-    <div class="form-item" id="edit-pass-wrapper">
-     <label for="edit-pass">Password: <span class="form-required" title="This field is required.">*</span></label>
-     <input type="password" value="a9z8e7" name="pass" id="edit-pass"  maxlength="60"  size="15"  class="form-text required" />
+    <div class="xsrfprobe-test-form-item" id="edit-pass-wrapper">
+     <label for="edit-pass">Password: <span class="xsrfprobe-test-form-required" title="This field is required.">*</span></label>
+     <input type="password" value="a9z8e7" name="pass" id="edit-pass"  maxlength="60"  size="15"  class="xsrfprobe-test-form-text required" />
     </div>
-    <input type="submit" name="op" id="edit-submit" value="Log in"  class="form-submit" />
-    <div class="item-list"><ul><li class="first"><a href="/drupal/?q=user/register" title="Create a new user account.">Create new account</a></li>
-    <li class="last"><a href="/drupal/?q=user/password" title="Request new password via e-mail.">Request new password</a></li>
-    </ul></div><input type="hidden" name="form_build_id" id="form-6a060c0861888b7321fab4f5ac6cb908" value="form-6a060c0861888b7321fab4f5ac6cb908"  />
-    <input type="hidden" name="form_id" id="edit-user-login-block" value="user_login_block"  />
+    <input type="submit" name="op" id="edit-submit" value="Log in"  class="xsrfprobe-test-form-submit" />
+    <div class="item-list"><ul><li class="first"><a href="/somednpoint/register" title="Create a new user account.">Create new account</a></li>
+    <li class="last"><a href="/somendpoint/tho" title="Request new password via e-mail.">Request new password</a></li>
+    </ul></div><input type="hidden" name="xsrfprobe-test-form_build_id" id="xsrfprobe-test-form-6a060cc6cb908" value="xsrfprobe-test-form-6a060cc6cb908"  />
+    <input type="hidden" name="xsrfprobe-test-form_id" id="edit-xsrfprobe-block" value="user_login_block"  />
     </div></form> """
 
-    return form0x02
+    return test_form_0x02
