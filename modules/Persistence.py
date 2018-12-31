@@ -118,7 +118,7 @@ def Persistence(url, postq):
             verbout(G, 'Set-Cookie header does not change with varied User-Agents...')
             verbout(color.GREEN, ' [+] Possible persistent session cookies found...')
             print(color.RED+ ' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-            print(color.ORANGE+' [!] Probable Insecure Practice: '+color.BR+' Persistent Session Cookies '+color.END)
+            print(color.ORANGE+' [!] Probable Insecure Practice: '+color.BY+' Persistent Session Cookies '+color.END)
             VulnLogger(url, 'Persistent Session Cookies Found.', '[i] Cookie: '+req.headers.get('Set-Cookie'))
         else:
             verbout(G,'Set-Cookie header changes with varied User-Agents...')
