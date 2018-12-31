@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://github.com/0xinfection"><img src="https://i.imgur.com/eFOCPuV.png" alt="XSRFProbe"></a>
+  <a href="https://github.com/0xinfection"><img src="https://i.imgur.com/9R5cXB6.png" alt="XSRFProbe"></a>
 </h1>
 
 <p align="center">  
