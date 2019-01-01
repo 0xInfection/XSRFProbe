@@ -18,12 +18,12 @@
   </a>
 </p>
 
-### About XSRFProbe
+### About [XSRFProbe](https://github.com/0xinfection/xsrfprobe/wiki/)
 __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)) (CSRF/XSRF) Audit and Exploitation Toolkit. Equipped with a Powerful Crawling Engine and Numerous Systematic Checks, it is now able to detect most cases of CSRF vulnerabilities, their related bypasses and futher generate (maliciously) exploitable proof of concepts with each found vulnerability. For more info on how XSRFProbe works, see [XSRFProbe Internals](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals) on [wiki](https://github.com/0xInfection/XSRFProbe/wiki/). This release is a stable release.
 
 <img src="https://i.imgur.com/xTrfWSt.gif" alt="xsrf-logo">
 <p align="center">
-  <a href="https://github.com/0xinfection/xsrfprobe/wiki">Wiki</a> •
+  <a href="https://github.com/0xinfection/xsrfprobe/wiki">XSRFProbe Wiki</a> •
   <a href="https://github.com/0xinfection/xsrfprobe/wiki/Getting-Started">Getting Started</a> •
   <a href="https://github.com/0xinfection/xsrfprobe/wiki/General-Usage">General Usage</a> •
   <a href="https://github.com/0xinfection/xsrfprobe/wiki/Advanced-Usage">Advanced Usage</a> •
@@ -33,9 +33,9 @@ __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/
 
 ### Some Features:
 
-- [x] Has a powerful crawler which features continuous crawling and scanning.
 - [x] Performs [several types of checks](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#types-of-checks) before declaring an endpoint as vulnerable.
 - [x] Can detect several types of Anti-CSRF tokens in POST requests.
+- [x] Features a powerful crawler which features continuous crawling and scanning.
 - [x] Out of the box support for custom cookie values and generic headers.
 - [x] Accurate [Token-Strength Detection](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#token-randomness-calculation) and [Analysis](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#post-scan-token-analysis) using various algorithms.
 - [x] Can generate both normal as well as maliciously exploitable CSRF PoCs.
