@@ -123,6 +123,6 @@ def Persistence(url, postq):
         else:
             verbout(G,'Set-Cookie header changes with varied User-Agents...')
             verbout(R,'No possible persistent session cookies found...')
-            print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to CSRF attacks!')
-            print(color.GREEN+' [+] Application Practice Method Detected : '+color.BG+' No Persistent Cookies '+color.END)
+            print(color.GREEN+' [+] Endpoint '+color.BG+' PROBABLY NOT VULNERABLE '+color.END+color.GREEN+' to CSRF attacks!')
+            print(color.ORANGE+' [+] Application Practice Method Detected : '+color.BG+' No Persistent Cookies '+color.END)
             NovulLogger(url, 'No Persistent Cookies.')

@@ -12,7 +12,7 @@
 # This file contains various regex expressions for detecting the
 # encoding type of strings.
 
-# Token hash encoding detection regex database
+# Token hash encoding detection db, thanks to a book, Python for Penetation Testers, LOL!
 HASH_DB = (
             ("Blowfish (Eggdrop)", r"^\+[a-zA-Z0-9\/\.]{12}$"),
             ("Blowfish (OpenBSD)", r"^\$2a\$[0-9]{0,2}?\$[a-zA-Z0-9\/\.]{53}$"),
@@ -45,6 +45,7 @@ HASH_DB = (
             ("EPiServer 6.x < v4", r"^\$episerver\$\*0\*[a-zA-Z0-9]{22}==\*[a-zA-Z0-9\+]{27}$"),
             ("EPiServer 6.x >= v4", r"^\$episerver\$\*1\*[a-zA-Z0-9]{22}==\*[a-zA-Z0-9]{43}$"),
             ("Cisco IOS SHA256", r"^[a-zA-Z0-9]{43}$"),
+            ("oRACLE 11g/12c", r"^(S:)?[a-f0-9]{40}(:)?[a-f0-9]{20}$"),
             ("SHA-1 (Django)", r"^sha1\$.{0,32}\$[a-fA-F0-9]{40}$"),
             ("SHA-1 crypt", r"^\$4\$[a-zA-Z0-9./]{8}\$[a-zA-Z0-9./]{1,}$"),
             ("SHA-1 (Hex)", r"^[a-fA-F0-9]{40}$"),
@@ -59,6 +60,7 @@ HASH_DB = (
             ("SHA-512 (Unix)", r"^\$6\$.{0,22}\$[a-zA-Z0-9\/\.]{86}$"),
             ("SHA-384", r"^[a-fA-F0-9]{96}$"),
             ("SHA-512", r"^[a-fA-F0-9]{128}$"),
+            ("SipHash", r"^[a-f0-9]{16}:2:4:[a-f0-9]{32}$"),
             ("SSHA-1", r"^({SSHA})?[a-zA-Z0-9\+\/]{32,38}?(==)?$"),
             ("SSHA-1 (Base64)", r"^\{SSHA\}[a-zA-Z0-9]{32,38}?(==)?$"),
             ("SSHA-512 (Base64)", r"^\{SSHA512\}[a-zA-Z0-9+]{96}$"),
@@ -69,8 +71,10 @@ HASH_DB = (
             ("OSX v10.7", r"^[a-fA-F0-9]{136}$"),
             ("OSX v10.8", r"^\$ml\$[a-fA-F0-9$]{199}$"),
             ("SAM (LM_Hash:NT_Hash)", r"^[a-fA-F0-9]{32}:[a-fA-F0-9]{32}$"),
-            ("MSSQL (2000)", r"^0x0100[a-f0-9]{0,8}?[a-f0-9]{80}$"), (
-            "MSSQL (2005)", r"^0x0100[a-f0-9]{0,8}?[a-f0-9]{40}$"),
+            ("MSSQL (2000)", r"^0x0100[a-f0-9]{0,8}?[a-f0-9]{80}$"),
+            ("Cisco Type 7", r"^[a-f0-9]{4,}$"),
+            ("Snefru-256", r"^(\\$snefru\\$)?[a-f0-9]{64}$"),
+            ("MSSQL (2005)", r"^0x0100[a-f0-9]{0,8}?[a-f0-9]{40}$"),
             ("MSSQL (2012)", r"^0x02[a-f0-9]{0,10}?[a-f0-9]{128}$"),
             ("TIGER-160 (HMAC)", r"^[a-f0-9]{40}$"),
             ("SHA-256", r"^[a-fA-F0-9]{64}$"),

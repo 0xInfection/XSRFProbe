@@ -29,7 +29,7 @@ required.add_argument('-u', '--url', help='Main URL to test', dest='url')
 
 # Optional Arguments (main stuff and necessary)
 optional.add_argument('-c', '--cookie', help='Cookie value to be requested with each successive request. If there are multiple cookies, separate them with commas. For example: `-c PHPSESSID=i837c5n83u4, _gid=jdhfbuysf`.', dest='cookie')
-optional.add_argument('-o', '--output', help='Output directory where files to be stored. Default is the`files` folder where all files generated will be stored.', dest='output')
+optional.add_argument('-o', '--output', help='Output directory where files to be stored. Default is the output/ folder where all files generated will be stored.', dest='output')
 optional.add_argument('-d', '--delay', help='Time delay between requests in seconds. Default is zero.', dest='delay', type=float)
 optional.add_argument('-q', '--quiet', help='Set the DEBUG mode to quiet. Report only when vulnerabilities are found. Minimal output will be printed on screen. ', dest='quiet', action='store_true')
 optional.add_argument('-v', '--verbose', help='Increase the verbosity of the output (e.g., -vv is more than -v). ', dest='verbose', action='store_true')
