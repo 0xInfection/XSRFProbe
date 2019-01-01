@@ -31,7 +31,7 @@ def inputin():
         print(R+'Site seems to be down...')
         quit()
     try:
-        print(O+'Testing '+color.CYAN+web.split('//')[1].replace(web0,'')+color.END+' endpoint status...')
+        print(O+'Testing '+color.CYAN+web.split('//')[1].split('/', 1)[1]+color.END+' endpoint status...')
         requests.get(web)
         print(color.GREEN+' [+] Endpoint seems to be up!'+color.END)
     except requests.exceptions.MissingSchema as e:
