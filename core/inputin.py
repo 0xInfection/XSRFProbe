@@ -12,16 +12,19 @@
 import socket, requests
 from tld import get_fld
 from core.colors import *
+from core.verbout import verbout
 from files.config import SITE_URL, CRAWL_SITE
 
 def inputin():
-
+    '''
+    This module actually parses the url passed by the user.
+    '''
     if SITE_URL:
         web = SITE_URL # If already assigned
-
     if 'http' not in web: # add protocol to site
         web = 'http://' + web
-
+    if not web.endswith('/'):
+        web = web + '/'
     web0 = get_fld(web)
     try:
         print(O+'Testing site '+color.GREY+web0+color.END+' status...')
