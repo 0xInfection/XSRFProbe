@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/badge/Python-3.x-green.svg">
   </a>
   <a href="https://github.com/0xinfection/XSRFProbe/releases">
-    <img src="https://img.shields.io/badge/Version-v2.0.0%20(stable)-blue.svg">
+    <img src="https://img.shields.io/badge/Version-v2.0%20(stable)-blue.svg">
   </a>
   <a href="https://github.com/0xinfection/XSRFProbe/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-GPLv3-orange.svg">
@@ -53,7 +53,7 @@ Lets see some real-world scenarios of XSRFProbe in action:
 <img src="https://i.imgur.com/MhTucgI.gif" width=50% /><img src="https://i.imgur.com/gcfZ9zQ.gif" width=50% />
 
 ### Version and License:
-XSRFProbe v2 release is a stable release and is licensed under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
+XSRFProbe v2.0 release is now a stable release and the work is licensed under the [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ### Warnings:
 
@@ -67,7 +67,7 @@ Test on a disposable/dummy setup/site!
 Usage of XSRFProbe for testing websites without prior mutual consistency can be considered as an illegal activity. It is the final user's responsibility to obey all applicable local, state and federal laws. The author assumes no liability and is not exclusively responsible for any misuse or damage caused by this program.
 
 ### Author's Words:
-This project is based __entirely upon my own research and my own experience with web applications__ on Cross-Site Request Forgery attacks. Useful [pull requests](https://github.com/0xInfection/XSRFProbe/wiki/Contributing), [ideas and issues](https://github.com/0xInfection/XSRFProbe/wiki/Contributing) are highly welcome. If you wish to see what how XSRFProbe is being developed, check out the [Development Board](https://github.com/0xInfection/XSRFProbe/projects/1). 
+This project is based __entirely upon my own research and my own experience with web applications__ on Cross-Site Request Forgery attacks. You can try going through the source code which is highly documented to help you understand how this toolkit was built. Useful requests](https://github.com/0xInfection/XSRFProbe/wiki/Contributing), [ideas and issues](https://github.com/0xInfection/XSRFProbe/wiki/Contributing) are highly welcome. If you wish to see what how XSRFProbe is being developed, check out the [Development Board](https://github.com/0xInfection/XSRFProbe/projects/1). 
 
 Thats it folks. Thank you...
 
