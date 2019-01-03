@@ -45,16 +45,16 @@ def inputin():
             ErrorLogger(url, e.__str__())
             quit()
         except requests.exceptions.HTTPError as e:  # if error
-            verbout(R, "HTTP Error : "+main_url)
-            ErrorLogger(main_url, e.__str__())
+            verbout(R, "HTTP Error : "+url)
+            ErrorLogger(url, e.__str__())
             quit()
         except requests.exceptions.ConnectionError as e:
-            verbout(R, 'Connection Aborted : '+main_url)
-            ErrorLogger(main_url, e.__str__())
+            verbout(R, 'Connection Aborted : '+url)
+            ErrorLogger(url, e.__str__())
             quit()
         except Exception as e:
             verbout(R, "Exception Caught: "+e.__str__())
-            ErrorLogger(main_url, e.__str__())
+            ErrorLogger(url, e.__str__())
             quit()  # if at all nothing happens :(
     if not web0.endswith('/'):
         web0 = web0 + '/'
