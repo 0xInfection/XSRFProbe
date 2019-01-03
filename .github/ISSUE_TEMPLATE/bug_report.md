@@ -24,7 +24,7 @@ labels:
 #### Some Questions
 <!-- Please check the boxes with "x" like `[x]`. -->
 - [ ] I am using the latest version of XSFRProbe.
-- [ ] I installed the dependecies using `pip3` instead of `pip`
+- [ ] I installed the dependecies using `pip3` instead of `pip`.
 - [ ] I have read the documentation before submitting this issue.
 - [ ] I have checked the other issues to see if someone reported this before.
 
