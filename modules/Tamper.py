@@ -68,7 +68,7 @@ def Tamper(url, action, req, body, query, para):
     # NOTE: This algorithm has lots of room for improvement.
     if ((str(resp.status_code).startswith('2') and not any(search(s, resp.text, I) for s in TOKEN_ERRORS))
         or (len(body) == len(resp.text))):
-        verbout(color.RED,' [-] Anti-CSRF Token tamper by index replacement returns valid response!')
+        verbout(color.RED,' [-] Anti-CSRF Token tamper by '+color.GREY+'index replacement'+color.RED+' returns valid response!')
         flagx1 = 0x01
         VulnLogger(url, 'Anti-CSRF Token tamper by index replacement returns valid response.', '[i] POST Query: '+req.__str__())
     else:
@@ -92,7 +92,7 @@ def Tamper(url, action, req, body, query, para):
     # NOTE: This algorithm has lots of room for improvement.
     if ((str(resp.status_code).startswith('2') and not any(search(s, resp.text, I) for s in TOKEN_ERRORS))
         or (len(body) == len(resp.text))):
-        verbout(color.RED,' [-] Anti-CSRF Token tamper by index removal returns valid response!')
+        verbout(color.RED,' [-] Anti-CSRF Token tamper by '+color.GREY+'index removal'+color.RED+' returns valid response!')
         flagx2 = 0x01
         VulnLogger(url, 'Anti-CSRF Token tamper by index removal returns valid response.', '[i] POST Query: '+req.__str__())
     else:
@@ -115,7 +115,7 @@ def Tamper(url, action, req, body, query, para):
     # NOTE: This algorithm has lots of room for improvement.
     if ((str(resp.status_code).startswith('2') and not any(search(s, resp.text, I) for s in TOKEN_ERRORS))
         or (len(body) == len(resp.text))):
-        verbout(color.RED,' [-] Anti-CSRF Token removal returns valid response!')
+        verbout(color.RED,' [-] Anti-CSRF'+color.GREY+' Token removal'+color.RED+' returns valid response!')
         flagx3 = 0x01
         VulnLogger(url, 'Anti-CSRF Token removal returns valid response.', '[i] POST Query: '+req.__str__())
     else:
