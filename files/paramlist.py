@@ -30,7 +30,7 @@ COMMON_CSRF_NAMES = (
                     'csrf',                       # PHP CSRFProtect
                     'AntiCSURF',                  # Anti CSURF (PHP)
                     'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
-                    'yii_anticsrf'                # http://www.yiiframework.com/
+                    'yii_anticsrf',               # http://www.yiiframework.com/
                     '[_token]',                   # Symfony 2.x
                     '_csrf_token',                # Symfony 1.4
                     'csrfmiddlewaretoken',        # Django 1.5
