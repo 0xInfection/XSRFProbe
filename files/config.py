@@ -33,12 +33,14 @@ DEBUG_LEVEL = 3
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
 USER_AGENT_RANDOM = False
 
-# User-Agent to be used (If COOKIE_VALUE supplied)
+# User-Agent to be used (If COOKIE_VALUE supplied).
+#
+# This is standard User-Agent emulating Chrome 68 on Windows 10 
 #
 # NOTE: This is a precaution in case the cookie value is supplied,
 # if the user-agent gets changed from time to time, the remote
 # application might trigger up some protection agents
-USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)'
+USER_AGENT = 'Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US) AppleWebKit/604.1.38 (KHTML, like Gecko) Chrome/68.0.3325.162'
 
 # Cookie value to be sent alongwith the requests. This option is particularly
 # needed for a wholesome check on CSRFs. Since for a basic successful CSRF attack
