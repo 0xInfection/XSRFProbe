@@ -53,7 +53,7 @@ Lets see some real-world scenarios of XSRFProbe in action:
 <img src="https://i.imgur.com/MhTucgI.gif" width=50% /><img src="https://i.imgur.com/gcfZ9zQ.gif" width=50% />
 
 ### Version and License:
-XSRFProbe v2.0 release is now a stable release and the work is licensed under the [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
+XSRFProbe v2.0 release is now a stable release and the work is licensed under the [GPL v3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ### Warnings:
 
