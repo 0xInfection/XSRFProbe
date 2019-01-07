@@ -43,31 +43,12 @@ COMMON_CSRF_NAMES = (
                     #
                     # TODO: Add more similar csrf token parameters
                     'token',
-                    'authenticity',
-                    'auth_token',
                     'auth',
-                    'anti_csrf',
+                    'hash',
                     'debug_token',
-                    'csrf_value',
-                    '_debugval',
-                    'csrf_token',
-                    '__authvalue',
-                    '__token',
-                    '__auth',
                     'secret',
-                    'timestamp_id',
-                    'auth_id',
-                    'timestamp_secret',
-                    'csrf_id',
-                    '__csrf',
-                    'dts_id',
-                    'req_id',
-                    '_id',
-                    'request_id',
-                    'sessionid',
-                    '_sessionid',
-                    'debug_id',
-                    'vtoken'
+                    'timestamp',
+                    'id',
                 )
 
 COMMON_CSRF_HEADERS = (
