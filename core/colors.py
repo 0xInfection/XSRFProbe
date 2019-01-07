@@ -34,5 +34,11 @@ if os.name != 'nt' and os.name != 'mac':
     
 else:
     class color:
-        END=BOLD=RED=GREEN=ORANGE=BLUE=PURPLE=UNDERLINE=CYAN=GREY=BR=BG=BY=''  # no escape sequences 
-    O = R = GR = G = C = ''  # no color values
+        # no escape sequences 
+        END=BOLD=RED=GREEN=ORANGE=BLUE=PURPLE=UNDERLINE=CYAN=GREY=BR=BG=BY=''
+    # no color values
+    O = ' [!] ' 
+    R = ' [-] '
+    GR = ' [*] '
+    G = ' [+] '
+    C = ' [+] '
