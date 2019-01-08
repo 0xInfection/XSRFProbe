@@ -53,6 +53,11 @@ def Post(url, action, data):
         verbout(R, 'Connection Aborted : '+main_url)
         ErrorLogger(main_url, e.__str__())
         return None
+    except requests.exceptions.ReadTimeout as e:
+        verbout(R, 'Exception at: '+color.GREY+url)
+        verbout(R, 'Error: Read Timeout. Consider increasing the timeout value via --timeout.')
+        ErrorLogger(url, e.__str__())
+        return None
     except ValueError as e:  # again if valuerror
         verbout(R, "Value Error : "+main_url)
         ErrorLogger(main_url, e.__str__())
@@ -87,15 +92,20 @@ def Get(url, headers=headers):
         verbout(R, 'Error: Invalid URL Format')
         ErrorLogger(url, e.__str__())
         return None
+    except requests.exceptions.ReadTimeout as e:
+        verbout(R, 'Exception at: '+color.GREY+url)
+        verbout(R, 'Error: Read Timeout. Consider increasing the timeout value via --timeout.')
+        ErrorLogger(url, e.__str__())
+        return None
     except requests.exceptions.HTTPError as e:  # if error
-        verbout(R, "HTTP Error : "+main_url)
-        ErrorLogger(main_url, e.__str__())
+        verbout(R, "HTTP Error Encountered : "+main_url)
+        ErrorLogger(url, e.__str__())
         return None
     except requests.exceptions.ConnectionError as e:
         verbout(R, 'Connection Aborted : '+main_url)
-        ErrorLogger(main_url, e.__str__())
+        ErrorLogger(url, e.__str__())
         return None
     except Exception as e:
         verbout(R, "Exception Caught: "+e.__str__())
-        ErrorLogger(main_url, e.__str__())
+        ErrorLogger(url, e.__str__())
         return None  # if at all nothing happens :(
