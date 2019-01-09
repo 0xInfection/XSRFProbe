@@ -11,10 +11,11 @@
 
 # Importing stuff
 import argparse, sys, tld
-import urllib.parse, os
+import urllib.parse, os, re
 from files import config
 from core.colors import R, G
 from core.updater import updater
+from files.dcodelist import IP
 
 # Processing command line arguments
 parser = argparse.ArgumentParser('python3 xsrfprobe.py')
@@ -149,20 +150,38 @@ if args.randagent:
     config.USER_AGENT = ''
 
 if config.SITE_URL:
-    if args.output:
-        # If output directory is mentioned...
-        try:
-            if not os.path.exists(args.output+tld.get_fld(config.SITE_URL)):
-                os.makedirs(args.output+tld.get_fld(config.SITE_URL))
-        except FileExistsError:
-            pass
-        config.OUTPUT_DIR = args.output+tld.get_fld(config.SITE_URL) + '/'
-    else:
-        try:
-            os.makedirs('output/'+tld.get_fld(config.SITE_URL))
-        except FileExistsError:
-            pass
-        config.OUTPUT_DIR = 'output/'+tld.get_fld(config.SITE_URL) + '/'
+    try:
+        if args.output:
+            # If output directory is mentioned...
+            try:
+                if not os.path.exists(args.output+tld.get_fld(config.SITE_URL)):
+                    os.makedirs(args.output+tld.get_fld(config.SITE_URL))
+            except FileExistsError:
+                pass
+            config.OUTPUT_DIR = args.output+tld.get_fld(config.SITE_URL) + '/'
+        else:
+            try:
+                os.makedirs('output/'+tld.get_fld(config.SITE_URL))
+            except FileExistsError:
+                pass
+            config.OUTPUT_DIR = 'output/'+tld.get_fld(config.SITE_URL) + '/'
+    # When this exception turns out, we know the user has supplied a IP not domain
+    except tld.exceptions.TldDomainNotFound:
+        direc = re.search(IP, config.SITE_URL).group(0)
+        if args.output:
+            # If output directory is mentioned...
+            try:
+                if not os.path.exists(args.output+direc):
+                    os.makedirs(args.output+direc)
+            except FileExistsError:
+                pass
+            config.OUTPUT_DIR = args.output+direc + '/'
+        else:
+            try:
+                os.makedirs('output/'+direc)
+            except FileExistsError:
+                pass
+            config.OUTPUT_DIR = 'output/'+direc + '/'        
 
 if args.quiet:
     config.DEBUG = False
