@@ -9,10 +9,10 @@
 #This module requires XSRF-Probe
 #https://github.com/0xInfection/XSRF-Probe
 
-import socket, requests
-from tld import get_fld
 from core.colors import *
+import socket, requests, tld, re
 from core.verbout import verbout
+from files.dcodelist import IP
 from files.config import SITE_URL, CRAWL_SITE
 
 def inputin():
@@ -25,7 +25,10 @@ def inputin():
         web = 'http://' + web
     if not web.endswith('/'):
         web = web + '/'
-    web0 = get_fld(web)
+    try:
+        web0 = tld.get_fld(web)
+    except tld.exceptions.TldDomainNotFound:
+        web0 = re.search(IP, web).group(0)
     try:
         print(O+'Testing site '+color.GREY+web0+color.END+' status...')
         socket.gethostbyname(web0) # test whether site is up or not
