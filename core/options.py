@@ -151,7 +151,6 @@ if args.randagent:
 
 if config.SITE_URL:
     try:
-        print(config.SITE_URL)
         if args.output:
             # If output directory is mentioned...
             try:
