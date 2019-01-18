@@ -113,16 +113,21 @@ def Persistence(url, postq):
                 for cookie in COOKIE_VALUE:
                     gen_headers['Cookie'] = cookie
             req = Get(url, headers=gen_headers)
-            resps.append(req.headers.get('Set-Cookie'))
-        if checkDuplicates(resps):
-            verbout(G, 'Set-Cookie header does not change with varied User-Agents...')
-            verbout(color.GREEN, ' [+] Possible persistent session cookies found...')
-            print(color.RED+' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-            print(color.ORANGE+' [!] Probable Insecure Practice: '+color.BY+' Persistent Session Cookies '+color.END)
-            VulnLogger(url, 'Persistent Session Cookies Found.', '[i] Cookie: '+req.headers.get('Set-Cookie'))
+            # We will append this to stuff only when set-cookie is being supplied.
+            if req.headers.get('Set-Cookie'):
+                resps.append(req.headers.get('Set-Cookie'))
+        if resps:
+            if checkDuplicates(resps):
+                verbout(G, 'Set-Cookie header does not change with varied User-Agents...')
+                verbout(color.GREEN, ' [+] Possible persistent session cookies found...')
+                print(color.RED+' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
+                print(color.ORANGE+' [!] Probable Insecure Practice: '+color.BY+' Persistent Session Cookies '+color.END)
+                VulnLogger(url, 'Persistent Session Cookies Found.', '[i] Cookie: '+req.headers.get('Set-Cookie'))
+            else:
+                verbout(G,'Set-Cookie header changes with varied User-Agents...')
+                verbout(R,'No possible persistent session cookies found...')
+                verbout(color.GREEN, ' [+] Endpoint '+color.BG+' PROBABLY NOT VULNERABLE '+color.END+color.GREEN+' to CSRF attacks!')
+                verbout(color.ORANGE, ' [+] Application Practice Method Detected : '+color.BG+' No Persistent Cookies '+color.END)
+                NovulLogger(url, 'No Persistent Cookies.')
         else:
-            verbout(G,'Set-Cookie header changes with varied User-Agents...')
-            verbout(R,'No possible persistent session cookies found...')
-            verbout(color.GREEN, ' [+] Endpoint '+color.BG+' PROBABLY NOT VULNERABLE '+color.END+color.GREEN+' to CSRF attacks!')
-            verbout(color.ORANGE, ' [+] Application Practice Method Detected : '+color.BG+' No Persistent Cookies '+color.END)
-            NovulLogger(url, 'No Persistent Cookies.')
+            verbout(R, 'No cookies are being set on any requests.')
