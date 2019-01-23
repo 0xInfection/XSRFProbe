@@ -16,9 +16,6 @@
   <a href="https://travis-ci.org/0xInfection/XSRFProbe">
     <img src="https://img.shields.io/badge/Build-Passing-brightgreen.svg?logo=travis">
   </a>
-  <a href="https://codecov.io/gh/0xInfection/XSRFProbe">
-    <img src="https://codecov.io/gh/0xInfection/XSRFProbe/branch/master/graph/badge.svg" />
-  </a>
 </p>
 
 ### About [XSRFProbe](https://github.com/0xinfection/xsrfprobe/wiki/)
