@@ -18,8 +18,8 @@ labels:
 [Do you know what could be causing the problem or how to fix it?]
 
 #### Environment:
-- OS: [e.g. Kali Rolling 2018.2]
-- Python version: [e.g. v3.7]
+- __OS__: [e.g. Kali Rolling 2018.2]
+- __Python version__: [e.g. v3.7]
 
 #### Some Questions
 <!-- Please check the boxes with "x" like `[x]`. -->
