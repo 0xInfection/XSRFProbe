@@ -291,6 +291,6 @@ def Engine():  # lets begin it!
         ErrorLogger('KeyBoard Interrupt', 'Aborted')
         GetLogger()  # The scanning has interrupted, so now we can log out all the links ;)
         quit()
-#    except Exception as e:
- #       verbout(R, e.__str__())
-  #      ErrorLogger(url, e)
+    except Exception as e:
+        verbout(R, e.__str__())
+        ErrorLogger(url, e)
