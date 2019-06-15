@@ -56,7 +56,7 @@ USER_AGENT = 'Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US) AppleWebKit/604.1
 # NOTE: If this value is not supplied, XSRFProbe will only scan for simple
 # cookies which the tool might encounter while making requests, especially
 # POST requests.
-COOKIE_VALUE = []
+COOKIE_VALUE = ''
 
 # Header values to be used (Modify it as per your need)
 HEADER_VALUES = {
