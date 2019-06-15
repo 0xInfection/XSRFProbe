@@ -6,13 +6,14 @@
 #-:-:-:-:-:-:-::-:-:#
 
 #Author: 0xInfection (@_tID)
-#This module requires XSRF-Probe
-#https://github.com/0xInfection/XSRF-Probe
+#This module requires XSRFProbe
+#https://github.com/0xInfection/XSRFProbe
 
 from core.colors import *
 import socket, requests, tld, re
 from core.verbout import verbout
 from files.dcodelist import IP
+from logger import ErrorLogger
 from files.config import SITE_URL, CRAWL_SITE
 
 def inputin():
@@ -43,22 +44,22 @@ def inputin():
             requests.get(web)
             print(color.GREEN+' [+] Endpoint seems to be up!'+color.END)
         except requests.exceptions.MissingSchema as e:
-            verbout(R, 'Exception at: '+color.GREY+url)
+            verbout(R, 'Exception at: '+color.GREY+web0)
             verbout(R, 'Error: Invalid URL Format')
-            ErrorLogger(url, e.__str__())
+            ErrorLogger(web0, e.__str__())
             quit()
-        except requests.exceptions.HTTPError as e:  # if error
-            verbout(R, "HTTP Error : "+url)
-            ErrorLogger(url, e.__str__())
+        except requests.exceptions.HTTPError as e:
+            verbout(R, "HTTP Error: "+web0)
+            ErrorLogger(web0, e.__str__())
             quit()
         except requests.exceptions.ConnectionError as e:
-            verbout(R, 'Connection Aborted : '+url)
-            ErrorLogger(url, e.__str__())
+            verbout(R, 'Connection Aborted: '+web0)
+            ErrorLogger(web0, e.__str__())
             quit()
         except Exception as e:
             verbout(R, "Exception Caught: "+e.__str__())
-            ErrorLogger(url, e.__str__())
-            quit()  # if at all nothing happens :(
+            ErrorLogger(web0, e.__str__())
+            quit()
     if not web0.endswith('/'):
         web0 = web0 + '/'
     if web.split('//')[1] == web0:
