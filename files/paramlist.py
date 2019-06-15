@@ -78,7 +78,7 @@ EXCLUSIONS_LIST = (
 # List of common errors shown when token is tampered.
 TOKEN_ERRORS = (
                     'the required form field',
-                    'token could not be decrypted',
+                    'token could not',
                     'invalid token',
                     'wrong',
                     'error',
