@@ -98,14 +98,14 @@ def Get(url, headers=headers):
         ErrorLogger(url, e.__str__())
         return None
     except requests.exceptions.HTTPError as e:  # if error
-        verbout(R, "HTTP Error Encountered : "+main_url)
+        verbout(R, "HTTP Error Encountered : "+url)
         ErrorLogger(url, e.__str__())
         return None
     except requests.exceptions.ConnectionError as e:
-        verbout(R, 'Connection Aborted : '+main_url)
+        verbout(R, 'Connection Aborted : '+url)
         ErrorLogger(url, e.__str__())
         return None
     except Exception as e:
         verbout(R, "Exception Caught: "+e.__str__())
         ErrorLogger(url, e.__str__())
-        return None  # if at all nothing happens :(
+        return None
