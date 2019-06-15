@@ -98,5 +98,6 @@ def Analysis():
                     NovulLogger('Analysis', 'Tokens cannot be Forged by Bruteforcing/Guessing.')
                 time.sleep(1)
             except KeyboardInterrupt:
+                ctr+=1
                 continue
         print(C+'Post-Scan Analysis Completed!')

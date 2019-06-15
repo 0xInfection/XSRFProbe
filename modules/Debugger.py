@@ -133,4 +133,4 @@ def randString():  # generate random strings
     return ''.join(Random().sample(string.ascii_letters, TOKEN_GENERATION_LENGTH))  # any chars to be generated as form field inputs
 
 def getAllForms(soup):  # get all forms
-    return soup.findAll('form', method=re.compile("post", re.IGNORECASE))  # duh...
+    return soup.findAll('form', method=re.compile("post", re.IGNORECASE))  # get forms with post method only
