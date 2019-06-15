@@ -13,7 +13,7 @@ from core.colors import *
 import socket, requests, tld, re
 from core.verbout import verbout
 from files.dcodelist import IP
-from logger import ErrorLogger
+from .logger import ErrorLogger
 from files.config import SITE_URL, CRAWL_SITE
 
 def inputin():
