@@ -30,9 +30,9 @@ class Form_Debugger():
         verbout(GR, 'Processing '+color.BOLD+'<input type="text" name="...')  # get name type inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'text'}):
             if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
-                value=m['value'].encode('utf8')  # make sure no encoding errors there
+                value = m['value'].encode('utf8')  # make sure no encoding errors there
             else:
-                value=randString()
+                value = TEXT_VALUE
             cr_input[m['name']] = value  # assign passed on value
             cr0 = {}
             cr0['type'] = 'text'
@@ -41,12 +41,12 @@ class Form_Debugger():
             cr0['value'] = ''
             totcr.append(cr0)
 
-        verbout(GR, 'Processing'+color.BOLD+' <input type="password" name="...')  # get password inputs
-        for m in form.findAll('input', {'name' : True, 'type' : 'password'}):
+        verbout(GR, 'Processing'+color.BOLD+' <input type="email" name="...')  # get password inputs
+        for m in form.findAll('input', {'name' : True, 'type' : 'email'}):
             if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
-                value=m['value'].encode('utf8')  # make sure no encoding errors there
+                value = m['value'].encode('utf8')  # make sure no encoding errors there
             else:
-                value=randString()
+                value = EMAIL_VALUE
             cr_input[m['name']] = value  # assign passed on value
             cr1={}
             cr1['type'] = 'password'
@@ -55,69 +55,83 @@ class Form_Debugger():
             cr1['value'] = ''
             totcr.append(cr1)
 
+        verbout(GR, 'Processing'+color.BOLD+' <input type="password" name="...')  # get password inputs
+        for m in form.findAll('input', {'name' : True, 'type' : 'password'}):
+            if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
+                value = m['value'].encode('utf8')  # make sure no encoding errors there
+            else:
+                value = randString()
+            cr_input[m['name']] = value  # assign passed on value
+            cr2={}
+            cr2['type'] = 'password'
+            cr2['name'] = m['name']
+            cr2['label'] = 'Password'
+            cr2['value'] = ''
+            totcr.append(cr2)
+
         try:
             verbout(GR, 'Processing'+color.BOLD+' <input type="hidden" name="...')  # get hidden input types
             for m in form.findAll('input', {'name' : True, 'type' : 'hidden'}):
                 if re.search('value=', m.__str__(), re.IGNORECASE):   # Ignore case while searching for a match
-                    value=m['value']  # make sure no encoding errors there
+                    value = m['value'].encode('utf8')  # make sure no encoding errors there
                 else:
-                    value=randString()
+                    value = TEXT_VALUE
                 cr_input[m['name']] = value  # assign passed on value
-                cr2={}
-                cr2['type'] = 'hidden'
-                cr2['name'] = m['name']
-                cr2['label'] = ''  # Nothing since its a hidden field
-                cr2['value'] = value
-                totcr.append(cr2)
-        except KeyboardInterrupt:
-            cr2['value'] = ''
+                cr3={}
+                cr3['type'] = 'hidden'
+                cr3['name'] = m['name']
+                cr3['label'] = ''  # Nothing since its a hidden field
+                cr3['value'] = value
+        except KeyError:
+            cr3['value'] = ''
+        totcr.append(cr3)
 
         verbout(GR, 'Processing '+color.BOLD+'<input type="submit" name="...')  # get submit buttons :D
         for m in form.findAll('input', {'name' : True, 'type' : 'submit'}):
             if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
-                value=m['value'].encode('utf8')  # make sure no encoding errors there
+                value = m['value'].encode('utf8')  # make sure no encoding errors there
             else:
-                value=randString()
+                value = 'Submit'
             cr_input[m['name']] = value  # assign passed on value
 
         verbout(GR, 'Processing'+color.BOLD+' <input type="checkbox" name="...')  # get checkbox type inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'checkbox'}):
             if re.search('value=', m.__str__(), re.IGNORECASE):   # Ignore case while searching for a match
-                value=m['value'].encode('utf8')  # make sure no encoding errors there
+                value = m['value'].encode('utf8')  # make sure no encoding errors there
             else:
-                value=randString()  # assign passed on value
+                value = randString()  # assign passed on value
             cr_input[m['name']] = value  # assign discovered value
-            cr3={}
-            cr3['type'] = 'checkbox'
-            cr3['name'] = m['name']
-            cr3['label'] = m['name'].title()
-            cr3['value'] = ''
-            totcr.append(cr3)
+            cr4={}
+            cr4['type'] = 'checkbox'
+            cr4['name'] = m['name']
+            cr4['label'] = m['name'].title()
+            cr4['value'] = ''
+            totcr.append(cr4)
 
         verbout(GR, 'Processing'+color.BOLD+' <input type="radio" name="...')  # get radio buttons :D
         listRadio = []
-        for m in form.findAll('input', {'name' : True,'type' : 'radio'}):
+        for m in form.findAll('input', {'name' : True, 'type' : 'radio'}):
             if (not m['name'] in listRadio) and re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
                 listRadio.append(m['name'])
                 cr_input[m['name']] = value.encode('utf8')  # make sure no encoding errors there
-                cr4={}
-                cr4['type'] = 'radio'
-                cr4['name'] = m['name']
-                cr4['label'] = m['name'].title()
-                cr4['value'] = ''
-                totcr.append(cr4)
+                cr5={}
+                cr5['type'] = 'radio'
+                cr5['name'] = m['name']
+                cr5['label'] = m['name'].title()
+                cr5['value'] = ''
+                totcr.append(cr5)
 
         verbout(GR, 'Processing'+color.BOLD+' <textarea name="...')  # get textarea input types
         for m in form.findAll('textarea', {'name' : True}):
             if len(m.contents)==0:
                 m.contents.append(randString())  # get random strings
             cr_input[m['name']] = m.contents[0].encode('utf8')  # make sure no encoding errors there
-            cr5={}
-            cr5['type'] = 'text'
-            cr5['name'] = m['name']
-            cr5['label'] = m['name'].title()
-            cr5['value'] = ''
-            totcr.append(cr5)
+            cr6={}
+            cr6['type'] = 'text'
+            cr6['name'] = m['name']
+            cr6['label'] = m['name'].title()
+            cr6['value'] = ''
+            totcr.append(cr6)
 
         verbout(GR, 'Processing'+color.BOLD+' <select name="...')  # selection type inputs
         for m in form.findAll('select', {'name' : True}):
