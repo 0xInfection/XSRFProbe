@@ -82,9 +82,9 @@ class Form_Debugger():
                 cr3['name'] = m['name']
                 cr3['label'] = ''  # Nothing since its a hidden field
                 cr3['value'] = value
+                totcr.append(cr3)
         except KeyError:
             cr3['value'] = ''
-        totcr.append(cr3)
 
         verbout(GR, 'Processing '+color.BOLD+'<input type="submit" name="...')  # get submit buttons :D
         for m in form.findAll('input', {'name' : True, 'type' : 'submit'}):
