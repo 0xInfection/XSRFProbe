@@ -109,7 +109,7 @@ if args.cookie:
     # Assigning Cookie
     if ',' in args.cookie:
         for cook in args.cookie.split(','):
-            config.COOKIE_VALUE.append(cook.strip())
+            config.COOKIE_VALUE[cook.split('=')[0].strip()] = cook.strip('=')[1].strip()
             # This is necessary when a cookie value is supplied
             # Since if the user-agent used to make the request changes
             # from time to time, the remote site might trigger up
@@ -134,7 +134,7 @@ if args.headers:
     #
     #config.HEADER_VALUES = {}
     for m in args.headers.split(','):
-        config.HEADER_VALUES[m.split('=')[0]] = m.split('=')[1]  # nice hack ;)
+        config.HEADER_VALUES[m.split('=')[0].strip()] = m.split('=')[1].strip()  # nice hack ;)
 
 if args.exclude:
     exc = args.exclude
