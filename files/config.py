@@ -56,7 +56,7 @@ USER_AGENT = 'Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US) AppleWebKit/604.1
 # NOTE: If this value is not supplied, XSRFProbe will only scan for simple
 # cookies which the tool might encounter while making requests, especially
 # POST requests.
-COOKIE_VALUE = ''
+COOKIE_VALUE = {}
 
 # Header values to be used (Modify it as per your need)
 HEADER_VALUES = {
@@ -66,6 +66,13 @@ HEADER_VALUES = {
                     'DNT'               : '1',  # Do Not Track Request Header :D
                     'Connection'        : 'close'
                 }
+
+# Email value to be supplied when parsing/filling forms
+# You can modify it as per your need :)
+EMAIL_VALUE = 'csrf.testing@xsrfprobe.tld'
+
+# Plaintext value to be supplied when parsing/filling forms
+TEXT_VALUE = 'csrftesting'
 
 # Request Timeout (Keep the max. timeout value to 10s)
 TIMEOUT_VALUE = 7
