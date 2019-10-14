@@ -105,7 +105,7 @@ def Entropy(req, url, headers, form, m_action, m_name=''):
             print(color.BLUE+' [+] URL : ' +color.CYAN+url)
             print(color.GREEN+' [+] Action : ' +color.ORANGE+m_action)
         # Print out the params
-        print(color.ORANGE+' [+] Query : '+color.GREY+urllib.parse.urlencode(result))
+        print(color.ORANGE+' [+] Query : '+color.GREY+urllib.parse.urlencode(req))
         print('')
     return (_q, para)  # Return the query paramter and anti-csrf token
 
