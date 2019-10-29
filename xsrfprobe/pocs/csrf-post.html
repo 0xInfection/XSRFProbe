@@ -1,0 +1,17 @@
+<html>
+ <title>
+  CSRF POST PoC
+ </title>
+ <body>
+  <p>
+   POST Based CSRF PoC (Requires User Interaction)
+  </p>
+  <form action="<your url here>" enctype="application/x-www-form-urlencoded" method="POST">
+   <label>
+    Csrf It
+   </label>
+   <input name="csrf-it" type="text" value=""/>
+   <input type="submit" value="Submit"/>
+  </form>
+ </body>
+</html>
