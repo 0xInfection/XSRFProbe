@@ -45,10 +45,9 @@ COMMON_CSRF_NAMES = (
                     'token',
                     'auth',
                     'hash',
-                    'debug_token',
                     'secret',
                     'timestamp',
-                    'id',
+                    'verify',
                 )
 
 COMMON_CSRF_HEADERS = (
