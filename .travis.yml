@@ -18,9 +18,11 @@ script:
   # Help message.
   - python xsrfprobe.py --help
   # Crawl entire www.webscantest.com and submit forms.
-  - python xsrfprobe.py -u http://www.webscantest.com --crawl --timeout 5 --max-chars 3 --quiet
+  - python xsrfprobe.py -u http://www.webscantest.com --crawl --timeout 5 --max-chars 3
   # Test only a single endpoint vulnerability.
-  - python xsrfprobe.py -u http://www.webscantest.com/csrf/csrfpost.php
+  - python xsrfprobe.py -u http://www.webscantest.com/csrf/csrfpost.php --timeout 10 --malicious
+  # Testing for token based attacks.
+  - python xsrfprobe.py -u http://www.webscantest.com/csrf/token.php --timeout 15 --delay 2
 notifications:
   on_success: change
   on_failure: change  # `always` will be the setting once code changes slow down
