@@ -29,9 +29,10 @@ class Form_Debugger():
 
         verbout(GR, 'Processing '+color.BOLD+'<input type="text" name="...')  # get name type inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'text'}):
-            if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
-                value = m['value'].encode('utf8')  # make sure no encoding errors there
-            else:
+            try:
+                if m['value']:   # Ignore case while searching for a match
+                    value = m['value'].encode('utf8')  # make sure no encoding errors there
+            except KeyError:
                 value = TEXT_VALUE
             cr_input[m['name']] = value  # assign passed on value
             cr0 = {}
@@ -43,9 +44,10 @@ class Form_Debugger():
 
         verbout(GR, 'Processing'+color.BOLD+' <input type="email" name="...')  # get password inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'email'}):
-            if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
-                value = m['value'].encode('utf8')  # make sure no encoding errors there
-            else:
+            try:
+                if m['value']:   # Ignore case while searching for a match
+                    value = m['value'].encode('utf8')  # make sure no encoding errors there
+            except KeyError:
                 value = EMAIL_VALUE
             cr_input[m['name']] = value  # assign passed on value
             cr1={}
@@ -57,9 +59,10 @@ class Form_Debugger():
 
         verbout(GR, 'Processing'+color.BOLD+' <input type="password" name="...')  # get password inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'password'}):
-            if re.search('value=', str(m).strip(), re.IGNORECASE):   # Ignore case while searching for a match
-                value = m['value'].encode('utf8')  # make sure no encoding errors there
-            else:
+            try:   # Ignore case while searching for a match
+                if m['value']:
+                    value = m['value'].encode('utf8')  # make sure no encoding errors there
+            except KeyError:
                 value = randString()
             cr_input[m['name']] = value  # assign passed on value
             cr2={}
