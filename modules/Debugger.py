@@ -49,9 +49,9 @@ class Form_Debugger():
                 value = EMAIL_VALUE
             cr_input[m['name']] = value  # assign passed on value
             cr1={}
-            cr1['type'] = 'password'
+            cr1['type'] = 'email'
             cr1['name'] = m['name']
-            cr1['label'] = 'Password'
+            cr1['label'] = 'Email'
             cr1['value'] = ''
             totcr.append(cr1)
 
@@ -73,7 +73,7 @@ class Form_Debugger():
             verbout(GR, 'Processing'+color.BOLD+' <input type="hidden" name="...')  # get hidden input types
             for m in form.findAll('input', {'name' : True, 'type' : 'hidden'}):
                 if re.search('value=', m.__str__(), re.IGNORECASE):   # Ignore case while searching for a match
-                    value = m['value'].encode('utf8')  # make sure no encoding errors there
+                    value = m['value']  # make sure no encoding errors there
                 else:
                     value = TEXT_VALUE
                 cr_input[m['name']] = value  # assign passed on value
