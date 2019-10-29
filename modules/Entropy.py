@@ -23,11 +23,10 @@ def Entropy(req, url, headers, form, m_action, m_name=''):
     This function has the work of comparing and
       calculating Shannon Entropy and related
            POST Based requests' security.
-
     """
     found = 0x00
-    # The minimum length of a csrf token should be 5 bytes.
-    min_length = 5
+    # The minimum length of a csrf token should be 6 bytes.
+    min_length = 6
 
     # I have never seen a CSRF token longer than 256 bytes,
     # so the main concept here is doubling that and checking
@@ -45,7 +44,7 @@ def Entropy(req, url, headers, form, m_action, m_name=''):
     # than that, the application request can be easily
     # forged making the application vulnerable even in
     # presence of a CSRF token.
-    min_entropy = 2.4
+    min_entropy = 3.0
 
     # Check for common CSRF token names
     _q, para = Token(req, headers)
@@ -81,8 +80,8 @@ def Entropy(req, url, headers, form, m_action, m_name=''):
         verbout(color.BLUE, ' [+] Entropy Calculated: '+color.CYAN+str(entropy))
         if entropy >= min_entropy:
             verbout(color.ORANGE,' [+] Anti-CSRF Token Entropy Calculated is '+color.BY+' GREATER than 2.4 '+color.END+'... ')
-            print(color.GREEN+' [+] Endpoint '+color.BG+' PROBABLY NOT VULNERABLE '+color.END+color.GREEN+' to CSRF Attacks...')
-            print(color.GREEN+' [!] CSRF Mitigation Method: '+color.BG+' High Entropy Anti-CSRF Tokens '+color.END)
+            print(color.ORANGE+' [+] Endpoint '+color.BY+' PROBABLY NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
+            print(color.ORANGE+' [!] CSRF Mitigation Method: '+color.BY+' High Entropy Anti-CSRF Tokens '+color.END)
             NovulLogger(url, 'High Entropy Anti-CSRF Tokens.')
             found = 0x01
         else:
