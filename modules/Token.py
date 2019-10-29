@@ -14,7 +14,7 @@ from re import search, I
 from time import sleep
 from core.colors import *
 from core.verbout import verbout
-from files.discovered import REQUEST_TOKENS
+from files import discovered
 from urllib.parse import urlencode, unquote
 from files.paramlist import COMMON_CSRF_NAMES, COMMON_CSRF_HEADERS
 
@@ -44,7 +44,7 @@ def Token(req, headers):
                         verbout(color.GREY, ' [+] Token Parameter: '+color.CYAN+qu[0]+'='+color.ORANGE+qu[1])
                         query, param = qu[0], qu[1]
                         # We are appending the token to a variable for further analysis
-                        REQUEST_TOKENS.append(param)
+                        discovered.REQUEST_TOKENS.append(param)
                         found = True
                         break  # Break execution if a Anti-CSRF token is found
             # If we haven't found the Anti-CSRF token in query, we'll search for it in headers :)
@@ -57,7 +57,7 @@ def Token(req, headers):
                             verbout(color.GREY, ' [+] Token Parameter: '+color.CYAN+qu[0]+'='+color.ORANGE+qu[1])
                             query, param = key, value
                             # We are appending the token to a variable for further analysis
-                            REQUEST_TOKENS.append(param)
+                            discovered.REQUEST_TOKENS.append(param)
                             break  # Break execution if a Anti-CSRF token is found
         except Exception as e:
             verbout(R, 'Request Parsing Exception!')
