@@ -24,8 +24,6 @@ def inputin():
         web = SITE_URL # If already assigned
     if 'http' not in web: # add protocol to site
         web = 'http://' + web
-    if not web.endswith('/'):
-        web = web + '/'
     try:
         web0 = tld.get_fld(web)
     except tld.exceptions.TldDomainNotFound:
