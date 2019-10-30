@@ -52,6 +52,20 @@ Lets see some real-world scenarios of XSRFProbe in action:
 <img src="https://i.imgur.com/yzyvXHX.gif" />
 <img src="https://i.imgur.com/MhTucgI.gif" width=50% /><img src="https://i.imgur.com/gcfZ9zQ.gif" width=50% />
 
+### Usage:
+> For the full usage info, please take a look at the wiki
+    - [General Usage](https://github.com/0xinfection/xsrfprobe/wiki/general-usage)
+    - [Advanced Usage](https://github.com/0xinfection/xsrfprobe/wiki/advanced-usage)
+- For the basics, the first step is to install the tool:
+```
+python3 setup.py install
+```
+- Now, the tool can be fired up via:
+```
+xsrfprobe --help
+```
+- After testing xsrfprobe on a site, an output folder is created in your present working directory as `xsrfprobe-output`. Under this folder you can view the detailed logs and information collected during the scans.
+
 ### Version and License:
 XSRFProbe v2.0 release is now a stable release and the work is licensed under the [GPL v3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
