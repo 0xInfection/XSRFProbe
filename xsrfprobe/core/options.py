@@ -67,8 +67,8 @@ if args.update:
 
 # Print out XSRFProbe version
 if args.version:
-    print('\n\033[1;97m [+] \033[1;91mXSRFProbe Version\033[0m : \033[1;97m'+__version__+'\033[0m')
-    print('\033[1;97m [+] \033[1;91mXSRFProbe License\033[0m : \033[1;97m'+__license__+'\033[0m\n')
+    print('\033[1;96m [+] \033[1;91mXSRFProbe Version\033[0m : '+__version__)
+    print('\033[1;96m [+] \033[1;91mXSRFProbe License\033[0m : '+__license__+'\n')
     quit()
 
 # Now lets update some global config variables
