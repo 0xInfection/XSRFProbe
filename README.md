@@ -56,6 +56,14 @@ Lets see some real-world scenarios of XSRFProbe in action:
 
 ### Usage:
 > For the full usage info, please take a look at the wiki's &mdash; [General Usage](https://github.com/0xinfection/xsrfprobe/wiki/general-usage) and [Advanced Usage](https://github.com/0xinfection/xsrfprobe/wiki/advanced-usage).
+
+#### Installing via Pypi:
+XSRFProbe can be easily installed via a single command:
+```
+pip install xsrfprobe
+```
+
+#### Installing manually:
 - For the basics, the first step is to install the tool:
 ```
 python3 setup.py install
