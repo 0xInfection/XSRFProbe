@@ -67,7 +67,7 @@ xsrfprobe --help
 - After testing XSRFProbe on a site, an output folder is created in your present working directory as `xsrfprobe-output`. Under this folder you can view the detailed logs and information collected during the scans.
 
 ### Version and License:
-XSRFProbe v2.0 release is now a stable release and the work is licensed under the [GPL v3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).
+XSRFProbe `v2.1` release is a `Stage 5 Production-Ready (Stable)` release and the work is licensed under the [GNU General Public License (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ### Warnings:
 
