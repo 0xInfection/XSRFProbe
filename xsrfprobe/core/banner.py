@@ -12,6 +12,7 @@
 # Just for some fancy benner to appear at beginning
 
 import time
+from xsrfprobe import __version__
 from xsrfprobe.core.colors import *
 
 def banner():
@@ -43,5 +44,5 @@ def banabout(): # some fancy banner stuff :p
     time.sleep(0.1)
     print(color.BLUE+'   [---]                                                                            [---]')
     time.sleep(0.1)
-    print(color.BLUE+'   [---]   '+color.ORANGE+'                     ~  Version '+color.RED+open('xsrfprobe/files/VersionNum').read().strip()+color.ORANGE+'  ~                       '+color.BLUE+'  [---]\n')
+    print(color.BLUE+'   [---]   '+color.ORANGE+'                         ~  Version '+color.RED+__version__+color.ORANGE+'  ~                           '+color.BLUE+'  [---]\n')
     time.sleep(0.1)

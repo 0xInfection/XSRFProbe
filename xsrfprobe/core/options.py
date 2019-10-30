@@ -12,6 +12,7 @@
 # Importing stuff
 import argparse, sys, tld
 import urllib.parse, os, re
+from xsrfprobe import __version__
 from xsrfprobe.files import config
 from xsrfprobe.core.colors import R, G
 from xsrfprobe.core.updater import updater
@@ -66,7 +67,7 @@ if args.update:
 
 # Print out XSRFProbe version
 if args.version:
-    print('\n\033[1;97m [+] \033[1;91mXSRFProbe Version\033[0m : \033[1;97m'+open('files/VersionNum').read())
+    print('\n\033[1;97m [+] \033[1;91mXSRFProbe Version\033[0m : \033[1;97m'+__version__+'\033[0m'
     quit()
 
 # Now lets update some global config variables
@@ -161,10 +162,10 @@ if config.SITE_URL:
             config.OUTPUT_DIR = args.output+tld.get_fld(config.SITE_URL) + '/'
         else:
             try:
-                os.makedirs('output/'+tld.get_fld(config.SITE_URL))
+                os.makedirs('xsrfprobe-output/'+tld.get_fld(config.SITE_URL))
             except FileExistsError:
                 pass
-            config.OUTPUT_DIR = 'output/'+tld.get_fld(config.SITE_URL) + '/'
+            config.OUTPUT_DIR = 'xsrfprobe-output/'+tld.get_fld(config.SITE_URL) + '/'
     # When this exception turns out, we know the user has supplied a IP not domain
     except tld.exceptions.TldDomainNotFound:
         direc = re.search(IP, config.SITE_URL).group(0)
@@ -178,10 +179,10 @@ if config.SITE_URL:
             config.OUTPUT_DIR = args.output+direc + '/'
         else:
             try:
-                os.makedirs('output/'+direc)
+                os.makedirs('xsrfprobe-output/'+direc)
             except FileExistsError:
                 pass
-            config.OUTPUT_DIR = 'output/'+direc + '/'        
+            config.OUTPUT_DIR = 'xsrfprobe-output/'+direc + '/'
 
 if args.quiet:
     config.DEBUG = False
