@@ -16,6 +16,7 @@ setup(
     author_email='theinfecteddrake@gmail.com',
     license=__import__('xsrfprobe').__license__,
     url='https://github.com/0xInfection/XSRFProbe',
+    download_url='https://github.com/0xInfection/XSRFProbe/archive/v2.1.zip',
     packages=find_packages(),
     scripts=['xsrfprobe/bin/xsrfprobe'],
     install_requires=[
@@ -37,5 +38,5 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
     ],
-    keywords='csrf xsrf appsec vulnerability scanner webapps',
+    keywords=['csrf', 'xsrf', 'appsec', 'vulnerability scanner', 'webapps'],
 )
