@@ -62,7 +62,7 @@ python3 setup.py install
 ```
 xsrfprobe --help
 ```
-- After testing xsrfprobe on a site, an output folder is created in your present working directory as `xsrfprobe-output`. Under this folder you can view the detailed logs and information collected during the scans.
+- After testing XSRFProbe on a site, an output folder is created in your present working directory as `xsrfprobe-output`. Under this folder you can view the detailed logs and information collected during the scans.
 
 ### Version and License:
 XSRFProbe v2.0 release is now a stable release and the work is licensed under the [GPL v3 License](https://www.gnu.org/licenses/gpl-3.0.en.html).

@@ -12,14 +12,17 @@
 # Importing stuff
 import argparse, sys, tld
 import urllib.parse, os, re
-from xsrfprobe import __version__
 from xsrfprobe.files import config
 from xsrfprobe.core.colors import R, G
 from xsrfprobe.core.updater import updater
 from xsrfprobe.files.dcodelist import IP
+from xsrfprobe import __version__, __license__
 
+print('''
+    \033[1;91mXSRFProbe\033[0m, \033[1;97mA \033[1;93mCross Site Request Forgery \033[1;97mAudit Toolkit\033[0m
+''')
 # Processing command line arguments
-parser = argparse.ArgumentParser('python3 xsrfprobe.py')
+parser = argparse.ArgumentParser(usage="xsrfprobe -u <url> <args>")
 parser._action_groups.pop()
 
 # A simple hack to have required argumentsa and optional arguments separately
@@ -54,20 +57,18 @@ optional.add_argument('--version', help='Display the version of XSRFProbe and ex
 args = parser.parse_args()
 
 if not len(sys.argv) > 1:
-    print('''
-    \033[1;91mXSRFProbe\033[0m, \033[1;97mA \033[1;93mCross Site Request Forgery \033[1;97mAudit Toolkit\033[0m
-''')
     parser.print_help()
-    quit('')
+    quit()
 
 # Update XSRFProbe to latest version
 if args.update:
     updater()
-    quit('')
+    quit()
 
 # Print out XSRFProbe version
 if args.version:
     print('\n\033[1;97m [+] \033[1;91mXSRFProbe Version\033[0m : \033[1;97m'+__version__+'\033[0m\n')
+    print('\n\033[1;97m [+] \033[1;91mXSRFProbe License\033[0m : \033[1;97m'+__license__+'\033[0m\n')
     quit()
 
 # Now lets update some global config variables

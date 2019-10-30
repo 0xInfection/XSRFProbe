@@ -79,13 +79,13 @@ def Entropy(req, url, headers, form, m_action, m_name=''):
         verbout(GR, 'Calculating Entropy...')
         verbout(color.BLUE, ' [+] Entropy Calculated: '+color.CYAN+str(entropy))
         if entropy >= min_entropy:
-            verbout(color.ORANGE,' [+] Anti-CSRF Token Entropy Calculated is '+color.BY+' GREATER than 2.4 '+color.END+'... ')
+            verbout(color.ORANGE,' [+] Anti-CSRF Token Entropy Calculated is '+color.BY+' GREATER than 3.0 '+color.END+'... ')
             print(color.ORANGE+' [+] Endpoint '+color.BY+' PROBABLY NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF Attacks...')
             print(color.ORANGE+' [!] CSRF Mitigation Method: '+color.BY+' High Entropy Anti-CSRF Tokens '+color.END)
             NovulLogger(url, 'High Entropy Anti-CSRF Tokens.')
             found = 0x01
         else:
-            verbout(color.RED,' [-] Anti-CSRF Token Entropy Calculated is '+color.BY+' LESS than 2.4 '+color.END+'... ')
+            verbout(color.RED,' [-] Anti-CSRF Token Entropy Calculated is '+color.BY+' LESS than 3.0 '+color.END+'... ')
             print(color.RED+' [-] Endpoint likely '+color.BR+' VULNERABLE '+color.END+color.RED+' to CSRF Attacks inspite of CSRF Tokens...')
             print(color.RED+' [!] Vulnerability Type: '+color.BR+' Low Entropy Anti-CSRF Tokens '+color.END)
             VulnLogger(url, 'Low Entropy Anti-CSRF Tokens.', 'Token: '+value)
