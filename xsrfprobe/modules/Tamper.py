@@ -123,7 +123,7 @@ def Tamper(url, action, req, body, query, para):
         NovulLogger(url, 'Anti-CSRF Token removal does not return valid response.')
 
     # If any of the forgeries worked...
-    if (flagx1 or flagx2 or flagx3) == 0x01:
+    if ((flagx1==0x01 and flagx2==0x01) or (flagx1==0x01 and flagx3==0x01) or (flagx2==0x01 and flagx3==0x01)):
         verbout(color.RED,' [+] The tampered token value works! Endpoint '+color.BR+' VULNERABLE to Replay Attacks '+color.END+'!')
         verbout(color.ORANGE,' [-] The Tampered Anti-CSRF Token requested does NOT return a 40x or 50x response! ')
         print(color.RED+' [-] Endpoint '+color.BR+' CONFIRMED VULNERABLE '+color.END+color.RED+' to Request Forgery Attacks...')
