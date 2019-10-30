@@ -1,8 +1,11 @@
 <h1 align="center">
   <br>
-  <a href="https://github.com/0xinfection"><img src="https://i.imgur.com/9R5cXB6.png" alt="XSRFProbe"></a>
+  <a href="https://github.com/0xinfection/xsrfprobe"><img src="https://i.ibb.co/rQzpKk6/circle-cropped.png" alt="wafw00f"/></a>
+  <br>
+  <br>
+  XSRFProbe
 </h1>
-
+<h4 align="center">The Prime Cross Site Request Forgery Audit & Exploitation Toolkit.</h4>
 <p align="center">  
   <a href="https://docs.python.org/3/download.html">
     <img src="https://img.shields.io/badge/Python-3.x-green.svg">
@@ -18,7 +21,7 @@
   </a>
 </p>
 
-### About [XSRFProbe](https://github.com/0xinfection/xsrfprobe/wiki/)
+### About:
 __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)) (CSRF/XSRF) Audit and Exploitation Toolkit. Equipped with a Powerful Crawling Engine and Numerous Systematic Checks, it is now able to detect most cases of CSRF vulnerabilities, their related bypasses and futher generate (maliciously) exploitable proof of concepts with each found vulnerability. For more info on how XSRFProbe works, see [XSRFProbe Internals](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals) on [wiki](https://github.com/0xInfection/XSRFProbe/wiki/). 
 
 <img src="https://i.imgur.com/xTrfWSt.gif" alt="xsrf-logo">
