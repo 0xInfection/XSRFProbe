@@ -1,7 +1,0 @@
-(i) http://example.com/csrf:
-
-<form method="post">
- <input name="csrf-it" type="text"/>
- <input type="submit" value="Send"/>
-</form>
-
