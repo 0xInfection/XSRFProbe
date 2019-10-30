@@ -7,7 +7,7 @@ matrix:
       dist: xenial    # required for Python 3.7 (travis-ci/travis-ci#9069)
       sudo: required  # required for Python 3.7 (travis-ci/travis-ci#9069)
 install:
-  - pip install -r requirements.txt
+  - python setup.py install
   - pip install flake8
 before_script:
   # stop the build if there are Python syntax errors or undefined names
@@ -16,13 +16,11 @@ before_script:
   - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --quiet
 script:
   # Help message.
-  - python xsrfprobe.py --help
-  # Crawl entire www.webscantest.com and submit forms.
-  - python xsrfprobe.py -u http://www.webscantest.com --crawl --timeout 5 --max-chars 3
-  # Test only a single endpoint vulnerability.
-  - python xsrfprobe.py -u http://www.webscantest.com/csrf/csrfpost.php --timeout 10 --malicious
-  # Testing for token based attacks.
-  - python xsrfprobe.py -u http://www.webscantest.com/csrf/token.php --timeout 15 --delay 2
+  - xsrfprobe --version
+  - xsrfprobe --help
+  - xsrfprobe -u http://www.webscantest.com --crawl --timeout 5 --max-chars 3 --quiet
+  - xsrfprobe -u http://www.webscantest.com/csrf/csrfpost.php --timeout 10 --random-agent
+  - xsrfprobe -u http://www.webscantest.com/csrf/token.php --timeout 15 --delay 2 --display
 notifications:
   on_success: change
   on_failure: change  # `always` will be the setting once code changes slow down

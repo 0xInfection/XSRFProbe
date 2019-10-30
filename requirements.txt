@@ -1,6 +1,0 @@
-requests
-bs4
-request
-stringdist
-tld
-yattag
