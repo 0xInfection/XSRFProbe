@@ -1,0 +1,34 @@
+[!] http://example.com/csrf -> No Referer Header based Request Validation presence.
+
+[i] Response Headers: {'Date': 'Fri, 28 Dec 2018 07:07:43 GMT', 'Set-Cookie': 'TEST_SESSIONID=jhf8avl5; path=/, NB_SRVID=srv140700; path=/', 'Expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'Cache-Control': 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0', 'Pragma': 'no-cache', 'Vary': 'Accept-Encoding', 'Content-Encoding': 'gzip', 'Content-Length': '663', 'Connection': 'close', 'Content-Type': 'text/html'}
+
+
+[!] http://example.com/csrf -> No Origin Header based request validation presence.
+
+[i] Response Headers: {'Date': 'Fri, 28 Dec 2018 07:07:45 GMT', 'Set-Cookie': 'TEST_SESSIONID=1cgnr23oqil463c6; path=/, NB_SRVID=srv140717; path=/', 'Expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'Cache-Control': 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0', 'Pragma': 'no-cache', 'Vary': 'Accept-Encoding', 'Content-Encoding': 'gzip', 'Content-Length': '663', 'Connection': 'close', 'Content-Type': 'text/html'}
+
+
+[!] http://example.com/csrf -> No Cookie Validation on Cross-Origin Requests.
+
+[i] Headers: {'Date': 'Fri, 28 Dec 2018 07:07:50 GMT','Set-Cookie': 'TEST_SESSIONID=3f9054b0g2; path=/, NB_SRVID=srv140717; path=/', 'Expires': 'Thu, 19 Nov 1981 08:52:00 GMT', 'Cache-Control': 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0', 'Pragma': 'no-cache', 'Vary': 'Accept-Encoding', 'Content-Encoding': 'gzip', 'Content-Length': '663', 'Connection': 'close', 'Content-Type': 'text/html'}
+
+
+[!] http://example.com/csrf -> Form Requested Without Anti-CSRF Token.
+
+[i] Form Requested: <form action="//csrf" method="post">
+ <input name="csrf_it" type="text"/>
+ <input type="submit" value="Send"/>
+</form>
+
+[i] Request Query: {'csrf_it': 'PBgCWG'}
+
+
+[!] http://example.com/csrf -> POST-Based Request Forgery on Forms.
+
+[i] Form: <form action="//csrf" method="post">
+ <input name="csrf_it" type="text"/>
+ <input type="submit" value="Send"/>
+</form>
+
+[i] POST Query: {'csrf_it': 'PBgCWG'}
+
