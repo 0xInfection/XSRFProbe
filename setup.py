@@ -14,7 +14,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Pinaki Mondal',
     author_email='theinfecteddrake@gmail.com',
-    license=__import__('xsrfprobe').__license__,
+    license='GPLv3',
     url='https://github.com/0xInfection/XSRFProbe',
     download_url='https://github.com/0xInfection/XSRFProbe/archive/v2.1.zip',
     packages=find_packages(),
