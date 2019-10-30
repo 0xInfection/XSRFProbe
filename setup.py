@@ -37,5 +37,5 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
     ],
-    keywords='csrf xsrf appsec detector webapps',
+    keywords='csrf xsrf appsec vulnerability scanner webapps',
 )
