@@ -156,7 +156,7 @@ def Engine():  # lets begin it!
                             # Go for token parameter tamper checks.
                             if (query and token):
                                 txor = Tamper(url, action, result, r2.text, query, token)
-                            o2 = resp2.open(url).read()  # make request as user2
+                            o2 = Get(url).text  # make request as user2
                             try:
                                 form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                             except IndexError:
@@ -240,7 +240,7 @@ def Engine():  # lets begin it!
                                     # Go for token parameter tamper checks.
                                     if (query and token):
                                         txor = Tamper(url, action, result, r2.text, query, token)
-                                    o2 = resp2.open(url).read()  # make request as user2
+                                    o2 = Get(url).text  # make request as user2
                                     try:
                                         form2 = Debugger.getAllForms(BeautifulSoup(o2))[i]  # user2 gets his form
                                     except IndexError:
