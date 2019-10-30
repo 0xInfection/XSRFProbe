@@ -38,11 +38,10 @@ __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/
 
 - [x] Performs [several types of checks](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#types-of-checks) before declaring an endpoint as vulnerable.
 - [x] Can detect several types of Anti-CSRF tokens in POST requests.
-- [x] Features a powerful crawler which features continuous crawling and scanning.
+- [x] Works with a powerful crawler which features continuous crawling and scanning.
 - [x] Out of the box support for custom cookie values and generic headers.
 - [x] Accurate [Token-Strength Detection](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#token-randomness-calculation) and [Analysis](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#post-scan-token-analysis) using various algorithms.
-- [x] Can generate both normal as well as maliciously exploitable CSRF PoCs.
-- [x] Follows a redirect when there is a 30x response.
+- [x] Can generate both normal as well as maliciously exploitable CSRF proof of concepts.
 - [x] Well [documented code](https://github.com/0xInfection/XSRFProbe/tree/master?files=1) and [highly generalised automated workflow](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals).
 - [x] The user is in [control of everything](https://github.com/0xInfection/XSRFProbe/wiki/Advanced-Usage#xsrfprobe-configuration-variables) whatever the scanner does.
 - [x] Has a user-friendly interaction environment with full verbose support.
