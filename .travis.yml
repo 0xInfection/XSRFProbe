@@ -17,7 +17,8 @@ before_script:
 script:
   # Help message.
   - xsrfprobe --version
-  - xsrfprobe -u http://www.webscantest.com --crawl --timeout 5 --max-chars 3
+  - xsrfprobe --help
+  - xsrfprobe -u http://www.webscantest.com --crawl --timeout 5 --max-chars 3 --quiet
   - xsrfprobe -u http://www.webscantest.com/csrf/csrfpost.php --timeout 10 --random-agent
   - xsrfprobe -u http://www.webscantest.com/csrf/token.php --timeout 15 --delay 2 --display
 notifications:
