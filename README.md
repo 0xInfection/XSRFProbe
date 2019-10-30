@@ -53,9 +53,7 @@ Lets see some real-world scenarios of XSRFProbe in action:
 <img src="https://i.imgur.com/MhTucgI.gif" width=50% /><img src="https://i.imgur.com/gcfZ9zQ.gif" width=50% />
 
 ### Usage:
-> For the full usage info, please take a look at the wiki
-    - [General Usage](https://github.com/0xinfection/xsrfprobe/wiki/general-usage)
-    - [Advanced Usage](https://github.com/0xinfection/xsrfprobe/wiki/advanced-usage)
+> For the full usage info, please take a look at the wiki's &mdash; [General Usage](https://github.com/0xinfection/xsrfprobe/wiki/general-usage) and [Advanced Usage](https://github.com/0xinfection/xsrfprobe/wiki/advanced-usage).
 - For the basics, the first step is to install the tool:
 ```
 python3 setup.py install
