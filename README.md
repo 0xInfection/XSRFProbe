@@ -91,4 +91,4 @@ Usage of XSRFProbe for testing websites without prior mutual consistency can be 
 ### Author's Words:
 This project is based __entirely upon my own research and my own experience with web applications__ on Cross-Site Request Forgery attacks. You can try going through the source code which is highly documented to help you understand how this toolkit was built. Useful [pull requests](https://github.com/0xInfection/XSRFProbe/wiki/Contributing), [ideas and issues](https://github.com/0xInfection/XSRFProbe/wiki/Reporting-Bugs#before-submitting) are highly welcome. If you wish to see what how XSRFProbe is being developed, check out the [Development Board](https://github.com/0xInfection/XSRFProbe/projects/1).
 
-> Copyright (C) [0xInfection](https://www.twitter.com/0xInfection)
+> Copyright &copy; [@0xInfection](https://www.twitter.com/0xInfection)
