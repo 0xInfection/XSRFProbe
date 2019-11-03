@@ -292,7 +292,7 @@ def Engine():  # lets begin it!
         GetLogger()  # The scanning has interrupted, so now we can log out all the links ;)
         sys.exit(1)
     except Exception as e:
+        print('\n'+R+'Encountered an error. \n'+R+'Please view the error log files to view what went wrong.')
         verbout(R, e.__str__())
         ErrorLogger(url, e)
         GetLogger()
-        sys.exit(1)
