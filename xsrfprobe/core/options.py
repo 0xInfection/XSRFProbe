@@ -67,7 +67,7 @@ if args.update:
 
 # Print out XSRFProbe version
 if args.version:
-    print('\033[1;96m [+] \033[1;91mXSRFProbe Version\033[0m : '+__version__)
+    print('\033[1;96m [+] \033[1;91mXSRFProbe Version\033[0m : v'+__version__)
     print('\033[1;96m [+] \033[1;91mXSRFProbe License\033[0m : '+__license__+'\n')
     quit()
 
@@ -111,7 +111,7 @@ if args.cookie:
     # Assigning Cookie
     if ',' in args.cookie:
         for cook in args.cookie.split(','):
-            config.COOKIE_VALUE[cook.split('=')[0].strip()] = cook.strip('=')[1].strip()
+            config.COOKIE_VALUE[cook.split('=')[0].strip()] = cook.split('=')[1].strip()
             # This is necessary when a cookie value is supplied
             # Since if the user-agent used to make the request changes
             # from time to time, the remote site might trigger up
