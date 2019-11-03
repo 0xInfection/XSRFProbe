@@ -32,12 +32,11 @@ setup(
         'Intended Audience :: System Administrators',
         'Intended Audience :: Developers',
         'Intended Audience :: Information Technology',
-        'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Topic :: Internet',
         'Topic :: Security',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3',
     ],
-    keywords=['csrf', 'xsrf', 'appsec', 'vulnerability scanner', 'webapps'],
+    keywords=['csrf', 'xsrf', 'appsec', 'vulnerability scanner', 'webapps', 'hacking'],
 )
