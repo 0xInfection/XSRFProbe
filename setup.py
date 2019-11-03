@@ -10,13 +10,14 @@ with io.open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 setup(
     name='xsrfprobe',
     version=__import__('xsrfprobe').__version__,
+    description='The Prime Cross Site Request Forgery (CSRF) Audit & Exploitation Toolkit',
     long_description=desc,
     long_description_content_type='text/markdown',
     author='Pinaki Mondal',
     author_email='theinfecteddrake@gmail.com',
     license='GPLv3',
     url='https://github.com/0xInfection/XSRFProbe',
-    download_url='https://github.com/0xInfection/XSRFProbe/archive/v2.1.zip',
+    download_url='https://github.com/0xInfection/XSRFProbe/archive/v2.1.1.zip',
     packages=find_packages(),
     scripts=['xsrfprobe/bin/xsrfprobe'],
     install_requires=[
