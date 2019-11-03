@@ -40,7 +40,7 @@ USER_AGENT_RANDOM = False
 # NOTE: This is a precaution in case the cookie value is supplied,
 # if the user-agent gets changed from time to time, the remote
 # application might trigger up some protection agents
-USER_AGENT = 'Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US) AppleWebKit/604.1.38 (KHTML, like Gecko) Chrome/68.0.3325.162'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36'
 
 # Cookie value to be sent alongwith the requests. This option is particularly
 # needed for a wholesome check on CSRFs. Since for a basic successful CSRF attack
@@ -60,9 +60,10 @@ COOKIE_VALUE = {}
 
 # Header values to be used (Modify it as per your need)
 HEADER_VALUES = {
-                    'Accept'            : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language'   : 'en-US,en;q=0.5',
-                    'Accept-Encoding'   : 'gzip',
+                    'Accept'            : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+                    'Accept-Language'   : 'en-US,en;q=0.9',
+                    'Accept-Encoding'   : 'gzip, deflate, br',
+                    'Sec-Fetch-Mode'    : 'navigate',
                     'DNT'               : '1',  # Do Not Track Request Header :D
                     'Connection'        : 'close'
                 }
