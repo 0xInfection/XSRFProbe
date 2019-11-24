@@ -22,13 +22,13 @@ headers = HEADER_VALUES  # set the headers
 
 # Set Cookie
 if COOKIE_VALUE:
-    for cookie in COOKIE_VALUE:
-        headers['Cookie'] = cookie
+    for cookie, value in COOKIE_VALUE.items():
+        headers['Cookie'] = cookie + '=' + value
 
 # Set User-Agent
-if USER_AGENT_RANDOM or not USER_AGENT:
+if USER_AGENT_RANDOM:
     headers['User-Agent'] = RandomAgent()
-else:
+if USER_AGENT:
     headers['User-Agent'] = USER_AGENT
 
 def Post(url, action, data):
@@ -41,7 +41,9 @@ def Post(url, action, data):
     main_url = urljoin(url, action)  # join url and action
     try:
         # Make the POST Request.
-        response = requests.post(main_url, headers=headers, data=data, timeout=TIMEOUT_VALUE)
+        pheaders(headers)
+        response = requests.post(main_url, headers=headers, data=data,
+                            timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
         if DISPLAY_HEADERS:
             pheaders(response.headers)
         return response  # read data content
@@ -81,7 +83,9 @@ def Get(url, headers=headers):
         return None
     try:
         verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
-        req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, stream=False)
+        pheaders(headers)
+        req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE,
+                                    stream=False, verify=VERIFY_CERT)
         # Displaying headers if DISPLAY_HEADERS is 'True'
         if DISPLAY_HEADERS:
             pheaders(req.headers)

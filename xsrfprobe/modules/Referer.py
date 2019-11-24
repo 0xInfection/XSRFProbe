@@ -38,12 +38,13 @@ def Referer(url):
 
     # We put the cookie in request, if cookie supplied :D
     if COOKIE_VALUE:
-        for cookie in COOKIE_VALUE:
-            gen_headers['Cookie'] = cookie
+        for cookie, value in COOKIE_VALUE.items():
+            gen_headers['Cookie'] = cookie + '=' + value
 
     # Make the request with different referer header and get the content
     verbout(O,'Making request with '+color.CYAN+'Tampered Referer Header'+color.END+'...')
     req0x02 = Get(url, headers=gen_headers)
+    HEADER_VALUES.pop('Referer', None)
 
     # Comparing the length of the requests' responses. If both content
     # lengths are same, then the site actually does not validate referer
