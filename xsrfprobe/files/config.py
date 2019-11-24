@@ -14,7 +14,7 @@
 # Lets assign some global variables...
 global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALUE
 global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
-global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR
+global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR, VERIFY_CERT
 global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS, GEN_MALICIOUS
 
 # Site Url to be scanned (Required)
@@ -109,6 +109,11 @@ REFERER_ORIGIN_CHECKS = True
 # so there will be more chances of missing out most possible
 # cases of Form based (POST Based) CSRFs.
 FORM_SUBMISSION = True
+
+# A switch to determine whether to verify certificates upon
+# requests. This will help devs test their web-app with self-signed
+# certificates.
+VERIFY_CERT = True
 
 # Referer Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
