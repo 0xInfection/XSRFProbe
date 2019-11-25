@@ -41,7 +41,6 @@ def Post(url, action, data):
     main_url = urljoin(url, action)  # join url and action
     try:
         # Make the POST Request.
-        pheaders(headers)
         response = requests.post(main_url, headers=headers, data=data,
                             timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
         if DISPLAY_HEADERS:
@@ -83,7 +82,6 @@ def Get(url, headers=headers):
         return None
     try:
         verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
-        pheaders(headers)
         req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE,
                                     stream=False, verify=VERIFY_CERT)
         # Displaying headers if DISPLAY_HEADERS is 'True'
