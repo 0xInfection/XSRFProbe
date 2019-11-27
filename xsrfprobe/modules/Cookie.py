@@ -44,8 +44,7 @@ def SameSite(url):
     # Setting the netloc as the referer for the first check.
     gen_headers['Referer'] = urlsplit(url).netloc
     if COOKIE_VALUE:
-        for cookie, value in COOKIE_VALUE.items():
-            gen_headers['Cookie'] = cookie + '=' + value
+        gen_headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
 
     getreq = Get(url, headers=gen_headers)  # Making the request
     map(HEADER_VALUES.pop, ['Referer', 'Cookie'])
@@ -115,8 +114,7 @@ def SameSite(url):
     # Assigning a fake referer for third request, this time with cookie ;)
     gen_headers['Referer'] = REFERER_URL
     if COOKIE_VALUE:
-        for cookie, value in COOKIE_VALUE.items():
-            gen_headers['Cookie'] = cookie + '=' + value
+        gen_headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
 
     getreq = Get(url, headers=gen_headers)
     HEADER_VALUES.pop('Referer', None)

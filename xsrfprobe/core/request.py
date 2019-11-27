@@ -24,10 +24,6 @@ headers = HEADER_VALUES  # set the headers
 if COOKIE_VALUE:
     headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
 
-# Setting no-verify flag
-if not VERIFY_CERT:
-    vrfy = False
-
 # Set User-Agent
 if USER_AGENT_RANDOM:
     headers['User-Agent'] = RandomAgent()
@@ -39,13 +35,14 @@ def Post(url, action, data):
     The main use of this function is as a
            Form Requester [POST].
     '''
+    global headers, TIMEOUT_VALUE, VERIFY_CERT
     time.sleep(DELAY_VALUE)  # If delay param has been supplied
     verbout(GR, 'Processing the '+color.GREY+'POST'+color.END+' Request...')
     main_url = urljoin(url, action)  # join url and action
     try:
         # Make the POST Request.
         response = requests.post(main_url, headers=headers, data=data,
-                            timeout=TIMEOUT_VALUE, verify=vrfy)
+                            timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
         if DISPLAY_HEADERS:
             pheaders(response.headers)
         return response  # read data content
@@ -76,7 +73,8 @@ def Get(url, headers=headers):
     The main use of this function is as a
             Url Requester [GET].
     '''
-    # We do not verify thr request while GET requests
+    global TIMEOUT_VALUE, VERIFY_CERT
+    # We do not verify the request while GET requests
     time.sleep(DELAY_VALUE)  # We make requests after the time delay
     # Making sure the url is not a file
     if url.split('.')[-1].lower() in (FILE_EXTENSIONS or EXECUTABLES):
@@ -86,7 +84,7 @@ def Get(url, headers=headers):
     try:
         verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
         req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE,
-                                    stream=False, verify=vrfy)
+                                    stream=False, verify=VERIFY_CERT)
         # Displaying headers if DISPLAY_HEADERS is 'True'
         if DISPLAY_HEADERS:
             pheaders(req.headers)
