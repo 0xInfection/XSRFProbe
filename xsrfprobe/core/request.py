@@ -22,8 +22,11 @@ headers = HEADER_VALUES  # set the headers
 
 # Set Cookie
 if COOKIE_VALUE:
-    for cookie, value in COOKIE_VALUE.items():
-        headers['Cookie'] = cookie + '=' + value
+    headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
+
+# Setting no-verify flag
+if not VERIFY_CERT:
+    vrfy = False
 
 # Set User-Agent
 if USER_AGENT_RANDOM:
@@ -42,7 +45,7 @@ def Post(url, action, data):
     try:
         # Make the POST Request.
         response = requests.post(main_url, headers=headers, data=data,
-                            timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
+                            timeout=TIMEOUT_VALUE, verify=vrfy)
         if DISPLAY_HEADERS:
             pheaders(response.headers)
         return response  # read data content
@@ -83,7 +86,7 @@ def Get(url, headers=headers):
     try:
         verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
         req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE,
-                                    stream=False, verify=VERIFY_CERT)
+                                    stream=False, verify=vrfy)
         # Displaying headers if DISPLAY_HEADERS is 'True'
         if DISPLAY_HEADERS:
             pheaders(req.headers)

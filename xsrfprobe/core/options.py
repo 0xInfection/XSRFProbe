@@ -111,13 +111,12 @@ if args.crawl:
 if args.cookie:
     # Assigning Cookie
     for cook in args.cookie.split(','):
-        config.COOKIE_VALUE[cook.split('=')[0].strip()] = cook.split('=')[1].strip()
+        config.COOKIE_VALUE.append(cook)
         # This is necessary when a cookie value is supplied
         # Since if the user-agent used to make the request changes
         # from time to time, the remote site might trigger up
         # security mechanisms (or worse, perhaps block your ip?)
         config.USER_AGENT_RANDOM = False
-    print(config.COOKIE_VALUE)
 
 # Set the headers displayer to 1 (actively display headers)
 if args.disphead:
