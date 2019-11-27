@@ -105,8 +105,7 @@ def Persistence(url, postq):
             verbout(GR, 'Value : '+color.ORANGE+agent)
             gen_headers['User-Agent'] = agent
             if COOKIE_VALUE:
-                for cookie, value in COOKIE_VALUE.items():
-                    gen_headers['Cookie'] = cookie + '=' + value
+                gen_headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
             req = Get(url, headers=gen_headers)
             # We will append this to stuff only when set-cookie is being supplied.
             if req.headers.get('Set-Cookie'):

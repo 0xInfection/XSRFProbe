@@ -38,8 +38,7 @@ def Referer(url):
 
     # We put the cookie in request, if cookie supplied :D
     if COOKIE_VALUE:
-        for cookie, value in COOKIE_VALUE.items():
-            gen_headers['Cookie'] = cookie + '=' + value
+        gen_headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
 
     # Make the request with different referer header and get the content
     verbout(O,'Making request with '+color.CYAN+'Tampered Referer Header'+color.END+'...')
