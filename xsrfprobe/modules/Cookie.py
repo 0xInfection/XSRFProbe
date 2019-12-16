@@ -22,16 +22,6 @@ from urllib.parse import urlencode, unquote, urlsplit
 
 resps = []
 
-def Cookie(url, request):
-    '''
-    This module is for checking the varied HTTP Cookies
-            and the related security on them to
-                    prevent CSRF attacks.
-    '''
-    verbout(GR, 'Proceeding for cookie based checks...')
-    SameSite(url)
-    Persistence(url, request)
-
 def SameSite(url):
     '''
     This function parses and verifies the cookies with
@@ -48,14 +38,16 @@ def SameSite(url):
     # SameSite flag on Cookies with the same Referer as the netloc
     verbout(color.GREY,' [+] Lets examine how server reacts to same referer...')
     gen_headers = HEADER_VALUES
-    gen_headers['User-Agent'] = USER_AGENT or RandomAgent()
+    gen_headers['User-Agent'] = USER_AGENT if USER_AGENT else RandomAgent()
     verbout(GR,'Setting Referer header same as host...')
+
     # Setting the netloc as the referer for the first check.
     gen_headers['Referer'] = urlsplit(url).netloc
     if COOKIE_VALUE:
-        for cook in COOKIE_VALUE:
-            gen_headers['Cookie'] = cook
+        gen_headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
+
     getreq = Get(url, headers=gen_headers)  # Making the request
+    map(HEADER_VALUES.pop, ['Referer', 'Cookie'])
     head = getreq.headers
     for h in head:
         #if search('cookie', h, I) or search('set-cookie', h, I):
@@ -82,10 +74,12 @@ def SameSite(url):
     # than the host. (This time without the Cookie assigned)
     verbout(color.GREY,' [+] Lets examine how server reacts to a fake external referer...')
     gen_headers = HEADER_VALUES
-    gen_headers['User-Agent'] = USER_AGENT or RandomAgent()  # Setting user-agents
+    gen_headers['User-Agent'] = USER_AGENT if USER_AGENT else RandomAgent()  # Setting user-agents
     # Assigning a fake referer for the second check, but no cookie.
     gen_headers['Referer'] = REFERER_URL
+    gen_headers.pop('Cookie', None)
     getreq = Get(url, headers=gen_headers)
+    HEADER_VALUES.pop('Referer', None)
     head = getreq.headers  # Getting headers from requests
     for h in head:
         # If search('cookie', h, I) or search('set-cookie', h, I):
@@ -120,9 +114,10 @@ def SameSite(url):
     # Assigning a fake referer for third request, this time with cookie ;)
     gen_headers['Referer'] = REFERER_URL
     if COOKIE_VALUE:
-        for cook in COOKIE_VALUE:
-            gen_headers['Cookie'] = cook
+        gen_headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
+
     getreq = Get(url, headers=gen_headers)
+    HEADER_VALUES.pop('Referer', None)
     head = getreq.headers
     for h in head:
         # if search('cookie', h, I) or search('set-cookie', h, I):
@@ -165,3 +160,13 @@ def SameSite(url):
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
         print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No Cross Origin Cookie Validation Presence '+color.END)
         VulnLogger(url, 'No Cookie Validation on Cross-Origin Requests.', '[i] Headers: '+str(head))
+
+def Cookie(url, request):
+    '''
+    This module is for checking the varied HTTP Cookies
+            and the related security on them to
+                    prevent CSRF attacks.
+    '''
+    verbout(GR, 'Proceeding for cookie based checks...')
+    SameSite(url)
+    Persistence(url, request)

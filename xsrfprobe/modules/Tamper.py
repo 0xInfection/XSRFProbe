@@ -29,9 +29,9 @@ def Tamper(url, action, req, body, query, para):
     verbout(color.RED, ' |   Anti-CSRF Token Tamper Validation   |')
     verbout(color.RED, ' +---------------------------------------+\n')
     # Null char flags (hex)
-    flagx1 = 0x00
-    flagx2 = 0x00
-    flagx3 = 0x00
+    flagx1, destx1 = 0x00, 0x00
+    flagx2, destx2 = 0x00, 0x00
+    flagx3, destx3 = 0x00, 0x00
     verbout(GR, 'Proceeding for CSRF attack via Anti-CSRF token tampering...')
     # First of all lets get out token from request
     if para == '':
@@ -66,8 +66,10 @@ def Tamper(url, action, req, body, query, para):
     # request, then we have the vulnerability.
     #
     # NOTE: This algorithm has lots of room for improvement.
-    if ((str(resp.status_code).startswith('2') and not any(search(s, resp.text, I) for s in TOKEN_ERRORS))
-        or (len(body) == len(resp.text))):
+    if str(resp.status_code).startswith('2'): destx1 = 0x01
+    if not any(search(s, resp.text, I) for s in TOKEN_ERRORS): destx2 = 0x01
+    if len(body) == len(resp.text): destx3 = 0x01
+    if ((destx1 == 0x01 and destx2 == 0x01) or (destx3 == 0x01)):
         verbout(color.RED,' [-] Anti-CSRF Token tamper by '+color.GREY+'index replacement'+color.RED+' returns valid response!')
         flagx1 = 0x01
         VulnLogger(url, 'Anti-CSRF Token tamper by index replacement returns valid response.', '[i] POST Query: '+req.__str__())
@@ -90,8 +92,10 @@ def Tamper(url, action, req, body, query, para):
     # (Accepted) or a 30x (Redirection), then we know it worked.
     #
     # NOTE: This algorithm has lots of room for improvement.
-    if ((str(resp.status_code).startswith('2') and not any(search(s, resp.text, I) for s in TOKEN_ERRORS))
-        or (len(body) == len(resp.text))):
+    if str(resp.status_code).startswith('2'): destx1 = 0x02
+    if not any(search(s, resp.text, I) for s in TOKEN_ERRORS): destx2 = 0x02
+    if len(body) == len(resp.text): destx3 = 0x02
+    if ((destx1 == 0x02 and destx2 == 0x02) or destx3 == 0x02):
         verbout(color.RED,' [-] Anti-CSRF Token tamper by '+color.GREY+'index removal'+color.RED+' returns valid response!')
         flagx2 = 0x01
         VulnLogger(url, 'Anti-CSRF Token tamper by index removal returns valid response.', '[i] POST Query: '+req.__str__())
@@ -113,8 +117,10 @@ def Tamper(url, action, req, body, query, para):
     # (Accepted) or a 30x (Redirection), then we know it worked.
     #
     # NOTE: This algorithm has lots of room for improvement.
-    if ((str(resp.status_code).startswith('2') and not any(search(s, resp.text, I) for s in TOKEN_ERRORS))
-        or (len(body) == len(resp.text))):
+    if str(resp.status_code).startswith('2'): destx1 = 0x03
+    if not any(search(s, resp.text, I) for s in TOKEN_ERRORS): destx2 = 0x03
+    if len(body) == len(resp.text): destx3 = 0x03
+    if ((destx1 == 0x03 and destx2 == 0x03) or destx3 == 0x03):
         verbout(color.RED,' [-] Anti-CSRF'+color.GREY+' Token removal'+color.RED+' returns valid response!')
         flagx3 = 0x01
         VulnLogger(url, 'Anti-CSRF Token removal returns valid response.', '[i] POST Query: '+req.__str__())

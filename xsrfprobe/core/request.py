@@ -16,19 +16,18 @@ from xsrfprobe.files.config import *
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.core.randua import RandomAgent
 from xsrfprobe.files.discovered import FILES_EXEC
-from xsrfprobe.core.logger import pheaders, ErrorLogger  # import ends
+from xsrfprobe.core.logger import presheaders, preqheaders, ErrorLogger  # import ends
 
 headers = HEADER_VALUES  # set the headers
 
 # Set Cookie
 if COOKIE_VALUE:
-    for cookie in COOKIE_VALUE:
-        headers['Cookie'] = cookie
+    headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
 
 # Set User-Agent
-if USER_AGENT_RANDOM or not USER_AGENT:
+if USER_AGENT_RANDOM:
     headers['User-Agent'] = RandomAgent()
-else:
+if USER_AGENT:
     headers['User-Agent'] = USER_AGENT
 
 def Post(url, action, data):
@@ -36,14 +35,19 @@ def Post(url, action, data):
     The main use of this function is as a
            Form Requester [POST].
     '''
+    global headers, TIMEOUT_VALUE, VERIFY_CERT
     time.sleep(DELAY_VALUE)  # If delay param has been supplied
+    verbout(GR, 'Preparing the request...')
+    if DISPLAY_HEADERS:
+        preqheaders(headers)
     verbout(GR, 'Processing the '+color.GREY+'POST'+color.END+' Request...')
     main_url = urljoin(url, action)  # join url and action
     try:
         # Make the POST Request.
-        response = requests.post(main_url, headers=headers, data=data, timeout=TIMEOUT_VALUE)
+        response = requests.post(main_url, headers=headers, data=data,
+                            timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
         if DISPLAY_HEADERS:
-            pheaders(response.headers)
+            presheaders(response.headers)
         return response  # read data content
     except requests.exceptions.HTTPError as e:  # if error
         verbout(R, "HTTP Error : "+main_url)
@@ -72,7 +76,8 @@ def Get(url, headers=headers):
     The main use of this function is as a
             Url Requester [GET].
     '''
-    # We do not verify thr request while GET requests
+    global TIMEOUT_VALUE, VERIFY_CERT
+    # We do not verify the request while GET requests
     time.sleep(DELAY_VALUE)  # We make requests after the time delay
     # Making sure the url is not a file
     if url.split('.')[-1].lower() in (FILE_EXTENSIONS or EXECUTABLES):
@@ -80,11 +85,15 @@ def Get(url, headers=headers):
         verbout(G, 'Found File: '+color.BLUE+url)
         return None
     try:
+        verbout(GR, 'Preparing the request...')
+        if DISPLAY_HEADERS:
+            preqheaders(headers)
         verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
-        req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE, stream=False)
+        req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE,
+                                    stream=False, verify=VERIFY_CERT)
         # Displaying headers if DISPLAY_HEADERS is 'True'
         if DISPLAY_HEADERS:
-            pheaders(req.headers)
+            presheaders(req.headers)
         # Return the object
         return req
     except requests.exceptions.MissingSchema as e:

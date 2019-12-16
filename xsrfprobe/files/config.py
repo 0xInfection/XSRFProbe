@@ -14,7 +14,7 @@
 # Lets assign some global variables...
 global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALUE
 global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
-global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR
+global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR, VERIFY_CERT
 global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS, GEN_MALICIOUS
 
 # Site Url to be scanned (Required)
@@ -56,7 +56,7 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 # NOTE: If this value is not supplied, XSRFProbe will only scan for simple
 # cookies which the tool might encounter while making requests, especially
 # POST requests.
-COOKIE_VALUE = {}
+COOKIE_VALUE = []
 
 # Header values to be used (Modify it as per your need)
 HEADER_VALUES = {
@@ -110,13 +110,18 @@ REFERER_ORIGIN_CHECKS = True
 # cases of Form based (POST Based) CSRFs.
 FORM_SUBMISSION = True
 
+# A switch to determine whether to verify certificates upon
+# requests. This will help devs test their web-app with self-signed
+# certificates.
+VERIFY_CERT = True
+
 # Referer Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-REFERER_URL = 'http://www.pwn.io'
+REFERER_URL = 'http://not-a-valid-referer.xsrfprobe-csrftesting.0xinfection.xyz'
 
 # Origin Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-ORIGIN_URL = 'http://www.pwn.io'
+ORIGIN_URL = 'http://not-a-valid-origin.xsrfprobe-csrftesting.0xinfection.xyz'
 
 # The length of the custom token to be generated for params
 #

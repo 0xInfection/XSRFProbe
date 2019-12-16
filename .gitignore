@@ -59,4 +59,4 @@ docs/_build/
 .github/*
 .idea/*
 .vscode/*
-.xsrfprobe-output/*
+xsrfprobe-output/*

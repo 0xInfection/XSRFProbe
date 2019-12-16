@@ -30,13 +30,24 @@ def logger(filename, content):
             f.write(content)  # else we write out as it is... ;)
         f.write('\n')
 
-def pheaders(tup):
+def preqheaders(tup):
     '''
     This module prints out the headers as received in the
                     requests normally.
     '''
     verbout(GR, 'Receiving headers...\n')
-    verbout(color.GREY,'  '+color.UNDERLINE+'HEADERS'+color.END+color.GREY+':'+'\n')
+    verbout(color.GREY,'  '+color.UNDERLINE+'REQUEST HEADERS'+color.END+color.GREY+':'+'\n')
+    for key, val in tup.items():
+        verbout('  ',color.CYAN+key+': '+color.ORANGE+val)
+    verbout('','')
+
+def presheaders(tup):
+    '''
+    This module prints out the headers as received in the
+                    requests normally.
+    '''
+    verbout(GR, 'Receiving headers...\n')
+    verbout(color.GREY,'  '+color.UNDERLINE+'RESPONSE HEADERS'+color.END+color.GREY+':'+'\n')
     for key, val in tup.items():
         verbout('  ',color.CYAN+key+': '+color.ORANGE+val)
     verbout('','')

@@ -44,13 +44,8 @@ def Persistence(url, postq):
     # First its time for GET type requests. Lets prepare our request.
     cookies = []
     verbout(C, 'Proceeding to test cookie persistence via '+color.CYAN+'Prepared GET Requests'+color.END+'...')
-    gen_headers = HEADER_VALUES
-    gen_headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36'
-    if COOKIE_VALUE:
-        for cookie in COOKIE_VALUE:
-            gen_headers['Cookie'] = cookie
     verbout(GR,'Making the request...')
-    req = Get(url, headers=gen_headers)
+    req = Get(url, headers=HEADER_VALUES)
     if req.cookies:
         for cook in req.cookies:
             if cook.expires:
@@ -106,16 +101,17 @@ def Persistence(url, postq):
         verbout(GR,'Setting custom generic headers...')
         gen_headers = HEADER_VALUES
         for name, agent in user_agents.items():
-            verbout(C,'Using User-Agent : '+color.CYAN+name)
-            verbout(GR,'Value : '+color.ORANGE+agent)
+            verbout(C, 'Using User-Agent : '+color.CYAN+name)
+            verbout(GR, 'Value : '+color.ORANGE+agent)
             gen_headers['User-Agent'] = agent
             if COOKIE_VALUE:
-                for cookie in COOKIE_VALUE:
-                    gen_headers['Cookie'] = cookie
+                gen_headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
             req = Get(url, headers=gen_headers)
             # We will append this to stuff only when set-cookie is being supplied.
             if req.headers.get('Set-Cookie'):
                 resps.append(req.headers.get('Set-Cookie'))
+        HEADER_VALUES.pop('User-Agent', None)
+        HEADER_VALUES['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36'
         if resps:
             if checkDuplicates(resps):
                 verbout(G, 'Set-Cookie header does not change with varied User-Agents...')
