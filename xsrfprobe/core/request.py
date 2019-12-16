@@ -16,7 +16,7 @@ from xsrfprobe.files.config import *
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.core.randua import RandomAgent
 from xsrfprobe.files.discovered import FILES_EXEC
-from xsrfprobe.core.logger import pheaders, ErrorLogger  # import ends
+from xsrfprobe.core.logger import presheaders, preqheaders, ErrorLogger  # import ends
 
 headers = HEADER_VALUES  # set the headers
 
@@ -37,6 +37,9 @@ def Post(url, action, data):
     '''
     global headers, TIMEOUT_VALUE, VERIFY_CERT
     time.sleep(DELAY_VALUE)  # If delay param has been supplied
+    verbout(GR, 'Preparing the request...')
+    if DISPLAY_HEADERS:
+        preqheaders(headers)
     verbout(GR, 'Processing the '+color.GREY+'POST'+color.END+' Request...')
     main_url = urljoin(url, action)  # join url and action
     try:
@@ -44,7 +47,7 @@ def Post(url, action, data):
         response = requests.post(main_url, headers=headers, data=data,
                             timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
         if DISPLAY_HEADERS:
-            pheaders(response.headers)
+            presheaders(response.headers)
         return response  # read data content
     except requests.exceptions.HTTPError as e:  # if error
         verbout(R, "HTTP Error : "+main_url)
@@ -82,12 +85,15 @@ def Get(url, headers=headers):
         verbout(G, 'Found File: '+color.BLUE+url)
         return None
     try:
+        verbout(GR, 'Preparing the request...')
+        if DISPLAY_HEADERS:
+            preqheaders(headers)
         verbout(GR, 'Processing the '+color.GREY+'GET'+color.END+' Request...')
         req = requests.get(url, headers=headers, timeout=TIMEOUT_VALUE,
                                     stream=False, verify=VERIFY_CERT)
         # Displaying headers if DISPLAY_HEADERS is 'True'
         if DISPLAY_HEADERS:
-            pheaders(req.headers)
+            presheaders(req.headers)
         # Return the object
         return req
     except requests.exceptions.MissingSchema as e:
