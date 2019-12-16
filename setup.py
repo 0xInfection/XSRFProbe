@@ -17,7 +17,7 @@ setup(
     author_email='theinfecteddrake@gmail.com',
     license='GPLv3',
     url='https://github.com/0xInfection/XSRFProbe',
-    download_url='https://github.com/0xInfection/XSRFProbe/archive/v2.1.1.zip',
+    download_url='https://github.com/0xInfection/XSRFProbe/archive/v2.2.0.zip',
     packages=find_packages(),
     scripts=['xsrfprobe/bin/xsrfprobe'],
     install_requires=[
