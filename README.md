@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/badge/Python-3.x-green.svg">
   </a>
   <a href="https://github.com/0xinfection/XSRFProbe/releases">
-    <img src="https://img.shields.io/badge/Version-v2.1%20(stable)-blue.svg">
+    <img src="https://img.shields.io/badge/Version-v2.2%20(stable)-blue.svg">
   </a>
   <a href="https://github.com/0xinfection/XSRFProbe/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-GPLv3-orange.svg">
@@ -75,7 +75,7 @@ xsrfprobe --help
 - After testing XSRFProbe on a site, an output folder is created in your present working directory as `xsrfprobe-output`. Under this folder you can view the detailed logs and information collected during the scans.
 
 ### Version and License:
-XSRFProbe `v2.1` release is a `Stage 5 Production-Ready (Stable)` release and the work is licensed under the [GNU General Public License (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html).
+XSRFProbe `v2.2` release is a `Stage 5 Production-Ready (Stable)` release and the work is licensed under the [GNU General Public License (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ### Warnings:
 
