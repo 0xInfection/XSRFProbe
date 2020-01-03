@@ -83,6 +83,9 @@ def Engine():  # lets begin it!
     bs1 = BeautifulSoup(form1).findAll('form', action=True)[0]  # make sure the stuff works properly
     bs2 = BeautifulSoup(form2).findAll('form', action=True)[0]  # same as above
     init1 = web  # First init
+    hdrs = [('Cookie', ','.join(cookie for cookie in COOKIE_VALUE))]
+    [hdrs.append((k, v)) for k, v in HEADER_VALUES.items()]
+    resp1.addheaders = resp2.addheaders = hdrs;
     resp1.open(init1)  # Makes request as User2
     resp2.open(init1)  # Make request as User1
 
@@ -169,9 +172,9 @@ def Engine():  # lets begin it!
                             if (POST_BASED) and ((not query) or (txor)):
                                 try:
                                     if m['name']:
-                                        PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify(), m['name'])
+                                        PostBased(url, r1.text, r2.text, r3.text, action, result, genpoc, m.prettify(), m['name'])
                                 except KeyError:
-                                    PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify())
+                                    PostBased(url, r1.text, r2.text, r3.text, action, result, genpoc, m.prettify())
                             else:
                                 print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
                                 print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to POST-Based CSRF Attacks!')
@@ -291,7 +294,7 @@ def Engine():  # lets begin it!
         ErrorLogger('KeyBoard Interrupt', 'Aborted')
         GetLogger()  # The scanning has interrupted, so now we can log out all the links ;)
         sys.exit(1)
-    except Exception as e:
+    #except Exception as e:
         print('\n'+R+'Encountered an error. \n'+R+'Please view the error log files to view what went wrong.')
         verbout(R, e.__str__())
         ErrorLogger(url, e)
