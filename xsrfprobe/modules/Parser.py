@@ -18,8 +18,7 @@ from xsrfprobe.core.colors import *  # import ends
 
 def buildUrl(url, href):  # receive form input type / url
     '''
-    This function is for building a proper URL based
-                on comparison to 'href'.
+    This function is for building a proper URL based on comparison to 'href'.
     '''
     # Making an exclusion list, so as to stop detection of Self-CSRF (Logout-CSRF)
     #
@@ -29,7 +28,7 @@ def buildUrl(url, href):  # receive form input type / url
     #
     # TODO: Add more to EXCLUSIONS_LIST.
     if href == "http://localhost" or any((re.search(s, href, re.IGNORECASE)) for s in EXCLUSIONS_LIST):
-        return ''
+        return None
 
     url_parts = urlsplit(url)  # SplitResult(scheme, netloc, path, query, fragment)
     href_parts = urlsplit(href)
@@ -43,7 +42,7 @@ def buildUrl(url, href):  # receive form input type / url
         if len(href_parts.netloc) == 0 and (len(href_parts.path) != 0 or len(href_parts.query) != 0):
             domain = url_parts.netloc  # Assigning the main domain
             if href_parts.path.startswith('/'):  # If the href starts with a '/', it is an internal Url
-                app = 'http://' + domain + href_parts.path  # Startpage
+                app = url_parts.scheme + '://' + domain + href_parts.path  # Startpage
             else:
                 try:
                     app = 'http://' + domain + re.findall(PROTOCOLS, url_parts.path)[0] + href_parts.path
