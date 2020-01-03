@@ -54,10 +54,13 @@ def GenNormalPoC(action, fields, method='POST', encoding_type='application/x-www
     formPrettify(indentPrettify(content))
     print('')
     # Write out the file af...
-    fi = open(OUTPUT_DIR+action.split('//')[1].replace('/','-')+'-csrf-poc.html', 'w+', encoding='utf8')
+    if '//' in action:
+        splitterfunc = action.split('//', 1)[1].replace('/','-')
+    else: splitterfunc = action.replace('/', '-')
+    fi = open(OUTPUT_DIR+splitterfunc+'-csrf-poc.html', 'w+', encoding='utf-8')
     fi.write(content.prettify())
     fi.close()
-    print(G+'PoC successfully saved under '+color.ORANGE+OUTPUT_DIR+action.split('//')[1].replace('/','-')+'-csrf-poc.html')
+    print(G+'PoC successfully saved under '+color.ORANGE+OUTPUT_DIR+splitterfunc+'-csrf-poc.html')
 
 def GenMalicious(action, fields, method='POST', encoding_type='application/x-www-form-urlencoded'):
     """
@@ -91,7 +94,10 @@ def GenMalicious(action, fields, method='POST', encoding_type='application/x-www
     formPrettify(indentPrettify(content))
     print('')
     # Write out the file af...
-    fi = open(OUTPUT_DIR+action.split('//')[1].replace('/','-')+'-malicious-poc.html', 'w+', encoding='utf8')
+    if '//' in action:
+        splitterfunc = action.split('//', 1)[1].replace('/','-')
+    else: splitterfunc = action.replace('/', '-')
+    fi = open(OUTPUT_DIR+splitterfunc+'-csrf-poc.html', 'w+', encoding='utf-8')    
     fi.write(content.prettify())
     fi.close()
-    print(G+'PoC successfully saved under '+color.ORANGE+OUTPUT_DIR+action.split('//')[1].replace('/','-')+'-malicious-poc.html')
+    print(G+'PoC successfully saved under '+color.ORANGE+OUTPUT_DIR+splitterfunc+'-malicious-poc.html')
