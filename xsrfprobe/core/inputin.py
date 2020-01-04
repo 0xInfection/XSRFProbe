@@ -15,7 +15,11 @@ from xsrfprobe.core.colors import *
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.files.dcodelist import IP
 from xsrfprobe.core.logger import ErrorLogger
-from xsrfprobe.files.config import SITE_URL, CRAWL_SITE
+from xsrfprobe.files.config import (
+    SITE_URL, 
+    CRAWL_SITE,
+    VERIFY_CERT
+)
 
 def inputin():
     '''
@@ -40,7 +44,7 @@ def inputin():
     if not CRAWL_SITE:
         try:
             print(O+'Testing '+color.CYAN+web.split('//')[1].split('/', 1)[1]+color.END+' endpoint status...')
-            requests.get(web)
+            requests.get(web, verify=VERIFY_CERT)
             print(color.GREEN+' [+] Endpoint seems to be up!'+color.END)
         except requests.exceptions.MissingSchema as e:
             verbout(R, 'Exception at: '+color.GREY+web0)

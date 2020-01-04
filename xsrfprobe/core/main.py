@@ -12,6 +12,7 @@
 # Standard Package imports
 import os
 import re
+import ssl
 import time
 import warnings
 import difflib
@@ -73,8 +74,14 @@ def Engine():  # lets begin it!
     # For the cookies that we encounter during requests...
     Cookie0 = http.cookiejar.CookieJar()  # First as User1
     Cookie1 = http.cookiejar.CookieJar()  # Then as User2
-    resp1 = build_opener(HTTPCookieProcessor(Cookie0))  # Process cookies
-    resp2 = build_opener(HTTPCookieProcessor(Cookie1))  # Process cookies
+    if not VERIFY_CERT:
+        context=ssl._create_unverified_context()
+        sslHandler = urllib.request.HTTPSHandler(context=context)
+        resp1 = build_opener(HTTPCookieProcessor(Cookie0), sslHandler)
+        resp2 = build_opener(HTTPCookieProcessor(Cookie1), sslHandler)
+    else:
+        resp1 = build_opener(HTTPCookieProcessor(Cookie0))
+        resp2 = build_opener(HTTPCookieProcessor(Cookie1)) 
     actionDone = []  # init to the done stuff
     csrf = ''  # no token initialise / invalid token
     ref_detect = 0x00  # Null Char Flag
@@ -268,12 +275,6 @@ def Engine():  # lets begin it!
                                     ErrorLogger(url, msg)
                         actionDone.append(action)  # add the stuff done
                         i+=1  # Increase user iteration
-                except URLError as e:  # if again...
-                    verbout(R, 'Exception at : '+url)  # again exception -_-
-                    time.sleep(0.4)
-                    verbout(O, 'Moving on...')
-                    ErrorLogger(url, e)
-                    continue  # make sure it doesn't stop at exceptions
                 # This error usually happens when some sites are protected by some load balancer
                 # example Cloudflare. These domains return a 403 forbidden response in various
                 # contexts. For example when making reverse DNS queries.
@@ -283,6 +284,12 @@ def Engine():  # lets begin it!
                         verbout(R, 'Error Code : ' +O+ str(e.code))
                         ErrorLogger(url, e)
                         quit()
+                except URLError as e:  # if again...
+                    verbout(R, 'Exception at : '+url)  # again exception -_-
+                    time.sleep(0.4)
+                    verbout(O, 'Moving on...')
+                    ErrorLogger(url, e)
+                    continue  # make sure it doesn't stop at exceptions
         GetLogger()  # The scanning has finished, so now we can log out all the links ;)
         print('\n'+G+"Scan completed!"+'\n')
         Analysis()  # For Post Scan Analysis
