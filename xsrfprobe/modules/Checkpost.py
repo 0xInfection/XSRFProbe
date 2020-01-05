@@ -40,9 +40,6 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
     for n in checkdiffx2:
         if re.match('\+|-', n):  # get regex matching stuff
             result13.append(n)  # append to existing list
-    # Make sure m_action has a / before it. (legitimate action).
-    if not m_action.startswith('/'):
-        m_action = '/' + m_action
 
     # This logic is based purely on the assumption on the difference of various requests
     # and response body.
@@ -81,7 +78,7 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
             # If --malicious has been supplied
             if GEN_MALICIOUS:
                 # Generates a malicious CSRF form
-                GenMalicious(url, genpoc.__str__())
+                GenMalicious(m_action, genpoc.__str__())
             else:
                 # Generates a normal PoC
-                GenNormalPoC(url, genpoc.__str__())
+                GenNormalPoC(m_action, genpoc.__str__())

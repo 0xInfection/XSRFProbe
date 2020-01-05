@@ -44,5 +44,5 @@ def banabout(): # some fancy banner stuff :p
     time.sleep(0.05)
     print(color.BLUE+'   [---]                                                                           [---]')
     time.sleep(0.05)
-    print(color.BLUE+'   [---]  '+color.ORANGE+'                         ~  Version '+color.RED+'2.1.0'+color.ORANGE+'  ~                           '+color.BLUE+'  [---]\n')
+    print(color.BLUE+'   [---]  '+color.ORANGE+'                         ~  Version '+color.RED+__version__+color.ORANGE+'  ~                           '+color.BLUE+'  [---]\n')
     time.sleep(0.05)

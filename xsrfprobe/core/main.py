@@ -12,6 +12,7 @@
 # Standard Package imports
 import os
 import re
+import ssl
 import time
 import warnings
 import difflib
@@ -73,8 +74,14 @@ def Engine():  # lets begin it!
     # For the cookies that we encounter during requests...
     Cookie0 = http.cookiejar.CookieJar()  # First as User1
     Cookie1 = http.cookiejar.CookieJar()  # Then as User2
-    resp1 = build_opener(HTTPCookieProcessor(Cookie0))  # Process cookies
-    resp2 = build_opener(HTTPCookieProcessor(Cookie1))  # Process cookies
+    if not VERIFY_CERT:
+        context=ssl._create_unverified_context()
+        sslHandler = urllib.request.HTTPSHandler(context=context)
+        resp1 = build_opener(HTTPCookieProcessor(Cookie0), sslHandler)
+        resp2 = build_opener(HTTPCookieProcessor(Cookie1), sslHandler)
+    else:
+        resp1 = build_opener(HTTPCookieProcessor(Cookie0))
+        resp2 = build_opener(HTTPCookieProcessor(Cookie1)) 
     actionDone = []  # init to the done stuff
     csrf = ''  # no token initialise / invalid token
     ref_detect = 0x00  # Null Char Flag
@@ -83,6 +90,9 @@ def Engine():  # lets begin it!
     bs1 = BeautifulSoup(form1).findAll('form', action=True)[0]  # make sure the stuff works properly
     bs2 = BeautifulSoup(form2).findAll('form', action=True)[0]  # same as above
     init1 = web  # First init
+    hdrs = [('Cookie', ','.join(cookie for cookie in COOKIE_VALUE))]
+    [hdrs.append((k, v)) for k, v in HEADER_VALUES.items()]
+    resp1.addheaders = resp2.addheaders = hdrs;
     resp1.open(init1)  # Makes request as User2
     resp2.open(init1)  # Make request as User1
 
@@ -169,9 +179,9 @@ def Engine():  # lets begin it!
                             if (POST_BASED) and ((not query) or (txor)):
                                 try:
                                     if m['name']:
-                                        PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify(), m['name'])
+                                        PostBased(url, r1.text, r2.text, r3.text, action, result, genpoc, m.prettify(), m['name'])
                                 except KeyError:
-                                    PostBased(url, r1.text, r2.text, r3.text, m['action'], result, genpoc, m.prettify())
+                                    PostBased(url, r1.text, r2.text, r3.text, action, result, genpoc, m.prettify())
                             else:
                                 print(color.GREEN+' [+] The form was requested with a Anti-CSRF token.')
                                 print(color.GREEN+' [+] Endpoint '+color.BG+' NOT VULNERABLE '+color.END+color.GREEN+' to POST-Based CSRF Attacks!')
@@ -265,12 +275,6 @@ def Engine():  # lets begin it!
                                     ErrorLogger(url, msg)
                         actionDone.append(action)  # add the stuff done
                         i+=1  # Increase user iteration
-                except URLError as e:  # if again...
-                    verbout(R, 'Exception at : '+url)  # again exception -_-
-                    time.sleep(0.4)
-                    verbout(O, 'Moving on...')
-                    ErrorLogger(url, e)
-                    continue  # make sure it doesn't stop at exceptions
                 # This error usually happens when some sites are protected by some load balancer
                 # example Cloudflare. These domains return a 403 forbidden response in various
                 # contexts. For example when making reverse DNS queries.
@@ -280,6 +284,12 @@ def Engine():  # lets begin it!
                         verbout(R, 'Error Code : ' +O+ str(e.code))
                         ErrorLogger(url, e)
                         quit()
+                except URLError as e:  # if again...
+                    verbout(R, 'Exception at : '+url)  # again exception -_-
+                    time.sleep(0.4)
+                    verbout(O, 'Moving on...')
+                    ErrorLogger(url, e)
+                    continue  # make sure it doesn't stop at exceptions
         GetLogger()  # The scanning has finished, so now we can log out all the links ;)
         print('\n'+G+"Scan completed!"+'\n')
         Analysis()  # For Post Scan Analysis
@@ -291,7 +301,7 @@ def Engine():  # lets begin it!
         ErrorLogger('KeyBoard Interrupt', 'Aborted')
         GetLogger()  # The scanning has interrupted, so now we can log out all the links ;)
         sys.exit(1)
-    except Exception as e:
+    #except Exception as e:
         print('\n'+R+'Encountered an error. \n'+R+'Please view the error log files to view what went wrong.')
         verbout(R, e.__str__())
         ErrorLogger(url, e)

@@ -44,11 +44,9 @@ class Form_Debugger():
 
         verbout(GR, 'Processing'+color.BOLD+' <input type="email" name="...')  # get password inputs
         for m in form.findAll('input', {'name' : True, 'type' : 'email'}):
-            try:
-                if m['value']:   # Ignore case while searching for a match
-                    value = m['value'].encode('utf8')  # make sure no encoding errors there
-            except KeyError:
-                value = EMAIL_VALUE
+            value = EMAIL_VALUE
+            if m['value']:   # Ignore case while searching for a match
+                value = m['value'].encode('utf8')  # make sure no encoding errors there
             cr_input[m['name']] = value  # assign passed on value
             cr1={}
             cr1['type'] = 'email'
