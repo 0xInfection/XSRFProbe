@@ -11,6 +11,7 @@
 
 import os
 from requests import get
+from xsrfprobe import __version__
 from xsrfprobe.core.colors import *
 
 def updater():
@@ -18,10 +19,10 @@ def updater():
     Function to update XSRFProbe seamlessly.
     '''
     print(GR+'Checking for updates...')
-    vno = get('https://raw.githubusercontent.com/0xInfection/XSRFProbe/master/files/VersionNum').text
+    vno = get('https://raw.githubusercontent.com/0xInfection/XSRFProbe/master/xsrfprobe/files/VersionNum').text
     print(GR+'Version on GitHub: '+color.CYAN+vno.strip())
-    print(GR+'Version You Have : '+color.CYAN+open('files/VersionNum').read())
-    if vno != open('files/VersionNum').read():
+    print(GR+'Version You Have : '+color.CYAN+__version__)
+    if vno != __version__:
         print(G+'A new version of XSRFProbe is available!')
         current_path = os.getcwd().split('/') # if you know it, you know it
         folder = current_path[-1] # current directory name
