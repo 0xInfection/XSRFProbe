@@ -8,5 +8,3 @@
 # Author: 0xInfection
 #This module requires XSRFProbe
 #https://github.com/0xInfection/XSRFProbe
-
-pass

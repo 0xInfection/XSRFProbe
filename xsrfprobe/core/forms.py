@@ -35,26 +35,26 @@ def testFormx2(): # an example of a xsrfprobe-test-form (used drupal)
 
     test_form_0x02 = """
     <form name='shit' id="contact" action="/nibba.php" method="post">
-     <h3>Colorlib Contact Form</h3>
-     <h4>Contact us for custom quote</h4>
-     <fieldset>
-     <input placeholder="Your name" type="text" tabindex="1" required autofocus>
-     </fieldset>
-     <fieldset>
-     <input placeholder="Your Email Address" type="email" tabindex="2" required>
-     </fieldset>
-     <fieldset>
-     <input placeholder="Your Phone Number (optional)" type="tel" tabindex="3" required>
-     </fieldset>
-     <fieldset>
-     <input placeholder="Your Web Site (optional)" type="url" tabindex="4" required>
-     </fieldset>
-     <fieldset>
-     <textarea placeholder="Type your message here...." tabindex="5" required></textarea>
-     </fieldset>
-     <fieldset>
-     <button name="submit" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
-     </fieldset>
+        <h3>Colorlib Contact Form</h3>
+        <h4>Contact us for custom quote</h4>
+            <fieldset>
+            <input placeholder="Your name" type="text" tabindex="1" required autofocus>
+            </fieldset>
+                <fieldset>
+                <input placeholder="Your Email Address" type="email" tabindex="2" required>
+                </fieldset>
+                    <fieldset>
+                        <input placeholder="Your Phone Number (optional)" type="tel" tabindex="3" required>
+                    </fieldset>
+                    <fieldset>
+                <input placeholder="Your Web Site (optional)" type="url" tabindex="4" required>
+                </fieldset>
+                <fieldset>
+            <textarea placeholder="Type your message here...." tabindex="5" required></textarea>
+            </fieldset>
+            <fieldset>
+        <button name="submit" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
+        </fieldset>
     </form> """
 
     return test_form_0x02
