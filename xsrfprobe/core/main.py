@@ -92,7 +92,7 @@ def Engine():  # lets begin it!
     init1 = web  # First init
     hdrs = [('Cookie', ','.join(cookie for cookie in COOKIE_VALUE))]
     [hdrs.append((k, v)) for k, v in HEADER_VALUES.items()]
-    resp1.addheaders = resp2.addheaders = hdrs;
+    resp1.addheaders = resp2.addheaders = hdrs
     resp1.open(init1)  # Makes request as User2
     resp2.open(init1)  # Make request as User1
 
@@ -301,7 +301,7 @@ def Engine():  # lets begin it!
         ErrorLogger('KeyBoard Interrupt', 'Aborted')
         GetLogger()  # The scanning has interrupted, so now we can log out all the links ;)
         sys.exit(1)
-    #except Exception as e:
+    except Exception as e:
         print('\n'+R+'Encountered an error. \n'+R+'Please view the error log files to view what went wrong.')
         verbout(R, e.__str__())
         ErrorLogger(url, e)
