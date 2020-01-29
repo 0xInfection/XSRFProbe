@@ -103,12 +103,12 @@ def Engine():  # lets begin it!
         # Implementing the first mode. [NO CRAWL]
         if not CRAWL_SITE:
             url = web
-            response = Get(url).text
             try:
-                verbout(O,'Trying to parse response...')
+                response = Get(url).text
+                verbout(O, 'Trying to parse response...')
                 soup = BeautifulSoup(response)  # Parser init
-            except HTMLParser.HTMLParseError:
-                verbout(R,'BeautifulSoup Error: '+url)
+            except AttributeError:
+                verbout(R, 'No response received, site probably down: '+url)
             i = 0 # Init user number
             if REFERER_ORIGIN_CHECKS:
                 # Referer Based Checks if True...
@@ -302,7 +302,8 @@ def Engine():  # lets begin it!
         GetLogger()  # The scanning has interrupted, so now we can log out all the links ;)
         sys.exit(1)
     except Exception as e:
-        print('\n'+R+'Encountered an error. \n'+R+'Please view the error log files to view what went wrong.')
+        print('\n'+R+'Encountered an error. \n')
+        print(R+'Please view the error log files to view what went wrong.')
         verbout(R, e.__str__())
         ErrorLogger(url, e)
         GetLogger()
