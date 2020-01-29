@@ -46,7 +46,6 @@ COMMON_CSRF_NAMES = (
                     'auth',
                     'hash',
                     'secret',
-                    'timestamp',
                     'verify',
                 )
 
@@ -84,6 +83,7 @@ TOKEN_ERRORS = (
                     'not valid',
                     'please check your request',
                     'your browser did something unexpected',
+                    'csrf'
                     'clearing your cookies',
                     'tampered token',
                     'null',
