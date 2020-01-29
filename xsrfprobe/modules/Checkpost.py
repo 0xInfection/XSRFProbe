@@ -78,7 +78,7 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
             # If --malicious has been supplied
             if GEN_MALICIOUS:
                 # Generates a malicious CSRF form
-                GenMalicious(m_action, genpoc.__str__())
+                GenMalicious(url, genpoc.__str__())
             else:
                 # Generates a normal PoC
-                GenNormalPoC(m_action, genpoc.__str__())
+                GenNormalPoC(url, genpoc.__str__())
