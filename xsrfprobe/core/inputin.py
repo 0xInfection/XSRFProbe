@@ -27,6 +27,8 @@ def inputin():
     '''
     if SITE_URL:
         web = SITE_URL  # If already assigned
+    if not web.endswith('/'):
+        web = web + '/'
     if 'http' not in web:  # add protocol to site
         web = 'http://' + web
     try:
