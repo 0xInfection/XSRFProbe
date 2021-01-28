@@ -48,7 +48,7 @@ __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/
 - [x] Detailed logging system of errors, vulnerabilities, tokens and other stuffs.
 
 ### Gallery:
-Lets see some real-world scenarios of XSRFProbe in action:
+Let's see some real-world scenarios of XSRFProbe in action:
 
 <img src="https://i.imgur.com/AAE1HrE.gif" width=50% /><img src="https://i.imgur.com/TJt103P.gif" width=50% />
 <img src="https://i.imgur.com/yzyvXHX.gif" />
