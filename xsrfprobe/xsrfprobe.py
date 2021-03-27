@@ -11,4 +11,4 @@
 
 def startEngine():
     from xsrfprobe.core import main  # import stuff
-    main.Engine()  # start the Scanner Engine ;)
+    main.Engine()

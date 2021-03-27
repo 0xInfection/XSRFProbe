@@ -13,11 +13,8 @@ from difflib import SequenceMatcher
 
 def sameSequence(str1,str2):
     '''
-    This function is intended to find same sequence
-                between str1 and str2.
+    This function is intended to find same sequence between str1 and str2.
     '''
-    # Initialize SequenceMatcher object with
-    # Input string
     seqMatch = SequenceMatcher(None, str1, str2)
 
     # Find match of longest sub-string
@@ -32,15 +29,13 @@ def sameSequence(str1,str2):
 
 def replaceStrIndex(text, index=0, replacement=''):
     '''
-    This method returns a tampered string by
-                    replacement
+    This method returns a tampered string by replacement
     '''
     return '%s%s%s' % (text[:index], replacement, text[index+1:])
 
 def checkDuplicates(iterable):
     '''
-    This function works as a byte sequence checker for
-            tuples passed onto this function.
+    This function works as a byte sequence checker for tuples passed onto this function.
     '''
     seen = set()
     for x in iterable:
@@ -51,8 +46,7 @@ def checkDuplicates(iterable):
 
 def byteString(s, encoding='utf8'):
     """
-    Return a byte-string version of 's',
-            Encoded as utf-8.
+    Return a byte-string version of 's', encoded as utf-8.
     """
     try:
         s = s.encode(encoding)
@@ -60,10 +54,9 @@ def byteString(s, encoding='utf8'):
         s = str(s)
     return s
 
-def subSequence(str1,str2):
+def subSequence(str1, str2):
     '''
-    Returns whether 'str1' and 'str2' are subsequence
-                    of one another.
+    Returns whether 'str1' and 'str2' are subsequence of one another.
     '''
     j = 0    # Index of str1
     i = 0    # Index of str2

@@ -35,7 +35,7 @@ USER_AGENT_RANDOM = False
 
 # User-Agent to be used (If COOKIE_VALUE supplied).
 #
-# This is standard User-Agent emulating Chrome 68 on Windows 10 
+# This is standard User-Agent emulating Chrome 68 on Windows 10
 #
 # NOTE: This is a precaution in case the cookie value is supplied,
 # if the user-agent gets changed from time to time, the remote
@@ -60,17 +60,17 @@ COOKIE_VALUE = []
 
 # Header values to be used (Modify it as per your need)
 HEADER_VALUES = {
-                    'Accept'            : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                    'Accept-Language'   : 'en-US,en;q=0.9',
-                    'Accept-Encoding'   : 'gzip, deflate, br',
-                    'Sec-Fetch-Mode'    : 'navigate',
-                    'DNT'               : '1',  # Do Not Track Request Header :D
-                    'Connection'        : 'close'
-                }
+    'Accept'            : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'Accept-Language'   : 'en-US,en;q=0.9',
+    'Accept-Encoding'   : 'gzip, deflate, br',
+    'Sec-Fetch-Mode'    : 'navigate',
+    'DNT'               : '1',  # Do Not Track Request Header :D
+    'Connection'        : 'close'
+}
 
 # Email value to be supplied when parsing/filling forms
-# You can modify it as per your need :)
-EMAIL_VALUE = 'csrf.testing@xsrfprobe.tld'
+# You can modify it as per your need
+EMAIL_VALUE = 'csrf.testing@xsrfprobe.github'
 
 # Plaintext value to be supplied when parsing/filling forms
 TEXT_VALUE = 'csrftesting'
@@ -79,8 +79,7 @@ TEXT_VALUE = 'csrftesting'
 TIMEOUT_VALUE = 7
 
 # The time delay between requests. This option is especially required
-# when there is some sort of security measure such as load-balancers
-# or a Firewall (WAF).
+# when there is some sort of security measure such as WAF.
 DELAY_VALUE = 0
 
 # Whether to include Cookie Based Checks everywhere
@@ -117,11 +116,11 @@ VERIFY_CERT = True
 
 # Referer Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-REFERER_URL = 'http://not-a-valid-referer.xsrfprobe-csrftesting.0xinfection.xyz'
+REFERER_URL = 'https://not-a-valid-referer.xsrfprobe-csrftesting.0xinfection.xyz'
 
 # Origin Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-ORIGIN_URL = 'http://not-a-valid-origin.xsrfprobe-csrftesting.0xinfection.xyz'
+ORIGIN_URL = 'https://not-a-valid-origin.xsrfprobe-csrftesting.0xinfection.xyz'
 
 # The length of the custom token to be generated for params
 #
@@ -158,7 +157,7 @@ POC_GENERATION = True
 GEN_MALICIOUS = False
 
 # A list of file extensions that might be come across while scanning
-# and crawling
+# and crawling, we won't crawl them
 FILE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'pdf', 'js', 'css', 'ico', 'bmp', 'svg', 'json', 'xml', 'xls', 'csv', 'docx',]
 # These are a list of executable files that are found on the web
 EXECUTABLES = ['deb', 'bat', 'exe', 'msu', 'msi', 'apk', 'bin', 'csh', 'inf', 'ini', 'msc', 'osx' ,'out', 'vbe', 'ws', 'msp', 'jse']

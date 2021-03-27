@@ -12,8 +12,9 @@
 # Importing stuff
 import argparse, sys, tld
 import urllib.parse, os, re
+from xsrfprobe.core.colors import R
 from xsrfprobe.files import config
-from xsrfprobe.core.colors import R, G
+from xsrfprobe.files import paramlist
 from xsrfprobe.core.updater import updater
 from xsrfprobe.files.dcodelist import IP
 from xsrfprobe import __version__, __license__
@@ -44,7 +45,8 @@ optional.add_argument('-E', '--exclude', help='Comma separated list of paths or 
 
 # Other Options
 # optional.add_argument('-h', '--help', help='Show this help message and exit', dest='disp', default=argparse.SUPPRESS, action='store_true')
-optional.add_argument('--user-agent', help='Custom user-agent to be used. Only one user-agent can be specified.', dest='user_agent', type=str)
+optional.add_argument('-Tn', '--token-name', help='Name of the Anti-CSRF token, if already known, else XSRFProbe will try to detect on its own.', dest='ktoken')
+optional.add_argument('--user-agent', help='Custom user-agent to be used. Only one user-agent can be specified.', dest='user_agent')
 optional.add_argument('--max-chars', help='Maximum allowed character length for the custom token value to be generated. For example: `--max-chars 5`. Default value is 6.', dest='maxchars', type=int)
 optional.add_argument('--crawl', help="Crawl the whole site and simultaneously test all discovered endpoints for CSRF.", dest='crawl', action='store_true')
 optional.add_argument('--no-analysis', help='Skip the Post-Scan Analysis of Tokens which were gathered during requests', dest='skipal', action='store_true')
@@ -64,7 +66,6 @@ if not len(sys.argv) > 1:
 # Update XSRFProbe to latest version
 if args.update:
     updater()
-    quit()
 
 # Print out XSRFProbe version
 if args.version:
@@ -142,12 +143,13 @@ if args.headers:
     for m in args.headers.split(','):
         config.HEADER_VALUES[m.split('=')[0].strip()] = m.split('=')[1].strip()  # nice hack ;)
 
+if args.ktoken:
+    paramlist.COMMON_CSRF_NAMES.append(args.ktoken)
+
 if args.exclude:
-    exc = args.exclude
     #config.EXCLUDE_URLS = [s for s in exc.split(',').strip()]
-    m = exc.split(',').strip()
-    for s in m:
-        config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s))
+    for s in args.exclude.split(','):
+        config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s.strip()))
 
 if args.randagent:
     # If random-agent argument supplied...

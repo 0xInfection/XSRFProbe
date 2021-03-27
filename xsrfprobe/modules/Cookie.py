@@ -164,8 +164,7 @@ def SameSite(url):
 def Cookie(url, request):
     '''
     This module is for checking the varied HTTP Cookies
-            and the related security on them to
-                    prevent CSRF attacks.
+    and the related security on them to prevent CSRF attacks.
     '''
     verbout(GR, 'Proceeding for cookie based checks...')
     SameSite(url)

@@ -68,7 +68,7 @@ def writeOut(line, current_indent, desired_indent):
 	new_line = ""
 	spaces_to_add = (current_indent * desired_indent) - current_indent
 	if spaces_to_add > 0:
-	    for i in range(spaces_to_add):
+	    for _ in range(spaces_to_add):
 	        new_line += " "
 	new_line += str(line) + "\n"
 	return new_line

@@ -34,11 +34,11 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=''):
     result12 = []  # an init
     verbout(O, 'Matching results...')
     for n in checkdiffx1:
-        if re.match('\+|-', n):  # get regex matching stuff only +/-
+        if re.match('\+|\-', n):  # get regex matching stuff only +/-
             result12.append(n)  # append to existing list
     result13 = []  # an init
     for n in checkdiffx2:
-        if re.match('\+|-', n):  # get regex matching stuff
+        if re.match('\+|\-', n):  # get regex matching stuff
             result13.append(n)  # append to existing list
 
     # This logic is based purely on the assumption on the difference of various requests
