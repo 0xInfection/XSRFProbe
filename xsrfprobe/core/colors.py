@@ -31,13 +31,13 @@ if os.name != 'nt' and os.name != 'mac':
     GR = '\033[1m \033[97m[*]\033[0m '  # processing
     G  = '\033[1m \033[92m[+]\033[0m '  # yay!
     C  = '\033[1m \033[96m[+]\033[0m '  # crawling...
-    
+
 else:
     class color:
-        # no escape sequences 
+        # no escape sequences
         END=BOLD=RED=GREEN=ORANGE=BLUE=PURPLE=UNDERLINE=CYAN=GREY=BR=BG=BY=''
     # no color values
-    O = ' [!] ' 
+    O = ' [!] '
     R = ' [-] '
     GR = ' [*] '
     G = ' [+] '

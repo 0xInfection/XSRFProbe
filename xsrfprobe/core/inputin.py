@@ -61,4 +61,4 @@ def inputin():
         web0 = web0 + '/'
     if web.split('//')[1] == web0:
         return web, ''
-    return (web, web0)
+    return web, web0

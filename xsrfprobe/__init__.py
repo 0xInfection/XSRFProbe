@@ -10,4 +10,5 @@
 # https://github.com/0xInfection/XSRFProbe
 
 __version__ = '2.3.1'
+__author__ = '0xInfection'
 __license__ = 'GNU General Public License v3 (GPLv3)'

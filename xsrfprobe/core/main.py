@@ -29,7 +29,6 @@ from xsrfprobe.core.inputin import inputin
 from xsrfprobe.core.request import Get, Post
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.core.prettify import formPrettify
-from xsrfprobe.core.banner import banner
 from xsrfprobe.core.logger import ErrorLogger, GetLogger
 from xsrfprobe.core.logger import VulnLogger, NovulLogger
 
@@ -55,7 +54,6 @@ from xsrfprobe.modules.Checkpost import PostBased
 warnings.filterwarnings('ignore')
 
 def Engine():
-    banner()
     web, fld = inputin()
     Cookie0 = http.cookiejar.CookieJar()
     Cookie1 = http.cookiejar.CookieJar()
@@ -280,7 +278,7 @@ def Engine():
         ErrorLogger('KeyBoard Interrupt', 'Aborted')
         GetLogger()
         sys.exit(1)
-    except Exception as e:
+    #except Exception as e:
         print('\n'+R+'Encountered an error. \n')
         print(R+'Please view the error log files to view what went wrong.')
         verbout(R, e.__str__())

@@ -9,9 +9,10 @@
 #This module requires XSRFProbe
 #https://github.com/0xInfection/XSRFProbe
 
-import re, html.parser
 import urllib.error
+import re, html.parser
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 from xsrfprobe.modules import Parser
 from xsrfprobe.core.colors import *
 from xsrfprobe.files.config import *
@@ -51,20 +52,20 @@ class Handler:  # Main Crawler Handler
             return True
         return False
 
-    def addToVisit(self, Parser):
-        self.toVisit.append(Parser)
+    def resolveBaseRef(self, link):
+        parsob = urlparse(link)
+        return parsob.path
+
+    def checkExclusion(self, link):
+        if link in EXCLUDE_DIRS:
+            return True
+        return False
 
     def process(self, root):
-        # Our first task is to remove urls that aren't to be scanned and have been
-        # passed via the --exclude parameter.
-        if EXCLUDE_DIRS:
-            for link in EXCLUDE_DIRS:
-                self.visited.append(link)
-
         url = self.currentURI
         try:
             query = Get(url)
-            if query != None and not str(query.status_code).startswith('40'):
+            if query != None and not str(query.status_code).startswith('4'):
                 INTERNAL_URLS.append(url)
             else:
                 if url in self.toVisit:
@@ -112,15 +113,14 @@ class Handler:  # Main Crawler Handler
                 p = re.compile(RID_SINGLE)
                 app = p.sub('', app)
 
-                # Add new link to the queue only if its pattern has not been added yet
-                uriPattern=removeIDs(app)
+                uriPattern = removeIDs(app)
                 if self.notExist(uriPattern) and app != url:
-                    if app not in EXCLUDE_DIRS:
+                    if not self.checkExclusion(self.resolveBaseRef(app)):
                         verbout(G, 'Added :> ' +color.BLUE+ app)
                         self.toVisit.append(app)
                         self.uriPatterns.append(uriPattern)
                     else:
-                        verbout(O, 'Skipping due to exclusion:', app)
+                        verbout(O, 'Skipping due to exclusion: '+app)
 
         self.visited.append(url)
         return soup
@@ -129,7 +129,7 @@ class Handler:  # Main Crawler Handler
         return self.uriPatterns
 
     def notExist(self, test):
-        if (test not in self.uriPatterns):
+        if test not in self.uriPatterns:
             return 1
         return 0
 

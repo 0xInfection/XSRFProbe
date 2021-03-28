@@ -21,17 +21,16 @@ def Origin(url):
     Check if the remote web application verifies the Origin before
                     processing the HTTP request.
     """
-    log = logging.getLogger('Origin')
     verbout(color.RED, '\n +-------------------------------------+')
     verbout(color.RED, ' |   Origin Based Request Validation   |')
     verbout(color.RED, ' +-------------------------------------+\n')
     # Make the request normally and get content
-    log.debug('Making a normal request...')
+    verbout('Making a normal request...')
     req0x01 = Get(url)
     global HEADER_VALUES
     # Set a fake Origin along with UA (pretending to be a
     # legitimate request from a browser)
-    log.debug('Tampering the Origin header...')
+    verbout('Tampering the Origin header...')
     gen_headers = HEADER_VALUES.copy()
     gen_headers['Origin'] = ORIGIN_URL
 
@@ -62,8 +61,8 @@ def Origin(url):
         NovulLogger(url, 'Presence of Origin Header based request Validation.')
         return True
     else:
-        log.debug('Endpoint '+color.RED+'Origin Validation Not Present'+color.END+'!')
-        log.debug('Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
+        verbout('Endpoint '+color.RED+'Origin Validation Not Present'+color.END+'!')
+        verbout('Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
         print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
         print(color.ORANGE+' [!] Possible Vulnerability Type: '+color.BY+' No Origin Based Request Validation '+color.END+'\n')
         VulnLogger(url, 'No Origin Header based request validation presence.', '[i] Response Headers: '+str(req0x02.headers))

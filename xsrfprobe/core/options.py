@@ -10,18 +10,23 @@
 # https://github.com/0xInfection/XSRFProbe
 
 # Importing stuff
-import argparse, sys, tld
-import urllib.parse, os, re
-from xsrfprobe.core.colors import R
+import argparse, sys, tld, os, re
+from xsrfprobe.core.colors import R, color
 from xsrfprobe.files import config
 from xsrfprobe.files import paramlist
 from xsrfprobe.core.updater import updater
 from xsrfprobe.files.dcodelist import IP
-from xsrfprobe import __version__, __license__
+from xsrfprobe import __author__, __license__, __version__
 
-print('''
-    \033[1;91mXSRFProbe\033[0m, \033[1;97mA \033[1;93mCross Site Request Forgery \033[1;97mAudit Toolkit\033[0m
-''')
+print('''%s
+                  ___              __
+   __ __ ___ ____/ _/__  _______  / /  ___
+   \ \ /(_-</ __/ _/ _ \/ __/ _ \/ _ \/ -_)
+  /_\_\/___/_/ /_// .__/_/  \___/_.__/\__/   %sv%s%s
+                 /_/
+                        %s~ @%s%s
+''' % (color.CYAN, color.GREY, __version__, color.CYAN, color.BLUE, __author__, color.END))
+
 # Processing command line arguments
 parser = argparse.ArgumentParser(usage="xsrfprobe -u <url> <args>")
 parser._action_groups.pop()
@@ -38,14 +43,14 @@ optional.add_argument('-c', '--cookie', help='Cookie value to be requested with 
 optional.add_argument('-o', '--output', help='Output directory where files to be stored. Default is the output/ folder where all files generated will be stored.', dest='output')
 optional.add_argument('-d', '--delay', help='Time delay between requests in seconds. Default is zero.', dest='delay', type=float)
 optional.add_argument('-q', '--quiet', help='Set the DEBUG mode to quiet. Report only when vulnerabilities are found. Minimal output will be printed on screen. ', dest='quiet', action='store_true')
-optional.add_argument('-H', '--headers', help='Comma separated list of custom headers you\'d want to use. For example: ``--headers "Accept=text/php, X-Requested-With=Dumb"``.', dest='headers', type=str)
+optional.add_argument('-H', '--headers', help='Comma separated list of custom headers you\'d want to use. For example: `--headers "Authorization: bearer <token>,X-Forwarded-For:0.0.0.0"`.', dest='headers')
 optional.add_argument('-v', '--verbose', help='Increase the verbosity of the output (e.g., -vv is more than -v). ', dest='verbose', action='store_true')
-optional.add_argument('-t', '--timeout', help='HTTP request timeout value in seconds. The entered value may be either in floating point decimal or an integer. Example: ``--timeout 10.0``', dest='timeout', type=(float or int))
-optional.add_argument('-E', '--exclude', help='Comma separated list of paths or directories to be excluded which are not in scope. These paths/dirs won\'t be scanned. For example: `--exclude somepage/, sensitive-dir/, pleasedontscan/`', dest='exclude', type=str)
+optional.add_argument('-t', '--timeout', help='HTTP request timeout value in seconds. The entered value may be either in floating point decimal or an integer. Example: `--timeout 10.0`', dest='timeout', type=(float or int))
+optional.add_argument('-E', '--exclude', help='Comma separated list of paths or directories to be excluded which are not in scope. These paths/dirs won\'t be scanned. For example: `--exclude /logout.php,/sensitive-dir/`', dest='exclude')
 
 # Other Options
 # optional.add_argument('-h', '--help', help='Show this help message and exit', dest='disp', default=argparse.SUPPRESS, action='store_true')
-optional.add_argument('-Tn', '--token-name', help='Name of the Anti-CSRF token, if already known, else XSRFProbe will try to detect on its own.', dest='ktoken')
+optional.add_argument('-T', '--token-name', help='Name of the Anti-CSRF token, if already known, else XSRFProbe will try to detect on its own.', dest='token')
 optional.add_argument('--user-agent', help='Custom user-agent to be used. Only one user-agent can be specified.', dest='user_agent')
 optional.add_argument('--max-chars', help='Maximum allowed character length for the custom token value to be generated. For example: `--max-chars 5`. Default value is 6.', dest='maxchars', type=int)
 optional.add_argument('--crawl', help="Crawl the whole site and simultaneously test all discovered endpoints for CSRF.", dest='crawl', action='store_true')
@@ -69,8 +74,9 @@ if args.update:
 
 # Print out XSRFProbe version
 if args.version:
-    print('\033[1;96m [+] \033[1;91mXSRFProbe Version\033[0m : v'+__version__)
-    print('\033[1;96m [+] \033[1;91mXSRFProbe License\033[0m : '+__license__+'\n')
+    print('\033[1;96m [+] \033[1;91mAuthor\033[0m: @'+__author__)
+    print('\033[1;96m [+] \033[1;91mVersion\033[0m: v'+__version__)
+    print('\033[1;96m [+] \033[1;91mLicense\033[0m: '+__license__+'\n')
     quit()
 
 # Now lets update some global config variables
@@ -141,21 +147,19 @@ if args.headers:
     #
     #config.HEADER_VALUES = {}
     for m in args.headers.split(','):
-        config.HEADER_VALUES[m.split('=')[0].strip()] = m.split('=')[1].strip()  # nice hack ;)
+        config.HEADER_VALUES[m.split(':')[0].strip()] = m.split(':')[1].strip()
 
-if args.ktoken:
-    paramlist.COMMON_CSRF_NAMES.append(args.ktoken)
+if args.token:
+    paramlist.COMMON_CSRF_NAMES.append(args.token)
 
 if args.exclude:
-    #config.EXCLUDE_URLS = [s for s in exc.split(',').strip()]
-    for s in args.exclude.split(','):
-        config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s.strip()))
+    config.EXCLUDE_DIRS = [s.strip() for s in args.exclude.split(',')]
 
 if args.randagent:
     # If random-agent argument supplied...
     config.USER_AGENT_RANDOM = True
     # Turn off a single User-Agent mechanism...
-    config.USER_AGENT = ''
+    config.USER_AGENT = None
 
 if config.SITE_URL:
     try:

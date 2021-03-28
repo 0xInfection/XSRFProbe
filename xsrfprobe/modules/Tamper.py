@@ -10,7 +10,6 @@
 # https://github.com/0xInfection/XSRFProbe
 
 from re import search, I
-from urllib.parse import urlencode, quote
 from xsrfprobe.core.colors import *
 from xsrfprobe.core.request import Post
 from xsrfprobe.files.config import *

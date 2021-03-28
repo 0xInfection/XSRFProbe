@@ -9,13 +9,9 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-# this module holds values for controlling the entire scan interface.
+import string
 
-# Lets assign some global variables...
-global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALUE
-global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
-global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR, VERIFY_CERT
-global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS, GEN_MALICIOUS
+# this module holds values for controlling the entire scan interface.
 
 # Site Url to be scanned (Required)
 SITE_URL = ''
@@ -32,6 +28,13 @@ DEBUG_LEVEL = 3
 
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
 USER_AGENT_RANDOM = False
+
+# Fuzzy matching threshold
+FUZZY_MATCH_LIMIT = 0.9
+
+# Translation table to split strings by multiple chars
+TRANSLATION_TABLE = string.maketrans('\n\t\r"\'<',
+                                     '\0\0\0\0\0\0')
 
 # User-Agent to be used (If COOKIE_VALUE supplied).
 #
