@@ -63,6 +63,13 @@ def Origin(url):
     # domain.
     #
     # TODO: This algorithm has lots of room for improvement
+    if req0x01 is None or req0x02 is None:
+        verbout(
+            colors.RED,
+            " [!] Cannot compare the two requests as at least one of them is None",
+        )
+        return False
+
     if len(req0x01.content) != len(req0x02.content):
         verbout(
             colors.GREEN,
