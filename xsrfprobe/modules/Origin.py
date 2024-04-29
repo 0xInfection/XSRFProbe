@@ -24,13 +24,14 @@ def Origin(url):
     Check if the remote web application verifies the Origin before
                     processing the HTTP request.
     """
+    global HEADER_VALUES
+
     verbout(colors.RED, "\n +-------------------------------------+")
     verbout(colors.RED, " |   Origin Based Request Validation   |")
     verbout(colors.RED, " +-------------------------------------+\n")
     # Make the request normally and get content
     verbout(colors.O, "Making request on normal basis...")
     req0x01 = Get(url)
-    global HEADER_VALUES
     # Set a fake Origin along with UA (pretending to be a
     # legitimate request from a browser)
     verbout(colors.GR, "Setting generic headers...")
