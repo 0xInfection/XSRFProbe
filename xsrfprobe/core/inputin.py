@@ -29,6 +29,7 @@ def inputin():
     """
     This module actually parses the url passed by the user.
     """
+    web = ''
     if SITE_URL:
         web = SITE_URL  # If already assigned
     if not web.endswith("/"):
