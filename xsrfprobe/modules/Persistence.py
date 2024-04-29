@@ -106,15 +106,13 @@ def Persistence(url, postq):
         for cookie in postq.cookies:
             if cookie.expires:
                 print(
-                    colors.GREEN + " [+] Persistent Cookies found in Response Headers!"
+                    f"{colors.GREEN} [+] Persistent Cookies found in Response Headers!"
                 )
-                print(colors.GREY + " [+] Cookie: " + colors.CYAN + cookie.__str__())
+                print(f"{colors.GREY} [+] Cookie: {colors.CYAN}{cookie}")
                 # So to decode this, we'd need to convert it a human readable format.
                 print(
-                    colors.GREEN
-                    + " [+] Cookie Expiry Period: "
-                    + colors.ORANGE
-                    + datetime.fromtimestamp(cookie.expires).__str__()
+                    f"{colors.GREEN} [+] Cookie Expiry Period: {colors.ORANGE}"
+                    f"{datetime.fromtimestamp(cookie.expires)}"
                 )
                 found = 0x01
                 VulnLogger(
@@ -137,20 +135,11 @@ def Persistence(url, postq):
             colors.R, "No persistent session cookies identified upon POST Requests!"
         )
         print(
-            colors.ORANGE
-            + " [+] Endpoint might be "
-            + colors.BY
-            + " NOT VULNERABLE "
-            + colors.END
-            + colors.ORANGE
-            + " to CSRF attacks!"
+            f"{colors.ORANGE} [+] Endpoint might be {colors.BY} NOT VULNERABLE "
+            f"{colors.END}{colors.ORANGE} to CSRF attacks!"
         )
         print(
-            colors.ORANGE
-            + " [+] Detected : "
-            + colors.BY
-            + " No Persistent Cookies "
-            + colors.END
+            f"{colors.ORANGE} [+] Detected : {colors.BY} No Persistent Cookies {colors.END}"
         )
 
     # [Step 2]: The idea here is to try to identify cookie persistence on basis of observing
@@ -163,10 +152,7 @@ def Persistence(url, postq):
         verbout(
             colors.C,
             "Proceeding to test cookie persistence via "
-            + colors.CYAN
-            + "User-Agent Alteration"
-            + colors.END
-            + "...",
+            f"{colors.CYAN}User-Agent Alteration{colors.END}...",
         )
 
         user_agents = {
@@ -181,12 +167,15 @@ def Persistence(url, postq):
         gen_headers = HEADER_VALUES
 
         for name, agent in user_agents.items():
-            verbout(colors.C, "Using User-Agent : " + colors.CYAN + name)
-            verbout(colors.GR, "Value : " + colors.ORANGE + agent)
+            verbout(colors.C, f"Using User-Agent : {colors.CYAN}{name}")
+            verbout(colors.GR, f"Value : {colors.ORANGE}{agent}")
             gen_headers["User-Agent"] = agent
+
             if COOKIE_VALUE:
                 gen_headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
+
             req = Get(url, headers=gen_headers)
+
             # We will append this to stuff only when set-cookie is being supplied.
             if req.headers.get("Set-Cookie"):
                 resps.append(req.headers.get("Set-Cookie"))
