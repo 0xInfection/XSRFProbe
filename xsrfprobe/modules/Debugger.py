@@ -35,6 +35,8 @@ class Form_Debugger:
             colors.GR, "Processing " + colors.BOLD + '<input type="text" name="...'
         )  # get name type inputs
         for m in form.findAll("input", {"name": True, "type": "text"}):
+            # Empty is the default value
+            value = ""
             try:
                 if m["value"]:  # Ignore case while searching for a match
                     value = m["value"].encode(
