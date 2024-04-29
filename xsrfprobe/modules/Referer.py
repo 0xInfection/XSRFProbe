@@ -105,6 +105,6 @@ def Referer(url):
     VulnLogger(
         url,
         "No Referer Header based Request Validation presence.",
-        "[i] Response Headers: " + str(req0x02.headers),
+        f"[i] Response Headers: {req0x02.headers}",
     )
     return False
