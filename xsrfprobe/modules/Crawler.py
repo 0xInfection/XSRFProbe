@@ -113,7 +113,7 @@ class Handler:  # Main Crawler Handler
             verbout(colors.O, "Done parsing crawler response...")
 
         except Exception:
-            verbout(colors.R, "BeautifulSoup Error: " + url)
+            verbout(colors.R, f"BeautifulSoup Error: {url}")
             self.visited.append(url)
             if url in self.toVisit:
                 self.toVisit.remove(url)
@@ -124,7 +124,7 @@ class Handler:  # Main Crawler Handler
             app = ""
             # Making sure that href is not a function or doesn't begin with http://
             if not re.match(r"javascript:", m["href"]) or re.match(
-                "http://", m["href"]
+                r"http(s?)://", m["href"]
             ):
                 app = Parser.buildUrl(url, m["href"])
 
@@ -169,7 +169,7 @@ class Handler:  # Main Crawler Handler
                 uriPattern = removeIDs(app)  # remove IDs
                 if self.notExist(uriPattern) and app != url:
                     verbout(
-                        colors.G, "Added :> " + colors.BLUE + app
+                        colors.G, f"Added :> {colors.BLUE}{app}"
                     )  # display what we have got!
                     self.toVisit.append(app)  # add up urls to visit
                     self.uriPatterns.append(uriPattern)
