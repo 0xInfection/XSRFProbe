@@ -65,7 +65,7 @@ def inputin():
                 f"{colors.O}Testing {colors.CYAN}{end_point}{colors.END} endpoint status..."
             )
             requests.get(web, timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
-            print(f"{colors.GREEN}[+] Endpoint seems to be up!{colors.END}")
+            print(f" {colors.GREEN}[+] Endpoint seems to be up!{colors.END}")
         except requests.exceptions.RequestException as e:
             verbout(colors.R, "Endpoint error: " + end_point)
             ErrorLogger(web0, e.__str__())
