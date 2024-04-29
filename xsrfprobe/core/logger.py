@@ -31,7 +31,7 @@ def logger(filename, content):
     """
     output_file = OUTPUT_DIR + filename + ".log"
     with open(output_file, "w+", encoding="utf8") as f:
-        if type(content) is tuple or type(content) is list:
+        if isinstance(content, tuple) or isinstance(content, list):
             for m in content:  # if it is list or tuple, it is iterable
                 f.write(m + "\n")
         else:
