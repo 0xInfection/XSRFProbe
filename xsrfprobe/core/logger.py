@@ -47,16 +47,11 @@ def preqheaders(tup):
     verbout(colors.GR, "Receiving headers...\n")
     verbout(
         colors.GREY,
-        "  "
-        + colors.UNDERLINE
-        + "REQUEST HEADERS"
-        + colors.END
-        + colors.GREY
-        + ":"
-        + "\n",
+        f"  {colors.UNDERLINE}REQUEST HEADERS{colors.END}{colors.GREY}:\n",
     )
     for key, val in tup.items():
-        verbout("  ", colors.CYAN + key + ": " + colors.ORANGE + val)
+        verbout("  ", f"{colors.CYAN}{key}: {colors.ORANGE}{val}")
+
     verbout("", "")
 
 
@@ -68,16 +63,11 @@ def presheaders(tup):
     verbout(colors.GR, "Receiving headers...\n")
     verbout(
         colors.GREY,
-        "  "
-        + colors.UNDERLINE
-        + "RESPONSE HEADERS"
-        + colors.END
-        + colors.GREY
-        + ":"
-        + "\n",
+        f"  {colors.UNDERLINE}RESPONSE HEADERS{colors.END}{colors.GREY}:\n",
     )
     for key, val in tup.items():
-        verbout("  ", colors.CYAN + key + ": " + colors.ORANGE + val)
+        verbout("  ", f"{colors.CYAN}{key}: {colors.ORANGE}{val}")
+
     verbout("", "")
 
 
@@ -99,7 +89,7 @@ def GetLogger():
 
 
 def ErrorLogger(url, error):
-    con = "(i) " + url + " -> " + error.__str__()
+    con = f"(i) {url} -> {error}"
     SCAN_ERRORS.append(con)
 
 
