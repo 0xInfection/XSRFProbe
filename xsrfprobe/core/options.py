@@ -23,11 +23,6 @@ from xsrfprobe.core.updater import updater
 from xsrfprobe.files.dcodelist import IP
 from xsrfprobe import __version__, __license__
 
-print(
-    """
-    \033[1;91mXSRFProbe\033[0m, \033[1;97mA \033[1;93mCross Site Request Forgery \033[1;97mAudit Toolkit\033[0m
-"""
-)
 # Processing command line arguments
 parser = argparse.ArgumentParser(usage="xsrfprobe -u <url> <args>")
 parser._action_groups.pop()
@@ -171,6 +166,22 @@ optional.add_argument(
 )
 args = parser.parse_args()
 
+# Hide colors if user doesn't want it
+if args.nocolors:
+    config.NO_COLORS = True
+
+# Support hiding the colors "early"
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
+print(
+    f"""
+   {colors.RED}XSRFProbe{colors.END}, {colors.GREY}A {colors.ORANGE}Cross Site Request Forgery """
+    f"""{colors.GREY}Audit Toolkit{colors.END}
+"""
+)
+
 if not len(sys.argv) > 1:
     parser.print_help()
     quit()
@@ -182,8 +193,14 @@ if args.update:
 
 # Print out XSRFProbe version
 if args.version:
-    print("\033[1;96m [+] \033[1;91mXSRFProbe Version\033[0m : v" + __version__)
-    print("\033[1;96m [+] \033[1;91mXSRFProbe License\033[0m : " + __license__ + "\n")
+    print(
+        f"{colors.CYAN} [+] {colors.RED}XSRFProbe Version{colors.END} : v" + __version__
+    )
+    print(
+        f"{colors.CYAN} [+] {colors.RED}XSRFProbe License{colors.END} : "
+        + __license__
+        + "\n"
+    )
     quit()
 
 # Now lets update some global config variables
@@ -214,7 +231,7 @@ if not args.version and not args.update:
         else:
             config.SITE_URL = "http://" + args.url
     else:
-        print(R + "You must supply a url/endpoint.")
+        print(colors.R + "You must supply a url/endpoint.")
 
 # Crawl the site if --crawl supplied.
 if args.crawl:
@@ -235,10 +252,6 @@ if args.cookie:
 # Set the headers displayer to 1 (actively display headers)
 if args.disphead:
     config.DISPLAY_HEADERS = True
-
-# Hide colors if user doesn't want it
-if args.nocolors:
-    config.NO_COLORS = True
 
 # Set the requests not to verify SSL certificates
 if args.no_verify:

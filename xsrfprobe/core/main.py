@@ -11,13 +11,15 @@
 
 # Standard Package imports
 import os
-import re
 import ssl
 import time
 import warnings
-import difflib
 import http.cookiejar
 from bs4 import BeautifulSoup
+
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
 
 try:
     from urllib.parse import urlencode
@@ -25,19 +27,22 @@ try:
     from urllib.request import build_opener, HTTPCookieProcessor
 except ImportError:  # Throws exception in Case of Python2
     print(
-        "\033[1;91m [-] \033[1;93mXSRFProbe\033[0m isn't compatible with Python 2.x versions.\n\033[1;91m [-] \033[0mUse Python 3.x to run \033[1;93mXSRFProbe."
+        f"{colors.RED} [-] {colors.ORANGE}XSRFProbe{colors.END} isn't compatible with Python 2.x versions.\n"
+        f"{colors.RED} [-] {colors.END}Use Python 3.x to run {colors.ORANGE}XSRFProbe."
     )
     quit()
 try:
     import requests, stringdist, bs4
 except ImportError:
     print(
-        " [-] Required dependencies are not installed.\n [-] Run \033[1;93mpip3 install -r requirements.txt\033[0m to fix it."
+        " [-] Required dependencies are not installed.\n"
+        " [-] Run {colors.ORANGE}pip3 install -r requirements.txt{colors.END} to fix it."
     )
 
 # Imports from core
 from xsrfprobe.core.options import *
-from xsrfprobe.core.colors import *
+from xsrfprobe.files.discovered import FORMS_TESTED
+
 from xsrfprobe.core.inputin import inputin
 from xsrfprobe.core.request import Get, Post
 from xsrfprobe.core.verbout import verbout
@@ -49,7 +54,6 @@ from xsrfprobe.core.logger import VulnLogger, NovulLogger
 
 # Imports from files
 from xsrfprobe.files.config import *
-from xsrfprobe.files.discovered import FORMS_TESTED
 
 # Imports from modules
 from xsrfprobe.modules import Debugger
@@ -113,41 +117,42 @@ def Engine():  # lets begin it!
             url = web
             try:
                 response = Get(url).text
-                verbout(O, "Trying to parse response...")
+                verbout(colors.O, "Trying to parse response...")
                 soup = BeautifulSoup(response)  # Parser init
             except AttributeError:
-                verbout(R, "No response received, site probably down: " + url)
+                verbout(colors.R, "No response received, site probably down: " + url)
             i = 0  # Init user number
             if REFERER_ORIGIN_CHECKS:
                 # Referer Based Checks if True...
                 verbout(
-                    O,
+                    colors.O,
                     "Checking endpoint request validation via "
-                    + color.GREY
+                    + colors.GREY
                     + "Referer"
-                    + color.END
+                    + colors.END
                     + " Checks...",
                 )
                 if Referer(url):
                     ref_detect = 0x01
-                verbout(O, "Confirming the vulnerability...")
+                verbout(colors.O, "Confirming the vulnerability...")
                 # We have finished with Referer Based Checks, lets go for Origin Based Ones...
                 verbout(
-                    O,
+                    colors.O,
                     "Confirming endpoint request validation via "
-                    + color.GREY
+                    + colors.GREY
                     + "Origin"
-                    + color.END
+                    + colors.END
                     + " Checks...",
                 )
                 if Origin(url):
                     ori_detect = 0x01
             # Now lets get the forms...
             verbout(
-                O, "Retrieving all forms on " + color.GREY + url + color.END + "..."
+                colors.O,
+                "Retrieving all forms on " + colors.GREY + url + colors.END + "...",
             )
             for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
-                verbout(O, "Testing form:\n" + color.CYAN)
+                verbout(colors.O, "Testing form:\n" + colors.CYAN)
                 formPrettify(m.prettify())
                 verbout("", "")
                 FORMS_TESTED.append("(i) " + url + ":\n\n" + m.prettify() + "\n")
@@ -226,10 +231,10 @@ def Engine():  # lets begin it!
                                     i
                                 ]  # user2 gets his form
                             except IndexError:
-                                verbout(R, "Form Index Error")
+                                verbout(colors.R, "Form Index Error")
                                 ErrorLogger(url, "Form Index Error.")
                                 continue  # Making sure program won't end here (dirty fix :( )
-                            verbout(GR, "Preparing form inputs...")
+                            verbout(colors.GR, "Preparing form inputs...")
                             contents2, genpoc = form.prepareFormInputs(
                                 form2
                             )  # prepare for form 3 as user3
@@ -263,16 +268,16 @@ def Engine():  # lets begin it!
                                     )
                             else:
                                 print(
-                                    color.GREEN
+                                    colors.GREEN
                                     + " [+] The form was requested with a Anti-CSRF token."
                                 )
                                 print(
-                                    color.GREEN
+                                    colors.GREEN
                                     + " [+] Endpoint "
-                                    + color.BG
+                                    + colors.BG
                                     + " NOT VULNERABLE "
-                                    + color.END
-                                    + color.GREEN
+                                    + colors.END
+                                    + colors.GREEN
                                     + " to POST-Based CSRF Attacks!"
                                 )
                                 NovulLogger(
@@ -280,19 +285,19 @@ def Engine():  # lets begin it!
                                 )
                         except HTTPError as msg:  # if runtime exception...
                             verbout(
-                                R, "Exception : " + msg.__str__()
+                                colors.R, "Exception : " + msg.__str__()
                             )  # again exception :(
                             ErrorLogger(url, msg)
                 actionDone.append(action)  # add the stuff done
                 i += 1  # Increase user iteration
         else:
             # Implementing the 2nd mode [CRAWLING AND SCANNING].
-            verbout(GR, "Initializing crawling and scanning...")
+            verbout(colors.GR, "Initializing crawling and scanning...")
             crawler = Crawler.Handler(init1, resp1)  # Init to the Crawler handler
             while crawler.noinit():  # Until 0 urls left
                 url = next(crawler)  # Go for next!
                 print(
-                    C + "Testing :> " + color.CYAN + url
+                    colors.C + "Testing :> " + colors.CYAN + url
                 )  # Display what url its crawling
                 try:
                     soup = crawler.process(fld)  # Start the parser
@@ -302,34 +307,34 @@ def Engine():  # lets begin it!
                     if REFERER_ORIGIN_CHECKS:
                         # Referer Based Checks if True...
                         verbout(
-                            O,
+                            colors.O,
                             "Checking endpoint request validation via "
-                            + color.GREY
+                            + colors.GREY
                             + "Referer"
-                            + color.END
+                            + colors.END
                             + " Checks...",
                         )
                         if Referer(url):
                             ref_detect = 0x01
-                        verbout(O, "Confirming the vulnerability...")
+                        verbout(colors.O, "Confirming the vulnerability...")
                         # We have finished with Referer Based Checks, lets go for Origin Based Ones...
                         verbout(
-                            O,
+                            colors.O,
                             "Confirming endpoint request validation via "
-                            + color.GREY
+                            + colors.GREY
                             + "Origin"
-                            + color.END
+                            + colors.END
                             + " Checks...",
                         )
                         if Origin(url):
                             ori_detect = 0x01
                     # Now lets get the forms...
                     verbout(
-                        O,
+                        colors.O,
                         "Retrieving all forms on "
-                        + color.GREY
+                        + colors.GREY
                         + url
-                        + color.END
+                        + colors.END
                         + "...",
                     )
                     for m in Debugger.getAllForms(
@@ -411,10 +416,10 @@ def Engine():  # lets begin it!
                                             i
                                         ]  # user2 gets his form
                                     except IndexError:
-                                        verbout(R, "Form Index Error")
+                                        verbout(colors.R, "Form Index Error")
                                         ErrorLogger(url, "Form Index Error.")
                                         continue  # making sure program won't end here (dirty fix :( )
-                                    verbout(GR, "Preparing form inputs...")
+                                    verbout(colors.GR, "Preparing form inputs...")
                                     contents2, genpoc = form.prepareFormInputs(
                                         form2
                                     )  # prepare for form 3 as user3
@@ -450,16 +455,16 @@ def Engine():  # lets begin it!
                                             )
                                     else:
                                         print(
-                                            color.GREEN
+                                            colors.GREEN
                                             + " [+] The form was requested with a Anti-CSRF token."
                                         )
                                         print(
-                                            color.GREEN
+                                            colors.GREEN
                                             + " [+] Endpoint "
-                                            + color.BG
+                                            + colors.BG
                                             + " NOT VULNERABLE "
-                                            + color.END
-                                            + color.GREEN
+                                            + colors.END
+                                            + colors.GREEN
                                             + " to P0ST-Based CSRF Attacks!"
                                         )
                                         NovulLogger(
@@ -468,8 +473,10 @@ def Engine():  # lets begin it!
                                         )
                                 except HTTPError as msg:  # if runtime exception...
                                     verbout(
-                                        color.RED,
-                                        " [-] Exception : " + color.END + msg.__str__(),
+                                        colors.RED,
+                                        " [-] Exception : "
+                                        + colors.END
+                                        + msg.__str__(),
                                     )  # again exception :(
                                     ErrorLogger(url, msg)
                         actionDone.append(action)  # add the stuff done
@@ -479,30 +486,30 @@ def Engine():  # lets begin it!
                 # contexts. For example when making reverse DNS queries.
                 except HTTPError as e:
                     if str(e.code) == "403":
-                        verbout(R, "HTTP Authentication Error!")
-                        verbout(R, "Error Code : " + O + str(e.code))
+                        verbout(colors.R, "HTTP Authentication Error!")
+                        verbout(colors.R, "Error Code : " + colors.O + str(e.code))
                         ErrorLogger(url, e)
                         quit()
                 except URLError as e:  # if again...
-                    verbout(R, "Exception at : " + url)  # again exception -_-
+                    verbout(colors.R, "Exception at : " + url)  # again exception -_-
                     time.sleep(0.4)
-                    verbout(O, "Moving on...")
+                    verbout(colors.O, "Moving on...")
                     ErrorLogger(url, e)
                     continue  # make sure it doesn't stop at exceptions
         GetLogger()  # The scanning has finished, so now we can log out all the links ;)
-        print("\n" + G + "Scan completed!" + "\n")
+        print("\n" + colors.G + "Scan completed!" + "\n")
         Analysis()  # For Post Scan Analysis
     except KeyboardInterrupt as e:  # Incase user wants to exit :') (while crawling)
-        verbout(R, "User Interrupt!")
+        verbout(colors.R, "User Interrupt!")
         time.sleep(1.5)
         Analysis()  # For Post scan Analysis
-        print(R + "Aborted!")  # say goodbye
+        print(colors.R + "Aborted!")  # say goodbye
         ErrorLogger("KeyBoard Interrupt", "Aborted")
         GetLogger()  # The scanning has interrupted, so now we can log out all the links ;)
         sys.exit(1)
     except Exception as e:
-        print("\n" + R + "Encountered an error. \n")
-        print(R + "Please view the error log files to view what went wrong.")
-        verbout(R, e.__str__())
+        print("\n" + colors.R + "Encountered an error. \n")
+        print(colors.R + "Please view the error log files to view what went wrong.")
+        verbout(colors.R, e.__str__())
         ErrorLogger(url, e)
         GetLogger()

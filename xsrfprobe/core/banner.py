@@ -14,6 +14,7 @@
 import time
 from xsrfprobe import __version__
 import xsrfprobe.core.colors
+
 colors = xsrfprobe.core.colors.color()
 
 SLEEP_TIME = 0
