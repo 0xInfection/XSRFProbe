@@ -11,8 +11,9 @@
 
 import re
 import string
-from xsrfprobe.core.colors import *
 from random import Random
+
+from xsrfprobe.core.colors import *
 from xsrfprobe.files.config import *
 from xsrfprobe.core.verbout import verbout
 
