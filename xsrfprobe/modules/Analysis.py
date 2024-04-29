@@ -146,8 +146,7 @@ def Analysis():
                             " [-] Post-Analysis reveals that token might be "
                             + colors.BR
                             + " VULNERABLE "
-                            + colors.END
-                            + "!",
+                            + colors.END,
                         )
                         print(colors.RED + " [+] Possible CSRF Vulnerability Detected!")
                         print(
@@ -210,8 +209,7 @@ def Analysis():
                         " [-] Post-Analysis reveals that token might be "
                         + colors.BR
                         + " VULNERABLE "
-                        + colors.END
-                        + "!",
+                        + colors.END,
                     )
                     print(colors.GREEN + " [+] Possible CSRF Vulnerability Detected!")
                     print(
@@ -276,8 +274,7 @@ def Analysis():
                         " [+] Post-Analysis reveals that tokens are "
                         + colors.BG
                         + " NOT VULNERABLE "
-                        + colors.END
-                        + "!",
+                        + colors.END,
                     )
                     print(
                         colors.ORANGE

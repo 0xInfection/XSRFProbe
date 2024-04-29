@@ -96,11 +96,7 @@ def Origin(url):
     else:
         verbout(
             colors.R,
-            "Endpoint "
-            + colors.RED
-            + "Origin Validation Not Present"
-            + colors.END
-            + "!",
+            "Endpoint " + colors.RED + "Origin Validation Not Present" + colors.END,
         )
         verbout(
             colors.R,
@@ -115,7 +111,6 @@ def Origin(url):
             + " [+] Possible CSRF Vulnerability Detected : "
             + colors.GREY
             + url
-            + "!"
         )
         print(
             colors.ORANGE

@@ -209,7 +209,6 @@ def Persistence(url, postq):
                     + " [+] Possible CSRF Vulnerability Detected : "
                     + colors.ORANGE
                     + url
-                    + "!"
                 )
                 print(
                     colors.ORANGE

@@ -205,8 +205,7 @@ def Tamper(url, action, req, body, query, para):
             " [+] The tampered token value works! Endpoint "
             + colors.BR
             + " VULNERABLE to Replay Attacks "
-            + colors.END
-            + "!",
+            + colors.END,
         )
         verbout(
             colors.ORANGE,

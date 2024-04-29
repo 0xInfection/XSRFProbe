@@ -50,8 +50,7 @@ def Token(req, headers):
                             + colors.BG
                             + " Anti-CSRF Token "
                             + colors.END
-                            + colors.GREEN
-                            + "!",
+                            + colors.GREEN,
                         )
                         verbout(
                             colors.GREY,
@@ -79,8 +78,7 @@ def Token(req, headers):
                                 + colors.BG
                                 + " Anti-CSRF Token Header "
                                 + colors.END
-                                + colors.GREEN
-                                + "!",
+                                + colors.GREEN,
                             )
                             verbout(
                                 colors.GREY,

@@ -252,7 +252,6 @@ def SameSite(url):
             + " [+] Possible CSRF Vulnerability Detected : "
             + colors.GREY
             + url
-            + "!"
         )
         print(
             colors.ORANGE

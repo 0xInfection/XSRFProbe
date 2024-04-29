@@ -97,11 +97,7 @@ def Referer(url):
     else:
         verbout(
             colors.R,
-            "Endpoint "
-            + colors.RED
-            + "Referer Validation Not Present"
-            + colors.END
-            + "!",
+            "Endpoint " + colors.RED + "Referer Validation Not Present" + colors.END,
         )
         verbout(
             colors.R,
@@ -116,7 +112,6 @@ def Referer(url):
             + " [+] Possible CSRF Vulnerability Detected : "
             + colors.GREY
             + url
-            + "!"
         )
         print(
             colors.ORANGE
