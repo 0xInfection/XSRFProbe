@@ -42,9 +42,11 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=""):
     )  # check the diff noted
     result12 = []  # an init
     verbout(colors.O, "Matching results...")
+
     for n in checkdiffx1:
         if re.match(r"\+|-", n):  # get regex matching stuff only +/-
             result12.append(n)  # append to existing list
+
     result13 = []  # an init
     for n in checkdiffx2:
         if re.match(r"\+|-", n):  # get regex matching stuff
@@ -57,37 +59,25 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=""):
     #
     # NOTE: The algorithm has lots of scopes of improvement...
     if len(result12) <= len(result13):
+        print(f"{colors.GREEN} [+] CSRF Vulnerability Detected : {colors.ORANGE}{url}!")
         print(
-            colors.GREEN
-            + " [+] CSRF Vulnerability Detected : "
-            + colors.ORANGE
-            + url
-            + "!"
-        )
-        print(
-            colors.ORANGE
-            + " [!] Vulnerability Type: "
-            + colors.BR
-            + " POST-Based Request Forgery "
-            + colors.END
+            f"{colors.ORANGE} [!] Vulnerability Type: {colors.BR} POST-Based Request Forgery {colors.END}"
         )
         VulnLogger(
             url,
             "POST-Based Request Forgery on Forms.",
-            "[i] Form: "
-            + form.__str__()
-            + "\n[i] POST Query: "
-            + result.__str__()
-            + "\n",
+            f"[i] Form: {form}\n" f"[i] POST Query: {result}\n",
         )
         time.sleep(0.3)
         verbout(colors.O, "PoC of response and request...")
+
         if m_name:
-            print(colors.RED + "\n +-----------------+")
-            print(colors.RED + " |   Request PoC   |")
-            print(colors.RED + " +-----------------+\n")
-            print(colors.BLUE + " [+] URL : " + colors.CYAN + url)  # url part
-            print(colors.CYAN + " [+] Name : " + colors.ORANGE + m_name)  # name
+            print(f"{colors.RED}\n +-----------------+")
+            print(f"{colors.RED} |   Request PoC   |")
+            print(f"{colors.RED} +-----------------+\n")
+            print(f"{colors.BLUE} [+] URL : {colors.CYAN}{url}")  # url part
+            print(f"{colors.CYAN} [+] Name : {colors.ORANGE}{m_name}")  # name
+
             if m_action.count("/") > 1:
                 print(
                     colors.GREEN
@@ -99,9 +89,9 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=""):
             else:
                 print(colors.GREEN + " [+] Action : " + colors.END + m_action)  # action
         else:  # if value m['name'] not there :(
-            print(colors.RED + "\n +-----------------+")
-            print(colors.RED + " |   Request PoC   |")
-            print(colors.RED + " +-----------------+\n")
+            print(f"{colors.RED} \n +-----------------+")
+            print(f"{colors.RED}  |   Request PoC   |")
+            print(f"{colors.RED}  +-----------------+\n")
             print(colors.BLUE + " [+] URL : " + colors.CYAN + url)  # the url
             if m_action.count("/") > 1:
                 print(
