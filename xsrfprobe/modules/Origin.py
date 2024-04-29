@@ -44,11 +44,7 @@ def Origin(url):
     # Make the request with different Origin header and get the content
     verbout(
         colors.O,
-        "Making request with "
-        + colors.CYAN
-        + "Tampered Origin Header"
-        + colors.END
-        + "...",
+        f"Making request with {colors.CYAN}Tampered Origin Header{colors.END}...",
     )
     req0x02 = Get(url, headers=gen_headers)
     HEADER_VALUES.pop("Origin", None)
@@ -69,60 +65,39 @@ def Origin(url):
     if len(req0x01.content) != len(req0x02.content):
         verbout(
             colors.GREEN,
-            " [+] Endoint "
-            + colors.ORANGE
-            + "Origin Validation"
-            + colors.GREEN
-            + " Present!",
+            f" [+] Endoint {colors.ORANGE}Origin Validation{colors.GREEN} Present!",
         )
         print(
-            colors.GREEN
-            + " [-] Heuristics reveal endpoint might be "
-            + colors.BG
-            + " NOT VULNERABLE "
-            + colors.END
-            + "..."
+            f"{colors.GREEN} [-] Heuristics reveal endpoint might be "
+            f"{colors.BG} NOT VULNERABLE {colors.END}..."
         )
         print(
-            colors.ORANGE
-            + " [+] Mitigation Method: "
-            + colors.BG
-            + " Origin Based Request Validation "
-            + colors.END
-            + "\n"
+            f"{colors.ORANGE} [+] Mitigation Method: "
+            f"{colors.BG} Origin Based Request Validation {colors.END}"
         )
         NovulLogger(url, "Presence of Origin Header based request Validation.")
         return True
-    else:
-        verbout(
-            colors.R,
-            "Endpoint " + colors.RED + "Origin Validation Not Present" + colors.END,
-        )
-        verbout(
-            colors.R,
-            "Heuristics reveal endpoint might be "
-            + colors.BY
-            + " VULNERABLE "
-            + colors.END
-            + " to Origin Based CSRFs...",
-        )
-        print(
-            colors.CYAN
-            + " [+] Possible CSRF Vulnerability Detected : "
-            + colors.GREY
-            + url
-        )
-        print(
-            colors.ORANGE
-            + " [!] Possible Vulnerability Type: "
-            + colors.BY
-            + " No Origin Based Request Validation "
-            + colors.END
-            + "\n"
-        )
-        VulnLogger(
-            url,
-            "No Origin Header based request validation presence.",
-            "[i] Response Headers: " + str(req0x02.headers),
-        )
-        return False
+
+    verbout(
+        colors.R,
+        "Endpoint " + colors.RED + "Origin Validation Not Present" + colors.END,
+    )
+    verbout(
+        colors.R,
+        "Heuristics reveal endpoint might be "
+        f"{colors.BY} VULNERABLE {colors.END} to Origin Based CSRFs...",
+    )
+    print(
+        f"{colors.CYAN} [+] Possible CSRF Vulnerability Detected : "
+        f"{colors.GREY}{url}"
+    )
+    print(
+        f"{colors.ORANGE} [!] Possible Vulnerability Type: {colors.BY}"
+        f" No Origin Based Request Validation {colors.END}"
+    )
+    VulnLogger(
+        url,
+        "No Origin Header based request validation presence.",
+        "[i] Response Headers: " + str(req0x02.headers),
+    )
+    return False

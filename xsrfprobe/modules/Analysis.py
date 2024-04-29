@@ -144,25 +144,16 @@ def Analysis():
                         verbout(
                             colors.RED,
                             " [-] Post-Analysis reveals that token might be "
-                            + colors.BR
-                            + " VULNERABLE "
-                            + colors.END,
+                            f"{colors.BR} VULNERABLE {colors.END}",
                         )
-                        print(colors.RED + " [+] Possible CSRF Vulnerability Detected!")
+                        print(f"{colors.RED} [+] Possible CSRF Vulnerability Detected!")
                         print(
-                            colors.ORANGE
-                            + " [!] Vulnerability Type: "
-                            + colors.BR
-                            + " Weak Dynamic Part of Tokens "
-                            + colors.END
+                            f"{colors.ORANGE} [!] Vulnerability Type: "
+                            f"{colors.BR} Weak Dynamic Part of Tokens {colors.END}"
                         )
                         print(
-                            colors.GREY
-                            + " [+] Tokens can easily be "
-                            + colors.RED
-                            + "Forged by Bruteforcing/Guessing"
-                            + colors.END
-                            + "!\n"
+                            f"{colors.GREY} [+] Tokens can easily be "
+                            f"{colors.RED}Forged by Bruteforcing/Guessing{colors.END}!"
                         )
                         VulnLogger(
                             "Analysis",
