@@ -115,8 +115,10 @@ def Get(url, headers=headers):
         return None
     try:
         verbout(colors.GR, "Preparing the request...")
+
         if DISPLAY_HEADERS:
             preqheaders(headers)
+
         verbout(
             colors.GR,
             "Processing the {colors.GREY}GET{colors.END} Request...",
