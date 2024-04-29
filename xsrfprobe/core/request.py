@@ -56,11 +56,11 @@ def Post(url, action, data):
     global headers, TIMEOUT_VALUE, VERIFY_CERT
     time.sleep(DELAY_VALUE)  # If delay param has been supplied
     verbout(colors.GR, "Preparing the request...")
+
     if DISPLAY_HEADERS:
         preqheaders(headers)
-    verbout(
-        colors.GR, "Processing the " + colors.GREY + "POST" + colors.END + " Request..."
-    )
+
+    verbout(colors.GR, f"Processing the {colors.GREY}POST{colors.END} Request...")
     main_url = urljoin(url, action)  # join url and action
     try:
         # Make the POST Request.
@@ -119,8 +119,9 @@ def Get(url, headers=headers):
             preqheaders(headers)
         verbout(
             colors.GR,
-            "Processing the " + colors.GREY + "GET" + colors.END + " Request...",
+            "Processing the {colors.GREY}GET{colors.END} Request...",
         )
+
         req = requests.get(
             url,
             headers=headers,
@@ -128,9 +129,11 @@ def Get(url, headers=headers):
             stream=False,
             verify=VERIFY_CERT,
         )
+
         # Displaying headers if DISPLAY_HEADERS is 'True'
         if DISPLAY_HEADERS:
             presheaders(req.headers)
+
         # Return the object
         return req
     except requests.exceptions.MissingSchema as e:

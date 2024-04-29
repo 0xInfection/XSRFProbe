@@ -161,11 +161,13 @@ class Form_Debugger:
             colors.GR, "Processing" + colors.BOLD + ' <textarea name="...'
         )  # get textarea input types
         for m in form.findAll("textarea", {"name": True}):
-            if len(m.contents) == 0:
+            if m.contents == "":
                 m.contents.append(randString())  # get random strings
+
             cr_input[m["name"]] = m.contents[0].encode(
                 "utf8"
             )  # make sure no encoding errors there
+
             cr6 = {}
             cr6["type"] = "text"
             cr6["name"] = m["name"]
@@ -174,8 +176,9 @@ class Form_Debugger:
             totcr.append(cr6)
 
         verbout(
-            colors.GR, "Processing" + colors.BOLD + ' <select name="...'
+            colors.GR, f"Processing{colors.BOLD} <select name='..."
         )  # selection type inputs
+
         for m in form.findAll("select", {"name": True}):
             if m.findAll("option", value=True):
                 name = m["name"]  # assign passed on value
