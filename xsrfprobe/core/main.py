@@ -532,7 +532,7 @@ def Engine():  # lets begin it!
                     continue  # make sure it doesn't stop at exceptions
 
         GetLogger()  # The scanning has finished, so now we can log out all the links ;)
-        print("\n" + colors.G + "Scan completed!" + "\n")
+        print(f"\n{colors.G}Scan done\n")
         Analysis()  # For Post Scan Analysis
     except KeyboardInterrupt as e:  # Incase user wants to exit :') (while crawling)
         verbout(colors.R, "User Interrupt!")
