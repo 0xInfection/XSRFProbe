@@ -10,10 +10,15 @@
 # https://github.com/0xInfection/XSRFProbe
 
 # Importing stuff
-import argparse, sys, tld
-import urllib.parse, os, re
+import argparse
+import sys
+import urllib.parse
+import os
+import re
+
+import tld
+
 from xsrfprobe.files import config
-from xsrfprobe.core.colors import R, G
 from xsrfprobe.core.updater import updater
 from xsrfprobe.files.dcodelist import IP
 from xsrfprobe import __version__, __license__
@@ -141,6 +146,12 @@ optional.add_argument(
     action="store_true",
 )
 optional.add_argument(
+    "--no-colors",
+    help="Disable colors.",
+    dest="nocolors",
+    action="store_true",
+)
+optional.add_argument(
     "--update",
     help="Update XSRFProbe to latest version on GitHub via git.",
     dest="update",
@@ -224,6 +235,10 @@ if args.cookie:
 # Set the headers displayer to 1 (actively display headers)
 if args.disphead:
     config.DISPLAY_HEADERS = True
+
+# Hide colors if user doesn't want it
+if args.nocolors:
+    config.NO_COLORS = True
 
 # Set the requests not to verify SSL certificates
 if args.no_verify:

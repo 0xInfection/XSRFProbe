@@ -13,205 +13,208 @@
 
 import time
 from xsrfprobe import __version__
-from xsrfprobe.core.colors import *
+import xsrfprobe.core.colors
+colors = xsrfprobe.core.colors.color()
 
 SLEEP_TIME = 0
+
 
 def banner():
     """Display the program banner"""
     print("\n\n")
     time.sleep(SLEEP_TIME)
     print(
-        color.ORANGE
+        colors.ORANGE
         + "     _____       _____       _____      _____       _____                                    "
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.RED
+        colors.RED
         + "  __"
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "__ "
-        + color.ORANGE
+        + colors.ORANGE
         + "  |_  "
-        + color.RED
+        + colors.RED
         + "__"
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "___ "
-        + color.ORANGE
+        + colors.ORANGE
         + " |_  "
-        + color.RED
+        + colors.RED
         + "__"
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "___  "
-        + color.ORANGE
+        + colors.ORANGE
         + "|_  "
-        + color.RED
+        + colors.RED
         + "_"
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "____ "
-        + color.ORANGE
+        + colors.ORANGE
         + "|_"
-        + color.RED
+        + colors.RED
         + "   _"
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "____ "
-        + color.ORANGE
+        + colors.ORANGE
         + "|_ "
-        + color.RED
+        + colors.RED
         + " _____   _____  ______  ______  "
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.RED
+        colors.RED
         + " \  `  /    "
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "|   ___|   "
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "|  _  _|   "
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "|   ___|  "
-        + color.ORANGE
+        + colors.ORANGE
         + "| "
-        + color.RED
+        + colors.RED
         + "|   _  |  "
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "|  _ ,' /     \|  _   )|   ___| "
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.RED
+        colors.RED
         + "  >   <     "
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + " `-.`-.    "
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "|     \    "
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "|   ___|  "
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + " |    __|  "
-        + color.ORANGE
+        + colors.ORANGE
         + "|"
-        + color.RED
+        + colors.RED
         + "|     \ |  -  || |_  { |   ___| "
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.RED
+        colors.RED
         + " /__/__\   "
-        + color.ORANGE
+        + colors.ORANGE
         + "_|"
-        + color.RED
+        + colors.RED
         + "|______|  "
-        + color.ORANGE
+        + colors.ORANGE
         + "_|"
-        + color.RED
+        + colors.RED
         + "|__|\__\ "
-        + color.ORANGE
+        + colors.ORANGE
         + " _|"
-        + color.RED
+        + colors.RED
         + "|___|   "
-        + color.ORANGE
+        + colors.ORANGE
         + " _|"
-        + color.RED
+        + colors.RED
         + " |___|   "
-        + color.ORANGE
+        + colors.ORANGE
         + " _|"
-        + color.RED
+        + colors.RED
         + "|__|\__\\\_____/|______)|______| "
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.ORANGE + "    |_____|     |_____|     |_____|    |_____|     |_____| \n\n"
+        colors.ORANGE
+        + "    |_____|     |_____|     |_____|    |_____|     |_____| \n\n"
     )
     time.sleep(SLEEP_TIME)
 
 
 def banabout():  # some fancy banner stuff :p
     print(
-        color.BLUE
+        colors.BLUE
         + "   [---]            "
-        + color.GREY
+        + colors.GREY
         + "XSRFProbe,"
-        + color.RED
+        + colors.RED
         + " A"
-        + color.ORANGE
+        + colors.ORANGE
         + " Cross Site Request Forgery "
-        + color.RED
+        + colors.RED
         + "Audit Toolkit          "
-        + color.BLUE
+        + colors.BLUE
         + "[---]"
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.BLUE
+        colors.BLUE
         + "   [---]                                                                           [---]"
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.BLUE
+        colors.BLUE
         + "   [---]   "
-        + color.PURPLE
+        + colors.PURPLE
         + "                    "
-        + color.GREEN
+        + colors.GREEN
         + "~  Author : "
-        + color.CYAN
+        + colors.CYAN
         + "Pinaki Mondal  ~                   "
-        + color.BLUE
+        + colors.BLUE
         + "     [---]"
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.BLUE
+        colors.BLUE
         + "   [---]   "
-        + color.CYAN
+        + colors.CYAN
         + "                   ~  github.com / "
-        + color.GREY
+        + colors.GREY
         + "0xInfection  ~                     "
-        + color.BLUE
+        + colors.BLUE
         + "  [---]"
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.BLUE
+        colors.BLUE
         + "   [---]                                                                           [---]"
     )
     time.sleep(SLEEP_TIME)
     print(
-        color.BLUE
+        colors.BLUE
         + "   [---]  "
-        + color.ORANGE
+        + colors.ORANGE
         + "                         ~  Version "
-        + color.RED
+        + colors.RED
         + __version__
-        + color.ORANGE
+        + colors.ORANGE
         + "  ~                           "
-        + color.BLUE
+        + colors.BLUE
         + "  [---]\n"
     )
     time.sleep(SLEEP_TIME)

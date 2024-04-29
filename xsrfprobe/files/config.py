@@ -16,6 +16,7 @@ global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALU
 global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
 global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR, VERIFY_CERT
 global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS, GEN_MALICIOUS
+global NO_COLORS
 
 # Site Url to be scanned (Required)
 SITE_URL = ""
@@ -144,6 +145,9 @@ OUTPUT_DIR = ""
 # Turn this off if you don't want to see the headers on the
 # terminal, or if it feels irritating.
 DISPLAY_HEADERS = False
+
+# No colors option
+NO_COLORS = False
 
 # Option for controlling post-scan analysis. Turning it off
 # results in not analysing the tokens gathered.
