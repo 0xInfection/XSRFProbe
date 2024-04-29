@@ -37,6 +37,10 @@ def buildUrl(url, href):  # receive form input type / url
         return None
 
     url_parts = urlsplit(url)  # SplitResult(scheme, netloc, path, query, fragment)
+    port_part = ""
+    if url_parts.port is not None:
+        port_part = f":{url_parts.port}"
+
     href_parts = urlsplit(href)
     app = ""  # Init to the Url that will be built
 
@@ -51,21 +55,17 @@ def buildUrl(url, href):  # receive form input type / url
         domain = url_parts.hostname  # Assigning the main domain
         if href_parts.path.startswith("/"):
             # If the href starts with a '/', it is an internal Url
-            app = f"{url_parts.scheme}://{domain}"
-            if url_parts.port is not None:
-                app += f":{url_parts.port}"
+            app = f"{url_parts.scheme}://{domain}{port_part}"
 
             app += f"{href_parts.path}"  # Startpage
         else:
             try:
-                app = f"{url_parts.scheme}://{domain}"
-                if url_parts.port is not None:
-                    app += f":{url_parts.port}"
+                app = f"{url_parts.scheme}://{domain}{port_part}"
 
                 app += re.findall(PROTOCOLS, url_parts.path)[0] + href_parts.path
                 # Get real protocol urls
             except IndexError:
-                app = "http://" + domain + href_parts.path
+                app = f"{url_parts.scheme}://{domain}{port_part}{href_parts.path}"
 
         if href_parts.query:  # Checking if any queries were there...
             app += "?" + href_parts.query  # Adding the query parameters to Url
