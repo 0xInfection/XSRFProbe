@@ -18,9 +18,14 @@ import warnings
 import http.cookiejar
 from bs4 import BeautifulSoup
 
+# This needs to be first, so that the options are loaded, as well as things like
+#  colors are disabled
+import xsrfprobe.core.options
+
 import xsrfprobe.core.colors
 
 colors = xsrfprobe.core.colors.color()
+
 
 try:
     from urllib.parse import urlencode
@@ -85,7 +90,7 @@ warnings.filterwarnings("ignore")
 
 
 def Engine():  # lets begin it!
-    os.system("clear")  # Clear shit from terminal :p
+    os.system("clear")  # Clear terminal :p
     banner()  # Print the banner
     banabout()  # The second banner
     web, fld = inputin()  # Take the input
