@@ -177,7 +177,8 @@ class Form_Debugger:
         # get textarea input types
 
         for m in form.findAll("textarea", {"name": True}):
-            if m.contents == "":
+            # m.contents is an array of lines
+            if len(m.contents) == 0:
                 m.contents.append(randString())  # get random strings
 
             cr_input[m["name"]] = m.contents[0].encode(
