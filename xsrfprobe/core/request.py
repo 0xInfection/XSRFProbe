@@ -121,7 +121,7 @@ def Get(url, headers=headers):
 
         verbout(
             colors.GR,
-            "Processing the {colors.GREY}GET{colors.END} Request...",
+            f"Processing the {colors.GREY}GET{colors.END} Request...",
         )
 
         req = requests.get(
@@ -131,6 +131,10 @@ def Get(url, headers=headers):
             stream=False,
             verify=VERIFY_CERT,
         )
+
+        if req is None:
+            verbout(colors.RED, f" [!] Failed to get a response from: {url}")
+            return None
 
         # Displaying headers if DISPLAY_HEADERS is 'True'
         if DISPLAY_HEADERS:
