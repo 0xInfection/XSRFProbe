@@ -11,6 +11,7 @@
 
 import re
 import urllib.error
+import urllib.parse
 from bs4 import BeautifulSoup
 
 from xsrfprobe.modules import Parser
@@ -109,6 +110,7 @@ class Handler:  # Main Crawler Handler
         try:
             verbout(colors.O, "Trying to parse crawler response...")
             soup = BeautifulSoup(response)  # Parser init
+            verbout(colors.O, "Done parsing crawler response...")
 
         except Exception:
             verbout(colors.R, "BeautifulSoup Error: " + url)
@@ -117,6 +119,7 @@ class Handler:  # Main Crawler Handler
                 self.toVisit.remove(url)
             return None
 
+        verbout(colors.O, "Processing 'a' elements...")
         for m in soup.findAll("a", href=True):  # find out all href^?://*
             app = ""
             # Making sure that href is not a function or doesn't begin with http://
@@ -128,12 +131,39 @@ class Handler:  # Main Crawler Handler
             # If we get a valid link
             if app != "" and re.search(root, app):
                 # Getting rid of Urls starting with '../../../..'
-                while re.search(RID_DOUBLE, app):
-                    p = re.compile(RID_COMPILE)
-                    app = p.sub("/", app)
-                # Getting rid of Urls starting with './'
+                res = urllib.parse.urlparse(app)
+                path = res.path
+
+                if "../" in path:  # lets remove it
+                    # Remove starting ""/../"
+                    while path.startswith("/../"):
+                        path = path[len("/..") :]
+
+                    endless_loop = 0
+                    while re.search(pattern=RID_DOUBLE, string=path):
+                        endless_loop += 1
+
+                        # Prevent an endless loop here
+                        if endless_loop > 100:
+                            verbout(
+                                colors.R,
+                                f"URL is causing an endless loop: {app}, "
+                                "resetting path to: /",
+                            )
+                            path = "/"
+                            break
+
+                        p = re.compile(RID_COMPILE)
+                        path = p.sub(repl="/", string=path)
+
+                # Getting rid of URLs starting with './'
                 p = re.compile(RID_SINGLE)
-                app = p.sub("", app)
+                path = p.sub("", path)
+
+                app = f"{res.scheme}://{res.hostname}"
+                if res.port:
+                    app += f":{res.port}"
+                app += path
 
                 # Add new link to the queue only if its pattern has not been added yet
                 uriPattern = removeIDs(app)  # remove IDs
