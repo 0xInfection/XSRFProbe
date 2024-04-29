@@ -15,15 +15,17 @@ import time
 from xsrfprobe import __version__
 from xsrfprobe.core.colors import *
 
+SLEEP_TIME = 0
 
 def banner():
+    """Display the program banner"""
     print("\n\n")
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.ORANGE
         + "     _____       _____       _____      _____       _____                                    "
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.RED
         + "  __"
@@ -68,7 +70,7 @@ def banner():
         + color.RED
         + " _____   _____  ______  ______  "
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.RED
         + " \  `  /    "
@@ -93,7 +95,7 @@ def banner():
         + color.RED
         + "|  _ ,' /     \|  _   )|   ___| "
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.RED
         + "  >   <     "
@@ -118,7 +120,7 @@ def banner():
         + color.RED
         + "|     \ |  -  || |_  { |   ___| "
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.RED
         + " /__/__\   "
@@ -143,11 +145,11 @@ def banner():
         + color.RED
         + "|__|\__\\\_____/|______)|______| "
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.ORANGE + "    |_____|     |_____|     |_____|    |_____|     |_____| \n\n"
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
 
 
 def banabout():  # some fancy banner stuff :p
@@ -165,12 +167,12 @@ def banabout():  # some fancy banner stuff :p
         + color.BLUE
         + "[---]"
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.BLUE
         + "   [---]                                                                           [---]"
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.BLUE
         + "   [---]   "
@@ -183,7 +185,7 @@ def banabout():  # some fancy banner stuff :p
         + color.BLUE
         + "     [---]"
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.BLUE
         + "   [---]   "
@@ -194,12 +196,12 @@ def banabout():  # some fancy banner stuff :p
         + color.BLUE
         + "  [---]"
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.BLUE
         + "   [---]                                                                           [---]"
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
     print(
         color.BLUE
         + "   [---]  "
@@ -212,4 +214,4 @@ def banabout():  # some fancy banner stuff :p
         + color.BLUE
         + "  [---]\n"
     )
-    time.sleep(0.05)
+    time.sleep(SLEEP_TIME)
