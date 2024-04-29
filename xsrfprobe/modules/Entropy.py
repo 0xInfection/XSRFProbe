@@ -56,45 +56,39 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
         VulnLogger(
             url,
             "Form Requested Without Anti-CSRF Token.",
-            "[i] Form Requested: " + form + "\n[i] Request Query: " + req.__str__(),
+            f"[i] Form Requested: {form}\n[i] Request Query: {req}",
         )
         return "", ""
+
     verbout(colors.RED, "\n +------------------------------+")
     verbout(colors.RED, " |   Token Strength Detection   |")
     verbout(colors.RED, " +------------------------------+\n")
+
     for para in REQUEST_TOKENS:
         # Coverting the token to a raw string, cause some special
         # chars might fu*k with the Shannon Entropy operation.
         value = r"%s" % para
         verbout(
             colors.CYAN,
-            " [!] Testing Anti-CSRF Token: " + colors.ORANGE + "%s" % (value),
+            f" [!] Testing Anti-CSRF Token: {colors.ORANGE}{value}",
         )
+
         # Check length
         if len(value) <= min_length:
             print(
-                colors.RED
-                + " [-] CSRF Token Length less than 5 bytes. "
-                + colors.ORANGE
-                + "Token value can be guessed/bruteforced..."
+                f"{colors.RED} [-] CSRF Token Length less than 5 bytes. {colors.ORANGE}"
+                "Token value can be guessed/bruteforced..."
             )
             print(
-                colors.ORANGE
-                + " [-] Endpoint likely "
-                + colors.BR
-                + " VULNERABLE "
-                + colors.END
-                + colors.ORANGE
-                + " to CSRF Attacks..."
+                f"{colors.ORANGE} [-] Endpoint likely {colors.BR} VULNERABLE {colors.END}"
+                f"{colors.ORANGE} to CSRF Attacks..."
             )
             print(
-                colors.RED
-                + " [!] Vulnerability Type: "
-                + colors.BR
-                + " Very Short/No Anti-CSRF Tokens "
-                + colors.END
+                f"{colors.RED} [!] Vulnerability Type: "
+                f"{colors.BR} Very Short/No Anti-CSRF Tokens {colors.END}"
             )
-            VulnLogger(url, "Very Short Anti-CSRF Tokens.", "Token: " + value)
+            VulnLogger(url, "Very Short Anti-CSRF Tokens.", f"Token: {value}")
+
         if len(value) >= max_length:
             print(
                 colors.ORANGE
@@ -122,6 +116,7 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
             )
             NovulLogger(url, "Long Anti-CSRF tokens with Good Strength.")
             found = 0x01
+
         # Checking entropy
         verbout(
             colors.O,
@@ -131,9 +126,11 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
             + colors.END
             + " of Token audited...",
         )
+
         entropy = calcEntropy(value)
         verbout(colors.GR, "Calculating Entropy...")
         verbout(colors.BLUE, " [+] Entropy Calculated: " + colors.CYAN + str(entropy))
+
         if entropy >= min_entropy:
             verbout(
                 colors.ORANGE,
@@ -187,6 +184,7 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
                 + colors.END
             )
             VulnLogger(url, "Low Entropy Anti-CSRF Tokens.", "Token: " + value)
+
     if found == 0x00:
         if m_name:
             print(colors.RED + "\n +---------+")
@@ -206,6 +204,7 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
             colors.ORANGE + " [+] Query : " + colors.GREY + urllib.parse.urlencode(req)
         )
         print("")
+
     return (_q, para)  # Return the query paramter and anti-csrf token
 
 
