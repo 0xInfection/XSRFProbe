@@ -10,8 +10,11 @@
 # https://github.com/0xInfection/XSRFProbe
 
 from re import search, I
-from urllib.parse import urlencode, quote
-from xsrfprobe.core.colors import *
+
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
 from xsrfprobe.core.request import Post
 from xsrfprobe.files.config import *
 from xsrfprobe.core.verbout import verbout
@@ -26,14 +29,14 @@ def Tamper(url, action, req, body, query, para):
           found and check the content length for related
                       vulnerabilities.
     """
-    verbout(color.RED, "\n +---------------------------------------+")
-    verbout(color.RED, " |   Anti-CSRF Token Tamper Validation   |")
-    verbout(color.RED, " +---------------------------------------+\n")
+    verbout(colors.RED, "\n +---------------------------------------+")
+    verbout(colors.RED, " |   Anti-CSRF Token Tamper Validation   |")
+    verbout(colors.RED, " +---------------------------------------+\n")
     # Null char flags (hex)
     flagx1, destx1 = 0x00, 0x00
     flagx2, destx2 = 0x00, 0x00
     flagx3, destx3 = 0x00, 0x00
-    verbout(GR, "Proceeding for CSRF attack via Anti-CSRF token tampering...")
+    verbout(colors.GR, "Proceeding for CSRF attack via Anti-CSRF token tampering...")
     # First of all lets get out token from request
     if para == "":
         return True
@@ -49,14 +52,15 @@ def Tamper(url, action, req, body, query, para):
     # Required check for checking if string at that position isn't the
     # same char we are going to replace with.
     verbout(
-        GR, "Tampering Token by " + color.GREY + "index replacement" + color.END + "..."
+        colors.GR,
+        "Tampering Token by " + colors.GREY + "index replacement" + colors.END + "...",
     )
     if value[3] != "a":
         tampvalx1 = replaceStrIndex(value, 3, "a")
     else:
         tampvalx1 = replaceStrIndex(value, 3, "x")
-    verbout(color.BLUE, " [+] Original Token: " + color.CYAN + value)
-    verbout(color.BLUE, " [+] Tampered Token: " + color.CYAN + tampvalx1)
+    verbout(colors.BLUE, " [+] Original Token: " + colors.CYAN + value)
+    verbout(colors.BLUE, " [+] Tampered Token: " + colors.CYAN + tampvalx1)
     # Lets build up the request...
     req[query] = tampvalx1
     resp = Post(url, action, req)
@@ -77,11 +81,11 @@ def Tamper(url, action, req, body, query, para):
         destx3 = 0x01
     if (destx1 == 0x01 and destx2 == 0x01) or (destx3 == 0x01):
         verbout(
-            color.RED,
+            colors.RED,
             " [-] Anti-CSRF Token tamper by "
-            + color.GREY
+            + colors.GREY
             + "index replacement"
-            + color.RED
+            + colors.RED
             + " returns valid response!",
         )
         flagx1 = 0x01
@@ -92,7 +96,7 @@ def Tamper(url, action, req, body, query, para):
         )
     else:
         verbout(
-            color.RED, " [+] Token tamper in request does not return valid response!"
+            colors.RED, " [+] Token tamper in request does not return valid response!"
         )
         NovulLogger(
             url,
@@ -102,11 +106,12 @@ def Tamper(url, action, req, body, query, para):
     # [Step 2]: Second we take the token and then remove a character
     # at a specific position and test the response body.
     verbout(
-        GR, "Tampering Token by " + color.GREY + "index removal" + color.END + "..."
+        colors.GR,
+        "Tampering Token by " + colors.GREY + "index removal" + colors.END + "...",
     )
     tampvalx2 = replaceStrIndex(value, 3)
-    verbout(color.BLUE, " [+] Original Token: " + color.CYAN + value)
-    verbout(color.BLUE, " [+] Tampered Token: " + color.CYAN + tampvalx2)
+    verbout(colors.BLUE, " [+] Original Token: " + colors.CYAN + value)
+    verbout(colors.BLUE, " [+] Tampered Token: " + colors.CYAN + tampvalx2)
     # Lets build up the request...
     req[query] = tampvalx2
     resp = Post(url, action, req)
@@ -124,11 +129,11 @@ def Tamper(url, action, req, body, query, para):
         destx3 = 0x02
     if (destx1 == 0x02 and destx2 == 0x02) or destx3 == 0x02:
         verbout(
-            color.RED,
+            colors.RED,
             " [-] Anti-CSRF Token tamper by "
-            + color.GREY
+            + colors.GREY
             + "index removal"
-            + color.RED
+            + colors.RED
             + " returns valid response!",
         )
         flagx2 = 0x01
@@ -139,7 +144,7 @@ def Tamper(url, action, req, body, query, para):
         )
     else:
         verbout(
-            color.RED, " [+] Token tamper in request does not return valid response!"
+            colors.RED, " [+] Token tamper in request does not return valid response!"
         )
         NovulLogger(
             url,
@@ -149,11 +154,12 @@ def Tamper(url, action, req, body, query, para):
     # [Step 3]: Third we take the token and then remove the whole
     # anticsrf token and test the response body.
     verbout(
-        GR, "Tampering Token by " + color.GREY + "Token removal" + color.END + "..."
+        colors.GR,
+        "Tampering Token by " + colors.GREY + "Token removal" + colors.END + "...",
     )
     # Removing the anti-csrf token from request
     del req[query]
-    verbout(color.GREY, " [+] Removed token parameter from request!")
+    verbout(colors.GREY, " [+] Removed token parameter from request!")
     # Lets build up the request...
     resp = Post(url, action, req)
 
@@ -170,11 +176,11 @@ def Tamper(url, action, req, body, query, para):
         destx3 = 0x03
     if (destx1 == 0x03 and destx2 == 0x03) or destx3 == 0x03:
         verbout(
-            color.RED,
+            colors.RED,
             " [-] Anti-CSRF"
-            + color.GREY
+            + colors.GREY
             + " Token removal"
-            + color.RED
+            + colors.RED
             + " returns valid response!",
         )
         flagx3 = 0x01
@@ -185,7 +191,7 @@ def Tamper(url, action, req, body, query, para):
         )
     else:
         verbout(
-            color.RED, " [+] Token tamper in request does not return valid response!"
+            colors.RED, " [+] Token tamper in request does not return valid response!"
         )
         NovulLogger(url, "Anti-CSRF Token removal does not return valid response.")
 
@@ -196,32 +202,32 @@ def Tamper(url, action, req, body, query, para):
         or (flagx2 == 0x01 and flagx3 == 0x01)
     ):
         verbout(
-            color.RED,
+            colors.RED,
             " [+] The tampered token value works! Endpoint "
-            + color.BR
+            + colors.BR
             + " VULNERABLE to Replay Attacks "
-            + color.END
+            + colors.END
             + "!",
         )
         verbout(
-            color.ORANGE,
+            colors.ORANGE,
             " [-] The Tampered Anti-CSRF Token requested does NOT return a 40x or 50x response! ",
         )
         print(
-            color.RED
+            colors.RED
             + " [-] Endpoint "
-            + color.BR
+            + colors.BR
             + " CONFIRMED VULNERABLE "
-            + color.END
-            + color.RED
+            + colors.END
+            + colors.RED
             + " to Request Forgery Attacks..."
         )
         print(
-            color.ORANGE
+            colors.ORANGE
             + " [!] Vulnerability Type: "
-            + color.BR
+            + colors.BR
             + " Non-Unique Anti-CSRF Tokens in Requests "
-            + color.END
+            + colors.END
             + "\n"
         )
         VulnLogger(
@@ -232,24 +238,24 @@ def Tamper(url, action, req, body, query, para):
         return True
     else:
         print(
-            color.RED
+            colors.RED
             + " [-] The Tampered Anti-CSRF Token requested returns a 40x or 50x response... "
         )
         print(
-            color.GREEN
+            colors.GREEN
             + " [-] Endpoint "
-            + color.BG
+            + colors.BG
             + " NOT VULNERABLE "
-            + color.END
-            + color.ORANGE
+            + colors.END
+            + colors.ORANGE
             + " to CSRF Attacks..."
         )
         print(
-            color.ORANGE
+            colors.ORANGE
             + " [!] CSRF Mitigation Method: "
-            + color.BG
+            + colors.BG
             + " Unique Anti-CSRF Tokens "
-            + color.END
+            + colors.END
             + "\n"
         )
         NovulLogger(url, "Unique Anti-CSRF Tokens. No token reuse.")

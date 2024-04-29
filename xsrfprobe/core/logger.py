@@ -9,8 +9,10 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import os
-from xsrfprobe.core.colors import *
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
 from xsrfprobe.files.config import *
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.files.discovered import INTERNAL_URLS, FILES_EXEC, SCAN_ERRORS
@@ -42,19 +44,19 @@ def preqheaders(tup):
     This module prints out the headers as received in the
                     requests normally.
     """
-    verbout(GR, "Receiving headers...\n")
+    verbout(colors.GR, "Receiving headers...\n")
     verbout(
-        color.GREY,
+        colors.GREY,
         "  "
-        + color.UNDERLINE
+        + colors.UNDERLINE
         + "REQUEST HEADERS"
-        + color.END
-        + color.GREY
+        + colors.END
+        + colors.GREY
         + ":"
         + "\n",
     )
     for key, val in tup.items():
-        verbout("  ", color.CYAN + key + ": " + color.ORANGE + val)
+        verbout("  ", colors.CYAN + key + ": " + colors.ORANGE + val)
     verbout("", "")
 
 
@@ -63,19 +65,19 @@ def presheaders(tup):
     This module prints out the headers as received in the
                     requests normally.
     """
-    verbout(GR, "Receiving headers...\n")
+    verbout(colors.GR, "Receiving headers...\n")
     verbout(
-        color.GREY,
+        colors.GREY,
         "  "
-        + color.UNDERLINE
+        + colors.UNDERLINE
         + "RESPONSE HEADERS"
-        + color.END
-        + color.GREY
+        + colors.END
+        + colors.GREY
         + ":"
         + "\n",
     )
     for key, val in tup.items():
-        verbout("  ", color.CYAN + key + ": " + color.ORANGE + val)
+        verbout("  ", colors.CYAN + key + ": " + colors.ORANGE + val)
     verbout("", "")
 
 

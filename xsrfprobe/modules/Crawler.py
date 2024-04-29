@@ -9,11 +9,17 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import re, sys
+import re
 import urllib.error
 from bs4 import BeautifulSoup
+
 from xsrfprobe.modules import Parser
-from xsrfprobe.core.colors import *
+
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
+
 from xsrfprobe.files.config import *
 from xsrfprobe.files.dcodelist import *
 from xsrfprobe.core.request import Get
@@ -76,8 +82,8 @@ class Handler:  # Main Crawler Handler
         except (
             urllib.error.HTTPError,
             urllib.error.URLError,
-        ) as msg:  # Incase there isan exception connecting to Url
-            verbout(R, "HTTP Request Error: " + msg.__str__())
+        ) as msg:  # Incase there is an exception connecting to Url
+            verbout(colors.R, "HTTP Request Error: " + msg.__str__())
             ErrorLogger(url, msg.__str__())
             if url in self.toVisit:
                 self.toVisit.remove(url)  # Remove non-existent / errored urls
@@ -89,18 +95,18 @@ class Handler:  # Main Crawler Handler
             return None
 
         # Just in case there is a redirection, we are supposed to follow it :D
-        verbout(GR, "Making request to new location...")
+        verbout(colors.GR, "Making request to new location...")
         if hasattr(query.headers, "Location"):
             url = query.headers["Location"]
-        verbout(O, "Reading response...")
+        verbout(colors.O, "Reading response...")
         response = query.content  # Read the response contents
 
         try:
-            verbout(O, "Trying to parse response...")
+            verbout(colors.O, "Trying to parse response...")
             soup = BeautifulSoup(response)  # Parser init
 
-        except HTMLParser.HTMLParseError:
-            verbout(R, "BeautifulSoup Error: " + url)
+        except Exception:
+            verbout(colors.R, "BeautifulSoup Error: " + url)
             self.visited.append(url)
             if url in self.toVisit:
                 self.toVisit.remove(url)
@@ -128,7 +134,7 @@ class Handler:  # Main Crawler Handler
                 uriPattern = removeIDs(app)  # remove IDs
                 if self.notExist(uriPattern) and app != url:
                     verbout(
-                        G, "Added :> " + color.BLUE + app
+                        colors.G, "Added :> " + colors.BLUE + app
                     )  # display what we have got!
                     self.toVisit.append(app)  # add up urls to visit
                     self.uriPatterns.append(uriPattern)

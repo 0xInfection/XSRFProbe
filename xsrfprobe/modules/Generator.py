@@ -11,8 +11,12 @@
 
 from ast import literal_eval
 from bs4 import BeautifulSoup
-from yattag import Doc, indent
-from xsrfprobe.core.colors import *
+from yattag import Doc
+
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.files.config import OUTPUT_DIR
 from xsrfprobe.core.prettify import formPrettify
@@ -27,10 +31,10 @@ def GenNormalPoC(
     """
     Generate a normal CSRF PoC using basic form data
     """
-    print(GR + "Generating normal PoC Form...")
-    verbout(color.RED, "\n +---------------------+")
-    verbout(color.RED, " |   Normal Form PoC   |")
-    verbout(color.RED, " +---------------------+\n" + color.CYAN)
+    print(colors.GR + "Generating normal PoC Form...")
+    verbout(colors.RED, "\n +---------------------+")
+    verbout(colors.RED, " |   Normal Form PoC   |")
+    verbout(colors.RED, " +---------------------+\n" + colors.CYAN)
     # Main starting which we will use to generate form.
     with tag("html"):
         with tag("title"):
@@ -75,7 +79,7 @@ def GenNormalPoC(
     print(
         G
         + "PoC successfully saved under "
-        + color.ORANGE
+        + colors.ORANGE
         + OUTPUT_DIR
         + splitterfunc
         + "-csrf-poc.html"
@@ -88,10 +92,10 @@ def GenMalicious(
     """
     Generate a malicious CSRF PoC using basic form data
     """
-    print(GR, "Generating malicious PoC Form...")
-    verbout(color.RED, "\n +------------------------+")
-    verbout(color.RED, " |   Malicious Form PoC   |")
-    verbout(color.RED, " +------------------------+\n" + color.CYAN)
+    print(colors.GR, "Generating malicious PoC Form...")
+    verbout(colors.RED, "\n +------------------------+")
+    verbout(colors.RED, " |   Malicious Form PoC   |")
+    verbout(colors.RED, " +------------------------+\n" + colors.CYAN)
     # Main starting which we will use to generate form.
     with tag("html"):
         with tag("title"):
@@ -112,10 +116,10 @@ def GenMalicious(
                         val = input(
                             C
                             + "Enter value for form field "
-                            + color.GREEN
+                            + colors.GREEN
                             + field["name"].title()
                             + " :> "
-                            + color.CYAN
+                            + colors.CYAN
                         )
                     doc.input(name=field["name"], type="hidden", value=val)
         # The idea behind this is to generate PoC forms not requiring any
@@ -139,9 +143,9 @@ def GenMalicious(
     fi.write(content.prettify())
     fi.close()
     print(
-        G
+        colors.G
         + "PoC successfully saved under "
-        + color.ORANGE
+        + colors.ORANGE
         + OUTPUT_DIR
         + splitterfunc
         + "-malicious-poc.html"

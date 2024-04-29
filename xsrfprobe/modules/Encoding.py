@@ -11,7 +11,11 @@
 
 from time import sleep
 from re import search
-from xsrfprobe.core.colors import *
+
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.files.dcodelist import HASH_DB
 
@@ -25,10 +29,10 @@ def Encoding(val):
     found = 0x00
     if not val:
         return (found, None)
-    verbout(color.RED, "\n +------------------------------+")
-    verbout(color.RED, " |   Token Encoding Detection   |")
-    verbout(color.RED, " +------------------------------+\n")
-    verbout(GR, "Proceeding to detect encoding of Anti-CSRF Token...")
+    verbout(colors.RED, "\n +------------------------------+")
+    verbout(colors.RED, " |   Token Encoding Detection   |")
+    verbout(colors.RED, " +------------------------------+\n")
+    verbout(colors.GR, "Proceeding to detect encoding of Anti-CSRF Token...")
     # So the idea right here is to detect whether the Anti-CSRF tokens
     # are encoded in some form or the other.
     #
@@ -47,45 +51,45 @@ def Encoding(val):
         if txt is not None:
             found = 0x01
             verbout(
-                color.RED, "\n [+] Anti-CSRF Token is detected to be String Encoded!"
+                colors.RED, "\n [+] Anti-CSRF Token is detected to be String Encoded!"
             )
             print(
-                color.GREEN
+                colors.GREEN
                 + " [+] Token Encoding Detected: "
-                + color.BG
+                + colors.BG
                 + " "
                 + txt
                 + " "
-                + color.END
+                + colors.END
             )
             print(
-                color.ORANGE
+                colors.ORANGE
                 + " [-] Endpoint likely "
-                + color.BR
+                + colors.BR
                 + " VULNERABLE "
-                + color.END
-                + color.ORANGE
+                + colors.END
+                + colors.ORANGE
                 + " to CSRF Attacks inspite of CSRF Tokens."
             )
             print(
-                color.ORANGE
+                colors.ORANGE
                 + " [!] Vulnerability Type: "
-                + color.BR
+                + colors.BR
                 + " String Encoded Anti-CSRF Tokens "
-                + color.END
+                + colors.END
             )
             print(
-                color.RED
+                colors.RED
                 + " [-] The Tokens might be easily Decrypted and can be Forged!"
             )
             break  # Break the execution if token encoding detected
     if found == 0x00:
         print(
-            color.RED
+            colors.RED
             + "\n [-] "
-            + color.BR
+            + colors.BR
             + " No Token Encoding Detected. "
-            + color.END,
+            + colors.END,
             end="\n\n",
         )
     sleep(0.8)
@@ -94,7 +98,7 @@ def Encoding(val):
 
 def hashcheck(hashtype, regexstr, data):
     try:
-        print(O, "Matching Encoding Type: %s" % (hashtype), end="\r", flush=True)
+        print(colors.O, "Matching Encoding Type: %s" % (hashtype), end="\r", flush=True)
         sleep(0.1)
         if search(regexstr, data):
             return hashtype

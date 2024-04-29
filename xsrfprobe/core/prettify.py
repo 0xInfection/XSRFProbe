@@ -10,7 +10,10 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import re
-from xsrfprobe.core.colors import *
+
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
 
 
 def formPrettify(response):
@@ -27,23 +30,23 @@ def formPrettify(response):
         for grp in pattern:
             starttag = "".join(grp)
             if starttag:
-                line = line.replace(starttag, color.BLUE + starttag + color.END)
+                line = line.replace(starttag, colors.BLUE + starttag + colors.END)
         # Find attributes
         pattern = re.findall(r"""(\s\w+=)""", line)
         for grp in pattern:
             stu = "".join(grp)
             if stu:
-                line = line.replace(stu, color.CYAN + stu + color.END)
+                line = line.replace(stu, colors.CYAN + stu + colors.END)
         # Find ending tags
         pattern = re.findall(r"""(</.*>)""", line)
         for grp in pattern:
             endtag = "".join(grp)
             if endtag:
-                line = line.replace(endtag, color.CYAN + endtag + color.END)
+                line = line.replace(endtag, colors.CYAN + endtag + colors.END)
         if line != newLine:
             highlighted.append(line)
         else:
-            highlighted.append(color.GREY + newLine)
+            highlighted.append(colors.GREY + newLine)
     for h in highlighted:
         print("  " + h)
 

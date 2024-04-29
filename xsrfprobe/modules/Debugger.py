@@ -13,7 +13,10 @@ import re
 import string
 from random import Random
 
-from xsrfprobe.core.colors import *
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
 from xsrfprobe.files.config import *
 from xsrfprobe.core.verbout import verbout
 
@@ -24,12 +27,12 @@ class Form_Debugger:
         This method parses form types and generates strings based
                         on their input types.
         """
-        verbout(O, "Crafting inputs as form type...")
+        verbout(colors.O, "Crafting inputs as form type...")
         cr_input = {}
         totcr = []
 
         verbout(
-            GR, "Processing " + color.BOLD + '<input type="text" name="...'
+            colors.GR, "Processing " + colors.BOLD + '<input type="text" name="...'
         )  # get name type inputs
         for m in form.findAll("input", {"name": True, "type": "text"}):
             try:
@@ -48,7 +51,7 @@ class Form_Debugger:
             totcr.append(cr0)
 
         verbout(
-            GR, "Processing" + color.BOLD + ' <input type="email" name="...'
+            colors.GR, "Processing" + colors.BOLD + ' <input type="email" name="...'
         )  # get password inputs
         for m in form.findAll("input", {"name": True, "type": "email"}):
             value = EMAIL_VALUE
@@ -63,7 +66,7 @@ class Form_Debugger:
             totcr.append(cr1)
 
         verbout(
-            GR, "Processing" + color.BOLD + ' <input type="password" name="...'
+            colors.GR, "Processing" + colors.BOLD + ' <input type="password" name="...'
         )  # get password inputs
         for m in form.findAll("input", {"name": True, "type": "password"}):
             try:  # Ignore case while searching for a match
@@ -83,7 +86,8 @@ class Form_Debugger:
 
         try:
             verbout(
-                GR, "Processing" + color.BOLD + ' <input type="hidden" name="...'
+                colors.GR,
+                "Processing" + colors.BOLD + ' <input type="hidden" name="...',
             )  # get hidden input types
             for m in form.findAll("input", {"name": True, "type": "hidden"}):
                 if re.search(
@@ -103,7 +107,7 @@ class Form_Debugger:
             cr3["value"] = ""
 
         verbout(
-            GR, "Processing " + color.BOLD + '<input type="submit" name="...'
+            colors.GR, "Processing " + colors.BOLD + '<input type="submit" name="...'
         )  # get submit buttons :D
         for m in form.findAll("input", {"name": True, "type": "submit"}):
             if re.search(
@@ -115,7 +119,7 @@ class Form_Debugger:
             cr_input[m["name"]] = value  # assign passed on value
 
         verbout(
-            GR, "Processing" + color.BOLD + ' <input type="checkbox" name="...'
+            colors.GR, "Processing" + colors.BOLD + ' <input type="checkbox" name="...'
         )  # get checkbox type inputs
         for m in form.findAll("input", {"name": True, "type": "checkbox"}):
             if re.search(
@@ -133,7 +137,7 @@ class Form_Debugger:
             totcr.append(cr4)
 
         verbout(
-            GR, "Processing" + color.BOLD + ' <input type="radio" name="...'
+            colors.GR, "Processing" + colors.BOLD + ' <input type="radio" name="...'
         )  # get radio buttons :D
         listRadio = []
         for m in form.findAll("input", {"name": True, "type": "radio"}):
@@ -152,7 +156,7 @@ class Form_Debugger:
                 totcr.append(cr5)
 
         verbout(
-            GR, "Processing" + color.BOLD + ' <textarea name="...'
+            colors.GR, "Processing" + colors.BOLD + ' <textarea name="...'
         )  # get textarea input types
         for m in form.findAll("textarea", {"name": True}):
             if len(m.contents) == 0:
@@ -168,7 +172,7 @@ class Form_Debugger:
             totcr.append(cr6)
 
         verbout(
-            GR, "Processing" + color.BOLD + ' <select name="...'
+            colors.GR, "Processing" + colors.BOLD + ' <select name="...'
         )  # selection type inputs
         for m in form.findAll("select", {"name": True}):
             if m.findAll("option", value=True):
@@ -177,12 +181,12 @@ class Form_Debugger:
                     "utf8"
                 )  # find forms fields based on value
 
-        verbout(GR, "Parsing final inputs...")
+        verbout(colors.GR, "Parsing final inputs...")
         return (cr_input, totcr)  # Return the form input types
 
 
 def randString():  # generate random strings
-    verbout(GR, "Compiling strings...")
+    verbout(colors.GR, "Compiling strings...")
     return "".join(
         Random().sample(string.ascii_letters, TOKEN_GENERATION_LENGTH)
     )  # any chars to be generated as form field inputs

@@ -9,10 +9,13 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import time
 import urllib.parse
 from math import log
-from xsrfprobe.core.colors import *
+
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
 from xsrfprobe.modules.Token import Token
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.files.discovered import REQUEST_TOKENS
@@ -56,149 +59,152 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
             "[i] Form Requested: " + form + "\n[i] Request Query: " + req.__str__(),
         )
         return "", ""
-    verbout(color.RED, "\n +------------------------------+")
-    verbout(color.RED, " |   Token Strength Detection   |")
-    verbout(color.RED, " +------------------------------+\n")
+    verbout(colors.RED, "\n +------------------------------+")
+    verbout(colors.RED, " |   Token Strength Detection   |")
+    verbout(colors.RED, " +------------------------------+\n")
     for para in REQUEST_TOKENS:
         # Coverting the token to a raw string, cause some special
         # chars might fu*k with the Shannon Entropy operation.
         value = r"%s" % para
         verbout(
-            color.CYAN, " [!] Testing Anti-CSRF Token: " + color.ORANGE + "%s" % (value)
+            colors.CYAN,
+            " [!] Testing Anti-CSRF Token: " + colors.ORANGE + "%s" % (value),
         )
         # Check length
         if len(value) <= min_length:
             print(
-                color.RED
+                colors.RED
                 + " [-] CSRF Token Length less than 5 bytes. "
-                + color.ORANGE
+                + colors.ORANGE
                 + "Token value can be guessed/bruteforced..."
             )
             print(
-                color.ORANGE
+                colors.ORANGE
                 + " [-] Endpoint likely "
-                + color.BR
+                + colors.BR
                 + " VULNERABLE "
-                + color.END
-                + color.ORANGE
+                + colors.END
+                + colors.ORANGE
                 + " to CSRF Attacks..."
             )
             print(
-                color.RED
+                colors.RED
                 + " [!] Vulnerability Type: "
-                + color.BR
+                + colors.BR
                 + " Very Short/No Anti-CSRF Tokens "
-                + color.END
+                + colors.END
             )
             VulnLogger(url, "Very Short Anti-CSRF Tokens.", "Token: " + value)
         if len(value) >= max_length:
             print(
-                color.ORANGE
+                colors.ORANGE
                 + " [+] CSRF Token Length greater than "
-                + color.CYAN
+                + colors.CYAN
                 + "256 bytes. "
-                + color.GREEN
+                + colors.GREEN
                 + "Token value cannot be guessed/bruteforced..."
             )
             print(
-                color.GREEN
+                colors.GREEN
                 + " [+] Endpoint likely "
-                + color.BG
+                + colors.BG
                 + " NOT VULNERABLE "
-                + color.END
-                + color.GREEN
+                + colors.END
+                + colors.GREEN
                 + " to CSRF Attacks..."
             )
             print(
-                color.GREEN
+                colors.GREEN
                 + " [!] CSRF Mitigation Method: "
-                + color.BG
+                + colors.BG
                 + " Long Anti-CSRF Tokens "
-                + color.END
+                + colors.END
             )
             NovulLogger(url, "Long Anti-CSRF tokens with Good Strength.")
             found = 0x01
         # Checking entropy
         verbout(
-            O,
+            colors.O,
             "Proceeding to calculate "
-            + color.GREY
+            + colors.GREY
             + "Shannon Entropy"
-            + color.END
+            + colors.END
             + " of Token audited...",
         )
         entropy = calcEntropy(value)
-        verbout(GR, "Calculating Entropy...")
-        verbout(color.BLUE, " [+] Entropy Calculated: " + color.CYAN + str(entropy))
+        verbout(colors.GR, "Calculating Entropy...")
+        verbout(colors.BLUE, " [+] Entropy Calculated: " + colors.CYAN + str(entropy))
         if entropy >= min_entropy:
             verbout(
-                color.ORANGE,
+                colors.ORANGE,
                 " [+] Anti-CSRF Token Entropy Calculated is "
-                + color.BY
+                + colors.BY
                 + " GREATER than 3.0 "
-                + color.END
+                + colors.END
                 + "... ",
             )
             print(
-                color.ORANGE
+                colors.ORANGE
                 + " [+] Endpoint "
-                + color.BY
+                + colors.BY
                 + " PROBABLY NOT VULNERABLE "
-                + color.END
-                + color.ORANGE
+                + colors.END
+                + colors.ORANGE
                 + " to CSRF Attacks..."
             )
             print(
-                color.ORANGE
+                colors.ORANGE
                 + " [!] CSRF Mitigation Method: "
-                + color.BY
+                + colors.BY
                 + " High Entropy Anti-CSRF Tokens "
-                + color.END
+                + colors.END
             )
             NovulLogger(url, "High Entropy Anti-CSRF Tokens.")
             found = 0x01
         else:
             verbout(
-                color.RED,
+                colors.RED,
                 " [-] Anti-CSRF Token Entropy Calculated is "
-                + color.BY
+                + colors.BY
                 + " LESS than 3.0 "
-                + color.END
+                + colors.END
                 + "... ",
             )
             print(
-                color.RED
+                colors.RED
                 + " [-] Endpoint likely "
-                + color.BR
+                + colors.BR
                 + " VULNERABLE "
-                + color.END
-                + color.RED
+                + colors.END
+                + colors.RED
                 + " to CSRF Attacks inspite of CSRF Tokens..."
             )
             print(
-                color.RED
+                colors.RED
                 + " [!] Vulnerability Type: "
-                + color.BR
+                + colors.BR
                 + " Low Entropy Anti-CSRF Tokens "
-                + color.END
+                + colors.END
             )
             VulnLogger(url, "Low Entropy Anti-CSRF Tokens.", "Token: " + value)
     if found == 0x00:
         if m_name:
-            print(color.RED + "\n +---------+")
-            print(color.RED + " |   PoC   |")
-            print(color.RED + " +---------+\n")
-            print(color.BLUE + " [+] URL : " + color.CYAN + url)
-            print(color.CYAN + " [+] Name : " + color.ORANGE + m_name)
-            print(color.GREEN + " [+] Action : " + color.ORANGE + m_action)
+            print(colors.RED + "\n +---------+")
+            print(colors.RED + " |   PoC   |")
+            print(colors.RED + " +---------+\n")
+            print(colors.BLUE + " [+] URL : " + colors.CYAN + url)
+            print(colors.CYAN + " [+] Name : " + colors.ORANGE + m_name)
+            print(colors.GREEN + " [+] Action : " + colors.ORANGE + m_action)
         else:  # if value m_name not there :(
-            print(color.RED + "\n +---------+")
-            print(color.RED + " |   PoC   |")
-            print(color.RED + " +---------+\n")
-            print(color.BLUE + " [+] URL : " + color.CYAN + url)
-            print(color.GREEN + " [+] Action : " + color.ORANGE + m_action)
+            print(colors.RED + "\n +---------+")
+            print(colors.RED + " |   PoC   |")
+            print(colors.RED + " +---------+\n")
+            print(colors.BLUE + " [+] URL : " + colors.CYAN + url)
+            print(colors.GREEN + " [+] Action : " + colors.ORANGE + m_action)
         # Print out the params
-        print(color.ORANGE + " [+] Query : " + color.GREY + urllib.parse.urlencode(req))
+        print(
+            colors.ORANGE + " [+] Query : " + colors.GREY + urllib.parse.urlencode(req)
+        )
         print("")
     return (_q, para)  # Return the query paramter and anti-csrf token
 

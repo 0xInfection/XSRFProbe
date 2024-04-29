@@ -14,7 +14,10 @@ from urllib.parse import urlsplit
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.files.dcodelist import PROTOCOLS
 from xsrfprobe.files.paramlist import EXCLUSIONS_LIST
-from xsrfprobe.core.colors import *  # import ends
+
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
 
 
 def buildUrl(url, href):  # receive form input type / url
@@ -72,7 +75,7 @@ def buildAction(url, action):
     The main function of this is to create an action Url based
                 on Current Location and Destination.
     """
-    verbout(O, "Parsing URL parameters...")
+    verbout(colors.O, "Parsing URL parameters...")
     if action and not action.startswith(
         "#"
     ):  # make sure it is not a fragment (eg. http://site.tld/index.php#search)

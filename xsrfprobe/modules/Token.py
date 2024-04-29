@@ -9,10 +9,13 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-from re import search, I
-from time import sleep
+from re import I
 from xsrfprobe.files import config
-from xsrfprobe.core.colors import *
+
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.files import discovered
 from urllib.parse import urlencode, unquote
@@ -24,15 +27,15 @@ def Token(req, headers):
     This method checks for whether Anti-CSRF Tokens are
                present in the request.
     """
-    verbout(color.RED, "\n +---------------------------+")
-    verbout(color.RED, " |   Anti-CSRF Token Check   |")
-    verbout(color.RED, " +---------------------------+\n")
+    verbout(colors.RED, "\n +---------------------------+")
+    verbout(colors.RED, " |   Anti-CSRF Token Check   |")
+    verbout(colors.RED, " +---------------------------+\n")
     param = ""  # Initializing param
     query = ""
     found = False
     # First lets have a look at config.py and see if its set
     if config.TOKEN_CHECKS:
-        verbout(O, "Parsing request for detecting anti-csrf tokens...")
+        verbout(colors.O, "Parsing request for detecting anti-csrf tokens...")
         try:
             # Lets check for the request values. But before that lets encode and unquote the request :D
             con = unquote(urlencode(req)).split("&")
@@ -42,21 +45,21 @@ def Token(req, headers):
                     # Search if the token is there in request...
                     if name.lower() in qu[0].lower():
                         verbout(
-                            color.GREEN,
+                            colors.GREEN,
                             " [+] The form was requested with an "
-                            + color.BG
+                            + colors.BG
                             + " Anti-CSRF Token "
-                            + color.END
-                            + color.GREEN
+                            + colors.END
+                            + colors.GREEN
                             + "!",
                         )
                         verbout(
-                            color.GREY,
+                            colors.GREY,
                             " [+] Token Parameter: "
-                            + color.CYAN
+                            + colors.CYAN
                             + qu[0]
                             + "="
-                            + color.ORANGE
+                            + colors.ORANGE
                             + qu[1],
                         )
                         query, param = qu[0], qu[1]
@@ -71,21 +74,21 @@ def Token(req, headers):
                         # Search if the token is there in request...
                         if name.lower() in key.lower():
                             verbout(
-                                color.GREEN,
+                                colors.GREEN,
                                 " [+] The form was requested with an "
-                                + color.BG
+                                + colors.BG
                                 + " Anti-CSRF Token Header "
-                                + color.END
-                                + color.GREEN
+                                + colors.END
+                                + colors.GREEN
                                 + "!",
                             )
                             verbout(
-                                color.GREY,
+                                colors.GREY,
                                 " [+] Token Parameter: "
-                                + color.CYAN
+                                + colors.CYAN
                                 + qu[0]
                                 + "="
-                                + color.ORANGE
+                                + colors.ORANGE
                                 + qu[1],
                             )
                             query, param = key, value
@@ -93,29 +96,29 @@ def Token(req, headers):
                             discovered.REQUEST_TOKENS.append(param)
                             break  # Break execution if a Anti-CSRF token is found
         except Exception as e:
-            verbout(R, "Request Parsing Exception!")
-            verbout(R, "Error: " + e.__str__())
+            verbout(colors.R, "Request Parsing Exception!")
+            verbout(colors.R, "Error: " + e.__str__())
         if param:
             return (query, param)
         verbout(
-            color.ORANGE,
+            colors.ORANGE,
             " [-] The form was requested "
-            + color.RED
+            + colors.RED
             + " Without an Anti-CSRF Token "
-            + color.END
-            + color.ORANGE
+            + colors.END
+            + colors.ORANGE
             + "...",
         )
         print(
-            color.RED
+            colors.RED
             + " [-] Endpoint seems "
-            + color.BR
+            + colors.BR
             + " VULNERABLE "
-            + color.END
-            + color.RED
+            + colors.END
+            + colors.RED
             + " to "
-            + color.BR
+            + colors.BR
             + " POST-Based Request Forgery "
-            + color.END
+            + colors.END
         )
         return (None, None)
