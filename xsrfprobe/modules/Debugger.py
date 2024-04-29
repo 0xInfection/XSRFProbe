@@ -31,9 +31,9 @@ class Form_Debugger:
         cr_input = {}
         totcr = []
 
-        verbout(
-            colors.GR, "Processing " + colors.BOLD + '<input type="text" name="...'
-        )  # get name type inputs
+        verbout(colors.GR, f"Processing {colors.BOLD}<input type='text' name='...")
+        # get name type inputs
+
         for m in form.findAll("input", {"name": True, "type": "text"}):
             # Empty is the default value
             value = ""
@@ -52,9 +52,9 @@ class Form_Debugger:
             cr0["value"] = ""
             totcr.append(cr0)
 
-        verbout(
-            colors.GR, "Processing" + colors.BOLD + ' <input type="email" name="...'
-        )  # get password inputs
+        verbout(colors.GR, f"Processing {colors.BOLD}<input type='email' name='...")
+        # get password inputs
+
         for m in form.findAll("input", {"name": True, "type": "email"}):
             value = EMAIL_VALUE
             if m["value"]:  # Ignore case while searching for a match
@@ -67,10 +67,12 @@ class Form_Debugger:
             cr1["value"] = ""
             totcr.append(cr1)
 
-        verbout(
-            colors.GR, "Processing" + colors.BOLD + ' <input type="password" name="...'
-        )  # get password inputs
+        verbout(colors.GR, f"Processing {colors.BOLD}<input type='password' name='...")
+        # get password inputs
+
         for m in form.findAll("input", {"name": True, "type": "password"}):
+            # Empty is the default value
+            value = ""
             try:  # Ignore case while searching for a match
                 if m["value"]:
                     value = m["value"].encode(
@@ -78,6 +80,7 @@ class Form_Debugger:
                     )  # make sure no encoding errors there
             except KeyError:
                 value = randString()
+
             cr_input[m["name"]] = value  # assign passed on value
             cr2 = {}
             cr2["type"] = "password"
@@ -89,15 +92,20 @@ class Form_Debugger:
         try:
             verbout(
                 colors.GR,
-                "Processing" + colors.BOLD + ' <input type="hidden" name="...',
-            )  # get hidden input types
+                f"Processing {colors.BOLD}<input type='hidden' name='...",
+            )
+            # get hidden input types
+
             for m in form.findAll("input", {"name": True, "type": "hidden"}):
+                # Empty is the default value
+                value = ""
                 if re.search(
                     "value=", m.__str__(), re.IGNORECASE
                 ):  # Ignore case while searching for a match
                     value = m["value"]  # make sure no encoding errors there
                 else:
                     value = TEXT_VALUE
+
                 cr_input[m["name"]] = value  # assign passed on value
                 cr3 = {}
                 cr3["type"] = "hidden"
@@ -108,28 +116,34 @@ class Form_Debugger:
         except KeyError:
             cr3["value"] = ""
 
-        verbout(
-            colors.GR, "Processing " + colors.BOLD + '<input type="submit" name="...'
-        )  # get submit buttons :D
+        verbout(colors.GR, f"Processing {colors.BOLD}<input type='submit' name='...")
+        # get submit buttons :D
+
         for m in form.findAll("input", {"name": True, "type": "submit"}):
+            # Empty is the default value
+            value = ""
             if re.search(
                 "value=", str(m).strip(), re.IGNORECASE
             ):  # Ignore case while searching for a match
                 value = m["value"].encode("utf8")  # make sure no encoding errors there
             else:
                 value = "Submit"
+
             cr_input[m["name"]] = value  # assign passed on value
 
-        verbout(
-            colors.GR, "Processing" + colors.BOLD + ' <input type="checkbox" name="...'
-        )  # get checkbox type inputs
+        verbout(colors.GR, f"Processing {colors.BOLD}<input type='checkbox' name='...")
+        # get checkbox type inputs
+
         for m in form.findAll("input", {"name": True, "type": "checkbox"}):
+            # Empty is the default value
+            value = ""
             if re.search(
                 "value=", m.__str__(), re.IGNORECASE
             ):  # Ignore case while searching for a match
                 value = m["value"].encode("utf8")  # make sure no encoding errors there
             else:
                 value = randString()  # assign passed on value
+
             cr_input[m["name"]] = value  # assign discovered value
             cr4 = {}
             cr4["type"] = "checkbox"
@@ -138,11 +152,13 @@ class Form_Debugger:
             cr4["value"] = ""
             totcr.append(cr4)
 
-        verbout(
-            colors.GR, "Processing" + colors.BOLD + ' <input type="radio" name="...'
-        )  # get radio buttons :D
+        verbout(colors.GR, f"Processing {colors.BOLD}<input type='radio' name='...")
+        # get radio buttons :D
+
         listRadio = []
         for m in form.findAll("input", {"name": True, "type": "radio"}):
+            # Empty is the default value
+            value = ""
             if (not m["name"] in listRadio) and re.search(
                 "value=", str(m).strip(), re.IGNORECASE
             ):  # Ignore case while searching for a match
@@ -157,9 +173,9 @@ class Form_Debugger:
                 cr5["value"] = ""
                 totcr.append(cr5)
 
-        verbout(
-            colors.GR, "Processing" + colors.BOLD + ' <textarea name="...'
-        )  # get textarea input types
+        verbout(colors.GR, f"Processing {colors.BOLD} <textarea name='...")
+        # get textarea input types
+
         for m in form.findAll("textarea", {"name": True}):
             if m.contents == "":
                 m.contents.append(randString())  # get random strings
@@ -175,9 +191,8 @@ class Form_Debugger:
             cr6["value"] = ""
             totcr.append(cr6)
 
-        verbout(
-            colors.GR, f"Processing{colors.BOLD} <select name='..."
-        )  # selection type inputs
+        verbout(colors.GR, f"Processing {colors.BOLD}<select name='...")
+        # selection type inputs
 
         for m in form.findAll("select", {"name": True}):
             if m.findAll("option", value=True):
