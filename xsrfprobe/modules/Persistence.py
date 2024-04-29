@@ -37,12 +37,9 @@ def Persistence(url, postq):
     # Checking if user has supplied a value.
     verbout(
         colors.GR,
-        "Proceeding to test for "
-        + colors.GREY
-        + "Cookie Persistence"
-        + colors.END
-        + "...",
+        f"Proceeding to test for {colors.GREY}Cookie Persistence{colors.END}...",
     )
+
     time.sleep(0.7)
     found = 0x00
     # Now let the real test begin...
@@ -55,11 +52,7 @@ def Persistence(url, postq):
     # cookies = []
     verbout(
         colors.C,
-        "Proceeding to test cookie persistence via "
-        + colors.CYAN
-        + "Prepared GET Requests"
-        + colors.END
-        + "...",
+        f"Proceeding to test cookie persistence via {colors.CYAN}Prepared GET Requests{colors.END}...",
     )
     verbout(colors.GR, "Making the request...")
     req = Get(url, headers=HEADER_VALUES)
