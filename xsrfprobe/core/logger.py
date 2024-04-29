@@ -74,16 +74,22 @@ def presheaders(tup):
 def GetLogger():
     if INTERNAL_URLS:
         logger("internal-links", INTERNAL_URLS)
+
     if SCAN_ERRORS:
         logger("errored", SCAN_ERRORS)
+
     if FILES_EXEC:
         logger("files-found", FILES_EXEC)
+
     if REQUEST_TOKENS:
         logger("anti-csrf-tokens", REQUEST_TOKENS)
+
     if FORMS_TESTED:
         logger("forms-tested", FORMS_TESTED)
+
     if VULN_LIST:
         logger("vulnerabilities", VULN_LIST)
+
     if STRENGTH_LIST:
         logger("strengths", STRENGTH_LIST)
 
@@ -94,10 +100,10 @@ def ErrorLogger(url, error):
 
 
 def VulnLogger(url, vuln, content=""):
-    tent = "[!] " + url + " -> " + vuln + "\n\n" + str(content) + "\n\n"
+    tent = f"[!] {url} -> {vuln}\n\n{content}\n\n"
     VULN_LIST.append(tent)
 
 
 def NovulLogger(url, strength):
-    tent = "[+] " + url + " -> " + strength
+    tent = f"[+] {url} -> {strength}"
     STRENGTH_LIST.append(tent)
