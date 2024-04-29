@@ -9,8 +9,11 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import requests, time
+import time
 from urllib.parse import urljoin
+
+import requests
+
 from xsrfprobe.core.colors import *
 from xsrfprobe.files.config import *
 from xsrfprobe.core.verbout import verbout
