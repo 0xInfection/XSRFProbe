@@ -29,7 +29,7 @@ def inputin():
     """
     This module actually parses the url passed by the user.
     """
-    web = ''
+    web = ""
     if SITE_URL:
         web = SITE_URL  # If already assigned
     if not web.endswith("/"):
@@ -52,24 +52,29 @@ def inputin():
     # We'll test for endpoint only when the --crawl isn't supplied.
     if not CRAWL_SITE:
         try:
+            end_point = web.split("//")[1].split("/", 1)[1]
+            if end_point == "":
+                end_point = "/"
+
             print(
                 colors.O
                 + "Testing "
                 + colors.CYAN
-                + web.split("//")[1].split("/", 1)[1]
+                + end_point
                 + colors.END
                 + " endpoint status..."
             )
             requests.get(web, timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
             print(colors.GREEN + " [+] Endpoint seems to be up!" + colors.END)
         except requests.exceptions.RequestException as e:
-            verbout(colors.R, "Endpoint error: " + web.split("//")[1].split("/", 1)[1])
+            verbout(colors.R, "Endpoint error: " + end_point)
             ErrorLogger(web0, e.__str__())
             quit()
         except Exception as e:
             verbout(colors.R, "Exception Caught: " + e.__str__())
             ErrorLogger(web0, e.__str__())
             quit()
+
     if not web0.endswith("/"):
         web0 = web0 + "/"
     if web.split("//")[1] == web0:
