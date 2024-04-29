@@ -27,7 +27,7 @@ from xsrfprobe import __version__, __license__
 parser = argparse.ArgumentParser(usage="xsrfprobe -u <url> <args>")
 parser._action_groups.pop()
 
-# A simple hack to have required argumentsa and optional arguments separately
+# A simple hack to have required arguments and optional arguments separately
 required = parser.add_argument_group("Required Arguments")
 optional = parser.add_argument_group("Optional Arguments")
 
