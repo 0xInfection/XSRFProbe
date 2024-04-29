@@ -100,16 +100,18 @@ def GetLogger():
 
     if JSON_OUTPUT:
         results = {
-            "internal-links" : INTERNAL_URLS,
-            "errors" : SCAN_ERRORS,
+            "internal-links": INTERNAL_URLS,
+            "errors": SCAN_ERRORS,
             "files-found": FILES_EXEC,
             "anti-csrf-tokens": REQUEST_TOKENS,
             "forms-tested": FORMS_TESTED,
             "vulnerabilities": VULN_LIST,
-            "strengths": STRENGTH_LIST
+            "strengths": STRENGTH_LIST,
         }
 
-        with open(f"{OUTPUT_DIR}results.json", mode="w", encoding="latin1") as file_handle:
+        with open(
+            f"{OUTPUT_DIR}results.json", mode="w", encoding="latin1"
+        ) as file_handle:
             json.dump(results, fp=file_handle)
 
 
