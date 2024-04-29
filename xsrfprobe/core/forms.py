@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-#-:-:-:-:-:-:-::-:-:#
+# -:-:-:-:-:-:-::-:-:#
 #    XSRF Probe     #
-#-:-:-:-:-:-:-::-:-:#
+# -:-:-:-:-:-:-::-:-:#
 
 # Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-def testFormx1(): # an example xsrfprobe-test-form to make sure the stuff works properly ;)
 
+def testFormx1():  # an example xsrfprobe-test-form to make sure the stuff works properly ;)
     test_form_0x01 = """
     <form name="loginform" id="loginform" action="/wp-login.php" method="post">
 	<p>
@@ -31,8 +31,8 @@ def testFormx1(): # an example xsrfprobe-test-form to make sure the stuff works 
 
     return test_form_0x01
 
-def testFormx2(): # an example of a xsrfprobe-test-form (used drupal)
 
+def testFormx2():  # an example of a xsrfprobe-test-form (used drupal)
     test_form_0x02 = """
     <form name='shit' id="contact" action="/nibba.php" method="post">
         <h3>Colorlib Contact Form</h3>

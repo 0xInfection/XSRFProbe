@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#-:-:-:-:-:-:-:-:-:#
+# -:-:-:-:-:-:-:-:-:#
 #    XSRFProbe     #
-#-:-:-:-:-:-:-:-:-:#
+# -:-:-:-:-:-:-:-:-:#
 
 # Author: 0xInfection
 # This module requires XSRFProbe
@@ -20,19 +20,28 @@ from xsrfprobe.core.randua import RandomAgent
 from xsrfprobe.core.utils import checkDuplicates
 from xsrfprobe.core.logger import VulnLogger, NovulLogger
 from urllib.parse import urlencode, unquote, urlsplit
+
 # Response storing list init
 resps = []
 
+
 def Persistence(url, postq):
-    '''
+    """
     The main idea behind this is to check for Cookie
                     Persistence.
-    '''
-    verbout(color.RED, '\n +-----------------------------------+')
-    verbout(color.RED, ' |   Cookie Persistence Validation   |')
-    verbout(color.RED, ' +-----------------------------------+\n')
+    """
+    verbout(color.RED, "\n +-----------------------------------+")
+    verbout(color.RED, " |   Cookie Persistence Validation   |")
+    verbout(color.RED, " +-----------------------------------+\n")
     # Checking if user has supplied a value.
-    verbout(GR,'Proceeding to test for '+color.GREY+'Cookie Persistence'+color.END+'...')
+    verbout(
+        GR,
+        "Proceeding to test for "
+        + color.GREY
+        + "Cookie Persistence"
+        + color.END
+        + "...",
+    )
     time.sleep(0.7)
     found = 0x00
     # Now let the real test begin...
@@ -43,25 +52,50 @@ def Persistence(url, postq):
     #
     # First its time for GET type requests. Lets prepare our request.
     cookies = []
-    verbout(C, 'Proceeding to test cookie persistence via '+color.CYAN+'Prepared GET Requests'+color.END+'...')
-    verbout(GR,'Making the request...')
+    verbout(
+        C,
+        "Proceeding to test cookie persistence via "
+        + color.CYAN
+        + "Prepared GET Requests"
+        + color.END
+        + "...",
+    )
+    verbout(GR, "Making the request...")
     req = Get(url, headers=HEADER_VALUES)
     if req.cookies:
         for cook in req.cookies:
             if cook.expires:
-                print(color.GREEN+' [+] Persistent Cookies found in Response Headers!')
-                print(color.GREY+' [+] Cookie: '+color.CYAN+cook.__str__())
+                print(
+                    color.GREEN + " [+] Persistent Cookies found in Response Headers!"
+                )
+                print(color.GREY + " [+] Cookie: " + color.CYAN + cook.__str__())
                 # cookie.expires returns a timestamp value. I didn't know it. :( Spent over 2+ hours scratching my head
                 # over this, until I stumbled upon a stackoverflow answer comment. So to decode this, we'd need to
                 # convert it a human readable format.
-                print(color.GREEN+' [+] Cookie Expiry Period: '+color.ORANGE+datetime.fromtimestamp(cook.expires).__str__())
+                print(
+                    color.GREEN
+                    + " [+] Cookie Expiry Period: "
+                    + color.ORANGE
+                    + datetime.fromtimestamp(cook.expires).__str__()
+                )
                 found = 0x01
-                VulnLogger(url, 'Persistent Session Cookies Found.', '[i] Cookie: '+req.headers.get('Set-Cookie'))
+                VulnLogger(
+                    url,
+                    "Persistent Session Cookies Found.",
+                    "[i] Cookie: " + req.headers.get("Set-Cookie"),
+                )
             else:
-                NovulLogger(url, 'No Persistent Session Cookies.')
+                NovulLogger(url, "No Persistent Session Cookies.")
     if found == 0x00:
-        verbout(R, 'No persistent session cookies identified on GET Type Requests!')
-    verbout(C, 'Proceeding to test cookie persistence on '+color.CYAN+'POST Requests'+color.END+'...')
+        verbout(R, "No persistent session cookies identified on GET Type Requests!")
+    verbout(
+        C,
+        "Proceeding to test cookie persistence on "
+        + color.CYAN
+        + "POST Requests"
+        + color.END
+        + "...",
+    )
     # Now its time for POST Based requests.
     #
     # NOTE: As a standard method, every web application should supply a cookie upon a POST query.
@@ -69,19 +103,50 @@ def Persistence(url, postq):
     if postq.cookies:
         for cookie in postq.cookies:
             if cookie.expires:
-                print(color.GREEN+' [+] Persistent Cookies found in Response Headers!')
-                print(color.GREY+' [+] Cookie: '+color.CYAN+cookie.__str__())
+                print(
+                    color.GREEN + " [+] Persistent Cookies found in Response Headers!"
+                )
+                print(color.GREY + " [+] Cookie: " + color.CYAN + cookie.__str__())
                 # So to decode this, we'd need to convert it a human readable format.
-                print(color.GREEN+' [+] Cookie Expiry Period: '+color.ORANGE+datetime.fromtimestamp(cookie.expires).__str__())
+                print(
+                    color.GREEN
+                    + " [+] Cookie Expiry Period: "
+                    + color.ORANGE
+                    + datetime.fromtimestamp(cookie.expires).__str__()
+                )
                 found = 0x01
-                VulnLogger(url, 'Persistent Session Cookies Found.', '[i] Cookie: '+req.headers.get('Set-Cookie'))
-                print(color.ORANGE+' [!] Probable Insecure Practice: '+color.BY+' Persistent Session Cookies '+color.END)
+                VulnLogger(
+                    url,
+                    "Persistent Session Cookies Found.",
+                    "[i] Cookie: " + req.headers.get("Set-Cookie"),
+                )
+                print(
+                    color.ORANGE
+                    + " [!] Probable Insecure Practice: "
+                    + color.BY
+                    + " Persistent Session Cookies "
+                    + color.END
+                )
             else:
-                NovulLogger(url, 'No Persistent Cookies.')
+                NovulLogger(url, "No Persistent Cookies.")
     if found == 0x00:
-        verbout(R, 'No persistent session cookies identified upon POST Requests!')
-        print(color.ORANGE+' [+] Endpoint might be '+color.BY+' NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF attacks!')
-        print(color.ORANGE+' [+] Detected : '+color.BY+' No Persistent Cookies '+color.END)
+        verbout(R, "No persistent session cookies identified upon POST Requests!")
+        print(
+            color.ORANGE
+            + " [+] Endpoint might be "
+            + color.BY
+            + " NOT VULNERABLE "
+            + color.END
+            + color.ORANGE
+            + " to CSRF attacks!"
+        )
+        print(
+            color.ORANGE
+            + " [+] Detected : "
+            + color.BY
+            + " No Persistent Cookies "
+            + color.END
+        )
 
     # [Step 2]: The idea here is to try to identify cookie persistence on basis of observing
     # variations in cases of using different user-agents. For this test we have chosen 5 different
@@ -90,40 +155,83 @@ def Persistence(url, postq):
     #
     # We'll test this method only when we haven't identified requests based on previous algo.
     if found != 0x01:
-        verbout(C, 'Proceeding to test cookie persistence via '+color.CYAN+'User-Agent Alteration'+color.END+'...')
+        verbout(
+            C,
+            "Proceeding to test cookie persistence via "
+            + color.CYAN
+            + "User-Agent Alteration"
+            + color.END
+            + "...",
+        )
         user_agents = {
-                'Chrome on Windows 8.1' : 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36',
-                'Safari on iOS'         : 'Mozilla/5.0 (iPhone; CPU iPhone OS 8_1_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12B466 Safari/600.1.4',
-                'IE6 on Windows XP'     : 'Mozilla/5.0 (Windows; U; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727)',
-                'Opera on Windows 10'   : 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36 OPR/43.0.2442.991',
-                'Chrome on Android'     : 'Mozilla/5.0 (Linux; U; Android 2.3.1; en-us; MID Build/GINGERBREAD) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1'
-            }
-        verbout(GR,'Setting custom generic headers...')
+            "Chrome on Windows 8.1": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36",
+            "Safari on iOS": "Mozilla/5.0 (iPhone; CPU iPhone OS 8_1_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12B466 Safari/600.1.4",
+            "IE6 on Windows XP": "Mozilla/5.0 (Windows; U; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727)",
+            "Opera on Windows 10": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36 OPR/43.0.2442.991",
+            "Chrome on Android": "Mozilla/5.0 (Linux; U; Android 2.3.1; en-us; MID Build/GINGERBREAD) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
+        }
+        verbout(GR, "Setting custom generic headers...")
         gen_headers = HEADER_VALUES
         for name, agent in user_agents.items():
-            verbout(C, 'Using User-Agent : '+color.CYAN+name)
-            verbout(GR, 'Value : '+color.ORANGE+agent)
-            gen_headers['User-Agent'] = agent
+            verbout(C, "Using User-Agent : " + color.CYAN + name)
+            verbout(GR, "Value : " + color.ORANGE + agent)
+            gen_headers["User-Agent"] = agent
             if COOKIE_VALUE:
-                gen_headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
+                gen_headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
             req = Get(url, headers=gen_headers)
             # We will append this to stuff only when set-cookie is being supplied.
-            if req.headers.get('Set-Cookie'):
-                resps.append(req.headers.get('Set-Cookie'))
-        HEADER_VALUES.pop('User-Agent', None)
-        HEADER_VALUES['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36'
+            if req.headers.get("Set-Cookie"):
+                resps.append(req.headers.get("Set-Cookie"))
+        HEADER_VALUES.pop("User-Agent", None)
+        HEADER_VALUES[
+            "User-Agent"
+        ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36"
         if resps:
             if checkDuplicates(resps):
-                verbout(G, 'Set-Cookie header does not change with varied User-Agents...')
-                verbout(color.ORANGE, ' [+] Possible persistent session cookies found...')
-                print(color.RED+' [+] Possible CSRF Vulnerability Detected : '+color.ORANGE+url+'!')
-                print(color.ORANGE+' [!] Probable Insecure Practice: '+color.BY+' Persistent Session Cookies '+color.END)
-                VulnLogger(url, 'Persistent Session Cookies Found.', '[i] Cookie: '+req.headers.get('Set-Cookie'))
+                verbout(
+                    G, "Set-Cookie header does not change with varied User-Agents..."
+                )
+                verbout(
+                    color.ORANGE, " [+] Possible persistent session cookies found..."
+                )
+                print(
+                    color.RED
+                    + " [+] Possible CSRF Vulnerability Detected : "
+                    + color.ORANGE
+                    + url
+                    + "!"
+                )
+                print(
+                    color.ORANGE
+                    + " [!] Probable Insecure Practice: "
+                    + color.BY
+                    + " Persistent Session Cookies "
+                    + color.END
+                )
+                VulnLogger(
+                    url,
+                    "Persistent Session Cookies Found.",
+                    "[i] Cookie: " + req.headers.get("Set-Cookie"),
+                )
             else:
-                verbout(G, 'Set-Cookie header changes with varied User-Agents...')
-                verbout(R, 'No possible persistent session cookies found...')
-                verbout(color.ORANGE, ' [+] Endpoint '+color.BY+' PROBABLY NOT VULNERABLE '+color.END+color.ORANGE+' to CSRF attacks!')
-                verbout(color.ORANGE, ' [+] Application Practice Method Detected : '+color.BY+' No Persistent Cookies '+color.END)
-                NovulLogger(url, 'No Persistent Cookies.')
+                verbout(G, "Set-Cookie header changes with varied User-Agents...")
+                verbout(R, "No possible persistent session cookies found...")
+                verbout(
+                    color.ORANGE,
+                    " [+] Endpoint "
+                    + color.BY
+                    + " PROBABLY NOT VULNERABLE "
+                    + color.END
+                    + color.ORANGE
+                    + " to CSRF attacks!",
+                )
+                verbout(
+                    color.ORANGE,
+                    " [+] Application Practice Method Detected : "
+                    + color.BY
+                    + " No Persistent Cookies "
+                    + color.END,
+                )
+                NovulLogger(url, "No Persistent Cookies.")
         else:
-            verbout(R, 'No cookies are being set on any requests.')
+            verbout(R, "No cookies are being set on any requests.")

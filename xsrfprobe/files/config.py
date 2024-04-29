@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#-:-:-:-:-:-:-::-:-:#
+# -:-:-:-:-:-:-::-:-:#
 #    XSRF Probe     #
-#-:-:-:-:-:-:-::-:-:#
+# -:-:-:-:-:-:-::-:-:#
 
 # Author: 0xInfection
 # This module requires XSRFProbe
@@ -18,7 +18,7 @@ global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR
 global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS, GEN_MALICIOUS
 
 # Site Url to be scanned (Required)
-SITE_URL = ''
+SITE_URL = ""
 
 # Switch for whether to crawl the site or not
 CRAWL_SITE = False
@@ -35,12 +35,12 @@ USER_AGENT_RANDOM = False
 
 # User-Agent to be used (If COOKIE_VALUE supplied).
 #
-# This is standard User-Agent emulating Chrome 68 on Windows 10 
+# This is standard User-Agent emulating Chrome 68 on Windows 10
 #
 # NOTE: This is a precaution in case the cookie value is supplied,
 # if the user-agent gets changed from time to time, the remote
 # application might trigger up some protection agents
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36'
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36"
 
 # Cookie value to be sent alongwith the requests. This option is particularly
 # needed for a wholesome check on CSRFs. Since for a basic successful CSRF attack
@@ -60,20 +60,20 @@ COOKIE_VALUE = []
 
 # Header values to be used (Modify it as per your need)
 HEADER_VALUES = {
-                    'Accept'            : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                    'Accept-Language'   : 'en-US,en;q=0.9',
-                    'Accept-Encoding'   : 'gzip, deflate, br',
-                    'Sec-Fetch-Mode'    : 'navigate',
-                    'DNT'               : '1',  # Do Not Track Request Header :D
-                    'Connection'        : 'close'
-                }
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Sec-Fetch-Mode": "navigate",
+    "DNT": "1",  # Do Not Track Request Header :D
+    "Connection": "close",
+}
 
 # Email value to be supplied when parsing/filling forms
 # You can modify it as per your need :)
-EMAIL_VALUE = 'csrf.testing@xsrfprobe.tld'
+EMAIL_VALUE = "csrf.testing@xsrfprobe.tld"
 
 # Plaintext value to be supplied when parsing/filling forms
-TEXT_VALUE = 'csrftesting'
+TEXT_VALUE = "csrftesting"
 
 # Request Timeout (Keep the max. timeout value to 10s)
 TIMEOUT_VALUE = 7
@@ -117,11 +117,11 @@ VERIFY_CERT = True
 
 # Referer Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-REFERER_URL = 'http://not-a-valid-referer.xsrfprobe-csrftesting.0xinfection.xyz'
+REFERER_URL = "http://not-a-valid-referer.xsrfprobe-csrftesting.0xinfection.xyz"
 
 # Origin Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-ORIGIN_URL = 'http://not-a-valid-origin.xsrfprobe-csrftesting.0xinfection.xyz'
+ORIGIN_URL = "http://not-a-valid-origin.xsrfprobe-csrftesting.0xinfection.xyz"
 
 # The length of the custom token to be generated for params
 #
@@ -138,7 +138,7 @@ EXCLUDE_DIRS = []
 
 # Output directory where everything (including logs) are to
 # be stored
-OUTPUT_DIR = ''
+OUTPUT_DIR = ""
 
 # This option is for displaying the headers received as response.
 # Turn this off if you don't want to see the headers on the
@@ -159,6 +159,39 @@ GEN_MALICIOUS = False
 
 # A list of file extensions that might be come across while scanning
 # and crawling
-FILE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'pdf', 'js', 'css', 'ico', 'bmp', 'svg', 'json', 'xml', 'xls', 'csv', 'docx',]
+FILE_EXTENSIONS = [
+    "png",
+    "jpg",
+    "jpeg",
+    "pdf",
+    "js",
+    "css",
+    "ico",
+    "bmp",
+    "svg",
+    "json",
+    "xml",
+    "xls",
+    "csv",
+    "docx",
+]
 # These are a list of executable files that are found on the web
-EXECUTABLES = ['deb', 'bat', 'exe', 'msu', 'msi', 'apk', 'bin', 'csh', 'inf', 'ini', 'msc', 'osx' ,'out', 'vbe', 'ws', 'msp', 'jse']
+EXECUTABLES = [
+    "deb",
+    "bat",
+    "exe",
+    "msu",
+    "msi",
+    "apk",
+    "bin",
+    "csh",
+    "inf",
+    "ini",
+    "msc",
+    "osx",
+    "out",
+    "vbe",
+    "ws",
+    "msp",
+    "jse",
+]
