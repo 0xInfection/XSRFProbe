@@ -11,6 +11,7 @@
 
 # Standard Package imports
 import os
+import sys
 import ssl
 import time
 import warnings
@@ -31,6 +32,7 @@ except ImportError:  # Throws exception in Case of Python2
         f"{colors.RED} [-] {colors.END}Use Python 3.x to run {colors.ORANGE}XSRFProbe."
     )
     quit()
+
 try:
     import requests, stringdist, bs4
 except ImportError:
@@ -40,7 +42,6 @@ except ImportError:
     )
 
 # Imports from core
-from xsrfprobe.core.options import *
 from xsrfprobe.files.discovered import FORMS_TESTED
 
 from xsrfprobe.core.inputin import inputin
@@ -53,7 +54,16 @@ from xsrfprobe.core.logger import ErrorLogger, GetLogger
 from xsrfprobe.core.logger import VulnLogger, NovulLogger
 
 # Imports from files
-from xsrfprobe.files.config import *
+from xsrfprobe.files.config import (
+    VERIFY_CERT,
+    COOKIE_VALUE,
+    HEADER_VALUES,
+    CRAWL_SITE,
+    REFERER_ORIGIN_CHECKS,
+    FORM_SUBMISSION,
+    COOKIE_BASED,
+    POST_BASED,
+)
 
 # Imports from modules
 from xsrfprobe.modules import Debugger

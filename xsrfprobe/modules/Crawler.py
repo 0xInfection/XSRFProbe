@@ -19,9 +19,14 @@ import xsrfprobe.core.colors
 
 colors = xsrfprobe.core.colors.color()
 
-
-from xsrfprobe.files.config import *
-from xsrfprobe.files.dcodelist import *
+from xsrfprobe.files.config import EXCLUDE_DIRS
+from xsrfprobe.files.dcodelist import (
+    RID_DOUBLE,
+    RID_COMPILE,
+    RID_SINGLE,
+    NUM_COM,
+    NUM_SUB,
+)
 from xsrfprobe.core.request import Get
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.core.logger import ErrorLogger

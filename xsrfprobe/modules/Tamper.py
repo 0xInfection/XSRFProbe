@@ -16,7 +16,6 @@ import xsrfprobe.core.colors
 colors = xsrfprobe.core.colors.color()
 
 from xsrfprobe.core.request import Post
-from xsrfprobe.files.config import *
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.core.utils import replaceStrIndex
 from xsrfprobe.files.paramlist import TOKEN_ERRORS

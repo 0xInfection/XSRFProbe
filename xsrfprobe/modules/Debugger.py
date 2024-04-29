@@ -17,7 +17,7 @@ import xsrfprobe.core.colors
 
 colors = xsrfprobe.core.colors.color()
 
-from xsrfprobe.files.config import *
+from xsrfprobe.files.config import EMAIL_VALUE, TEXT_VALUE, TOKEN_GENERATION_LENGTH
 from xsrfprobe.core.verbout import verbout
 
 

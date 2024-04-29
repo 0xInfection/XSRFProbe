@@ -13,7 +13,7 @@ import xsrfprobe.core.colors
 
 colors = xsrfprobe.core.colors.color()
 
-from xsrfprobe.files.config import *
+from xsrfprobe.files.config import HEADER_VALUES, REFERER_URL, COOKIE_VALUE
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.core.request import Get
 from xsrfprobe.core.logger import VulnLogger, NovulLogger

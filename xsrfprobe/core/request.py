@@ -18,7 +18,18 @@ import xsrfprobe.core.colors
 
 colors = xsrfprobe.core.colors.color()
 
-from xsrfprobe.files.config import *
+from xsrfprobe.files.config import (
+    HEADER_VALUES,
+    COOKIE_VALUE,
+    USER_AGENT_RANDOM,
+    USER_AGENT,
+    DELAY_VALUE,
+    DISPLAY_HEADERS,
+    TIMEOUT_VALUE,
+    VERIFY_CERT,
+    FILE_EXTENSIONS,
+    EXECUTABLES,
+)
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.core.randua import RandomAgent
 from xsrfprobe.files.discovered import FILES_EXEC

@@ -10,14 +10,13 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import time
-from re import I
 from datetime import datetime
 
 import xsrfprobe.core.colors
 
 colors = xsrfprobe.core.colors.color()
 
-from xsrfprobe.files.config import *
+from xsrfprobe.files.config import HEADER_VALUES, COOKIE_VALUE
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.core.request import Get
 from xsrfprobe.core.utils import checkDuplicates
@@ -64,6 +63,7 @@ def Persistence(url, postq):
     )
     verbout(colors.GR, "Making the request...")
     req = Get(url, headers=HEADER_VALUES)
+
     if req.cookies:
         for cook in req.cookies:
             if cook.expires:
@@ -88,10 +88,12 @@ def Persistence(url, postq):
                 )
             else:
                 NovulLogger(url, "No Persistent Session Cookies.")
+
     if found == 0x00:
         verbout(
             colors.R, "No persistent session cookies identified on GET Type Requests!"
         )
+
     verbout(
         colors.C,
         "Proceeding to test cookie persistence on "
@@ -133,8 +135,11 @@ def Persistence(url, postq):
                 )
             else:
                 NovulLogger(url, "No Persistent Cookies.")
+
     if found == 0x00:
-        verbout(R, "No persistent session cookies identified upon POST Requests!")
+        verbout(
+            colors.R, "No persistent session cookies identified upon POST Requests!"
+        )
         print(
             colors.ORANGE
             + " [+] Endpoint might be "

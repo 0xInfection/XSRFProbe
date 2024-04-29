@@ -10,7 +10,6 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import random
-import datetime
 
 user_agent_list = [
     # Chrome

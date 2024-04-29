@@ -13,7 +13,7 @@ import xsrfprobe.core.colors
 
 colors = xsrfprobe.core.colors.color()
 
-from xsrfprobe.files.config import *
+from xsrfprobe.files.config import OUTPUT_DIR
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.files.discovered import INTERNAL_URLS, FILES_EXEC, SCAN_ERRORS
 from xsrfprobe.files.discovered import (
