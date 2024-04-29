@@ -164,6 +164,12 @@ optional.add_argument(
     dest="version",
     action="store_true",
 )
+optional.add_argument(
+    "--json",
+    help="Output the results into a JSON file.",
+    dest="json",
+    action="store_true",
+)
 args = parser.parse_args()
 
 # Hide colors if user doesn't want it
@@ -266,7 +272,7 @@ if args.headers:
     # NOTE: As a default idea, when the user supplies custom headers, we
     # simply add the custom headers to a list of existing headers in
     # files/config.py.
-    # Uncomment the following lines to just reinitialise the headers everytime
+    # Uncomment the following lines to just reinitialise the headers every time
     # they make a request.
     #
     # config.HEADER_VALUES = {}
@@ -293,34 +299,42 @@ if config.SITE_URL:
         if args.output:
             # If output directory is mentioned...
             try:
-                if not os.path.exists(args.output + tld.get_fld(config.SITE_URL)):
-                    os.makedirs(args.output + tld.get_fld(config.SITE_URL))
+                if not os.path.exists(f"{args.output}{tld.get_fld(config.SITE_URL)}"):
+                    os.makedirs(f"{args.output}{tld.get_fld(config.SITE_URL)}")
             except FileExistsError:
                 pass
-            config.OUTPUT_DIR = args.output + tld.get_fld(config.SITE_URL) + "/"
+
+            config.OUTPUT_DIR = f"{args.output}{tld.get_fld(config.SITE_URL)}/"
         else:
             try:
-                os.makedirs("xsrfprobe-output/" + tld.get_fld(config.SITE_URL))
+                os.makedirs(f"xsrfprobe-output/{tld.get_fld(config.SITE_URL)}")
             except FileExistsError:
                 pass
-            config.OUTPUT_DIR = "xsrfprobe-output/" + tld.get_fld(config.SITE_URL) + "/"
+
+            config.OUTPUT_DIR = f"xsrfprobe-output/{tld.get_fld(config.SITE_URL)}/"
+
     # When this exception turns out, we know the user has supplied a IP not domain
     except tld.exceptions.TldDomainNotFound:
         direc = re.search(IP, config.SITE_URL).group(0)
         if args.output:
             # If output directory is mentioned...
             try:
-                if not os.path.exists(args.output + direc):
-                    os.makedirs(args.output + direc)
+                if not os.path.exists(f"{args.output}{direc}"):
+                    os.makedirs(f"{args.output}{direc}")
             except FileExistsError:
                 pass
-            config.OUTPUT_DIR = args.output + direc + "/"
+
+            config.OUTPUT_DIR = f"{args.output}{direc}/"
         else:
             try:
-                os.makedirs("xsrfprobe-output/" + direc)
+                os.makedirs(f"xsrfprobe-output/{direc}")
             except FileExistsError:
                 pass
-            config.OUTPUT_DIR = "xsrfprobe-output/" + direc + "/"
+
+            config.OUTPUT_DIR = f"xsrfprobe-output/{direc}/"
 
 if args.quiet:
     config.DEBUG = False
+
+if args.json:
+    config.JSON_OUTPUT = True

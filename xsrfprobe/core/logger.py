@@ -9,14 +9,18 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
+import json
+
 import xsrfprobe.core.colors
 
 colors = xsrfprobe.core.colors.color()
 
-from xsrfprobe.files.config import OUTPUT_DIR
+from xsrfprobe.files.config import OUTPUT_DIR, JSON_OUTPUT
 from xsrfprobe.core.verbout import verbout
-from xsrfprobe.files.discovered import INTERNAL_URLS, FILES_EXEC, SCAN_ERRORS
 from xsrfprobe.files.discovered import (
+    INTERNAL_URLS,
+    FILES_EXEC,
+    SCAN_ERRORS,
     VULN_LIST,
     FORMS_TESTED,
     REQUEST_TOKENS,
@@ -29,7 +33,7 @@ def logger(filename, content):
     This module is for logging all the stuff we found
             while crawling and scanning.
     """
-    output_file = OUTPUT_DIR + filename + ".log"
+    output_file = f"{OUTPUT_DIR}{filename}.log"
     with open(output_file, "w+", encoding="utf8") as f:
         if isinstance(content, tuple) or isinstance(content, list):
             for m in content:  # if it is list or tuple, it is iterable
@@ -72,6 +76,7 @@ def presheaders(tup):
 
 
 def GetLogger():
+    """Write out the results"""
     if INTERNAL_URLS:
         logger("internal-links", INTERNAL_URLS)
 
@@ -92,6 +97,20 @@ def GetLogger():
 
     if STRENGTH_LIST:
         logger("strengths", STRENGTH_LIST)
+
+    if JSON_OUTPUT:
+        results = {
+            "internal-links" : INTERNAL_URLS,
+            "errors" : SCAN_ERRORS,
+            "files-found": FILES_EXEC,
+            "anti-csrf-tokens": REQUEST_TOKENS,
+            "forms-tested": FORMS_TESTED,
+            "vulnerabilities": VULN_LIST,
+            "strengths": STRENGTH_LIST
+        }
+
+        with open(f"{OUTPUT_DIR}results.json", mode="w", encoding="latin1") as file_handle:
+            json.dump(results, fp=file_handle)
 
 
 def ErrorLogger(url, error):

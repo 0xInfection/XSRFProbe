@@ -141,6 +141,9 @@ EXCLUDE_DIRS = []
 # be stored
 OUTPUT_DIR = ""
 
+# Allow JSON output
+JSON_OUTPUT = False
+
 # This option is for displaying the headers received as response.
 # Turn this off if you don't want to see the headers on the
 # terminal, or if it feels irritating.
