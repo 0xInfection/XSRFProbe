@@ -102,8 +102,10 @@ class Handler:  # Main Crawler Handler
 
         # Just in case there is a redirection, we are supposed to follow it :D
         verbout(colors.GR, "Making request to new location...")
+
         if hasattr(query.headers, "Location"):
             url = query.headers["Location"]
+
         verbout(colors.O, "Reading response...")
         response = query.content  # Read the response contents
 
