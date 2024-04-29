@@ -147,25 +147,27 @@ def Engine():  # lets begin it!
                     + colors.END
                     + " Checks...",
                 )
+
                 if Referer(url):
                     ref_detect = 0x01
+
                 verbout(colors.O, "Confirming the vulnerability...")
                 # We have finished with Referer Based Checks, lets go for Origin Based Ones...
                 verbout(
                     colors.O,
                     "Confirming endpoint request validation via "
-                    + colors.GREY
-                    + "Origin"
-                    + colors.END
-                    + " Checks...",
+                    f"{colors.GREY}Origin{colors.END} Checks...",
                 )
+
                 if Origin(url):
                     ori_detect = 0x01
+
             # Now lets get the forms...
             verbout(
                 colors.O,
-                "Retrieving all forms on " + colors.GREY + url + colors.END + "...",
+                f"Retrieving all forms on {colors.GREY}{url}{colors.END}...",
             )
+
             for m in Debugger.getAllForms(soup):  # iterating over all forms extracted
                 verbout(colors.O, "Testing form:\n" + colors.CYAN)
                 formPrettify(m.prettify())
@@ -195,18 +197,23 @@ def Engine():  # lets begin it!
                             result, genpoc = form.prepareFormInputs(
                                 m
                             )  # prepare inputs as user 1
+
                             r1 = Post(
                                 url, action, result
                             )  # make request with token values generated as user1
+
                             result, genpoc = form.prepareFormInputs(
                                 m
                             )  # prepare inputs as user 2
+
                             r2 = Post(
                                 url, action, result
                             )  # again make request with token values generated as user2
+
                             # Go for cookie based checks
                             if COOKIE_BASED:
                                 Cookie(url, r1)
+
                             # Go for token based entropy checks...
                             try:
                                 if m["name"]:
@@ -222,8 +229,10 @@ def Engine():  # lets begin it!
                                 query, token = Entropy(
                                     result, url, r1.headers, m.prettify(), m["action"]
                                 )
+
                             # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
                             fnd, detct = Encoding(token)
+
                             if fnd == 0x01 and detct:
                                 VulnLogger(
                                     url,
@@ -235,11 +244,13 @@ def Engine():  # lets begin it!
                                     url,
                                     "Anti-CSRF token is not a string encoded value.",
                                 )
+
                             # Go for token parameter tamper checks.
                             if query and token:
                                 txor = Tamper(
                                     url, action, result, r2.text, query, token
                                 )
+
                             o2 = Get(url).text  # make request as user2
                             try:
                                 form2 = Debugger.getAllForms(BeautifulSoup(o2))[
@@ -249,6 +260,7 @@ def Engine():  # lets begin it!
                                 verbout(colors.R, "Form Index Error")
                                 ErrorLogger(url, "Form Index Error.")
                                 continue  # Making sure program won't end here (dirty fix :( )
+
                             verbout(colors.GR, "Preparing form inputs...")
                             contents2, genpoc = form.prepareFormInputs(
                                 form2
@@ -283,18 +295,15 @@ def Engine():  # lets begin it!
                                     )
                             else:
                                 print(
-                                    colors.GREEN
-                                    + " [+] The form was requested with a Anti-CSRF token."
+                                    f"{colors.GREEN} [+] The form was requested "
+                                    "with a Anti-CSRF token."
                                 )
                                 print(
-                                    colors.GREEN
-                                    + " [+] Endpoint "
-                                    + colors.BG
-                                    + " NOT VULNERABLE "
-                                    + colors.END
-                                    + colors.GREEN
-                                    + " to POST-Based CSRF Attacks!"
+                                    f"{colors.GREEN} [+] Endpoint {colors.BG} "
+                                    f"NOT VULNERABLE {colors.END}{colors.GREEN} to "
+                                    "POST-Based CSRF Attacks!"
                                 )
+
                                 NovulLogger(
                                     url, "Not vulnerable to POST-Based CSRF Attacks."
                                 )
@@ -312,12 +321,14 @@ def Engine():  # lets begin it!
             while crawler.noinit():  # Until 0 urls left
                 url = next(crawler)  # Go for next!
                 print(
-                    colors.C + "Testing :> " + colors.CYAN + url
+                    f"{colors.C}Testing :> {colors.CYAN}{url}"
                 )  # Display what url its crawling
+
                 try:
                     soup = crawler.process(fld)  # Start the parser
                     if not soup:
-                        continue  # Making sure not to end the program yet...
+                        continue  # Making sure not to end the program yet..
+
                     i = 0  # Set count = 0 (user number 0, which will be subsequently incremented)
                     if REFERER_ORIGIN_CHECKS:
                         # Referer Based Checks if True...
@@ -329,46 +340,42 @@ def Engine():  # lets begin it!
                             + colors.END
                             + " Checks...",
                         )
+
                         if Referer(url):
                             ref_detect = 0x01
+
                         verbout(colors.O, "Confirming the vulnerability...")
                         # We have finished with Referer Based Checks, lets go for Origin Based Ones...
                         verbout(
                             colors.O,
                             "Confirming endpoint request validation via "
-                            + colors.GREY
-                            + "Origin"
-                            + colors.END
-                            + " Checks...",
+                            f"{colors.GREY}Origin{colors.END} Checks...",
                         )
                         if Origin(url):
                             ori_detect = 0x01
                     # Now lets get the forms...
                     verbout(
                         colors.O,
-                        "Retrieving all forms on "
-                        + colors.GREY
-                        + url
-                        + colors.END
-                        + "...",
+                        f"Retrieving all forms on {colors.GREY}{url}{colors.END}...",
                     )
+
                     for m in Debugger.getAllForms(
                         soup
                     ):  # iterating over all forms extracted
-                        FORMS_TESTED.append(
-                            "(i) " + url + ":\n\n" + m.prettify() + "\n"
-                        )
+                        FORMS_TESTED.append(f"(i) {url}:\n\n{m.prettify()}\n")
+
                         try:
                             if m["action"]:
                                 pass
                         except KeyError:
                             m["action"] = "/" + url.rsplit("/", 1)[1]
                             ErrorLogger(url, 'No standard "action" attribute.')
+
                         action = Parser.buildAction(
                             url, m["action"]
                         )  # get all forms which have 'action' attribute
                         if (
-                            not action in actionDone and action != ""
+                            action not in actionDone and action != ""
                         ):  # if url returned is not a null value nor duplicate...
                             # If form submission is kept to True
                             if FORM_SUBMISSION:
@@ -376,17 +383,22 @@ def Engine():  # lets begin it!
                                     result, genpoc = form.prepareFormInputs(
                                         m
                                     )  # prepare inputs as user 1
+
                                     r1 = Post(
                                         url, action, result
                                     )  # make request with token values generated as user1
+
                                     result, genpoc = form.prepareFormInputs(
                                         m
                                     )  # prepare inputs as user 2
+
                                     r2 = Post(
                                         url, action, result
                                     )  # again make request with token values generated as user2
+
                                     if COOKIE_BASED:
                                         Cookie(url, r1)
+
                                     # Go for token based entropy checks...
                                     try:
                                         if m["name"]:
@@ -407,8 +419,10 @@ def Engine():  # lets begin it!
                                             m["action"],
                                         )
                                         ErrorLogger(url, 'No standard form "name".')
+
                                     # Now its time to detect the encoding type (if any) of the Anti-CSRF token.
                                     fnd, detct = Encoding(token)
+
                                     if fnd == 0x01 and detct:
                                         VulnLogger(
                                             url,
@@ -420,11 +434,13 @@ def Engine():  # lets begin it!
                                             url,
                                             "Anti-CSRF token is not a string encoded value.",
                                         )
+
                                     # Go for token parameter tamper checks.
                                     if query and token:
                                         txor = Tamper(
                                             url, action, result, r2.text, query, token
                                         )
+
                                     o2 = Get(url).text  # make request as user2
                                     try:
                                         form2 = Debugger.getAllForms(BeautifulSoup(o2))[
@@ -434,16 +450,18 @@ def Engine():  # lets begin it!
                                         verbout(colors.R, "Form Index Error")
                                         ErrorLogger(url, "Form Index Error.")
                                         continue  # making sure program won't end here (dirty fix :( )
+
                                     verbout(colors.GR, "Preparing form inputs...")
+
                                     contents2, genpoc = form.prepareFormInputs(
                                         form2
                                     )  # prepare for form 3 as user3
+
                                     r3 = Post(
                                         url, action, contents2
                                     )  # make request as user3 with user3's form
-                                    if (POST_BASED) and (
-                                        (query == "") or (txor == True)
-                                    ):
+
+                                    if (POST_BASED) and ((query == "") or txor):
                                         try:
                                             if m["name"]:
                                                 PostBased(
@@ -470,8 +488,7 @@ def Engine():  # lets begin it!
                                             )
                                     else:
                                         print(
-                                            colors.GREEN
-                                            + " [+] The form was requested with a Anti-CSRF token."
+                                            f"{colors.GREEN} [+] The form was requested with a Anti-CSRF token."
                                         )
                                         print(
                                             colors.GREEN
@@ -494,8 +511,10 @@ def Engine():  # lets begin it!
                                         + msg.__str__(),
                                     )  # again exception :(
                                     ErrorLogger(url, msg)
+
                         actionDone.append(action)  # add the stuff done
                         i += 1  # Increase user iteration
+
                 # This error usually happens when some sites are protected by some load balancer
                 # example Cloudflare. These domains return a 403 forbidden response in various
                 # contexts. For example when making reverse DNS queries.
@@ -511,6 +530,7 @@ def Engine():  # lets begin it!
                     verbout(colors.O, "Moving on...")
                     ErrorLogger(url, e)
                     continue  # make sure it doesn't stop at exceptions
+
         GetLogger()  # The scanning has finished, so now we can log out all the links ;)
         print("\n" + colors.G + "Scan completed!" + "\n")
         Analysis()  # For Post Scan Analysis
