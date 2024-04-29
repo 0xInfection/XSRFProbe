@@ -102,7 +102,7 @@ def Persistence(url, postq):
     #
     # NOTE: As a standard method, every web application should supply a cookie upon a POST query.
     # It might or might not be in case of GET requests.
-    if postq is not None and postq.cookies:
+    if postq.cookies:
         for cookie in postq.cookies:
             if cookie.expires:
                 print(
@@ -130,7 +130,7 @@ def Persistence(url, postq):
                     + colors.END
                 )
             else:
-                NovulLogger(url, "No Persistent Cookies.")
+                NovulLogger(url, "No Persistent Cookies (via POST).")
 
     if found == 0x00:
         verbout(
@@ -168,6 +168,7 @@ def Persistence(url, postq):
             + colors.END
             + "...",
         )
+
         user_agents = {
             "Chrome on Windows 8.1": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36",
             "Safari on iOS": "Mozilla/5.0 (iPhone; CPU iPhone OS 8_1_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12B466 Safari/600.1.4",
@@ -175,8 +176,10 @@ def Persistence(url, postq):
             "Opera on Windows 10": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36 OPR/43.0.2442.991",
             "Chrome on Android": "Mozilla/5.0 (Linux; U; Android 2.3.1; en-us; MID Build/GINGERBREAD) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
         }
+
         verbout(colors.GR, "Setting custom generic headers...")
         gen_headers = HEADER_VALUES
+
         for name, agent in user_agents.items():
             verbout(colors.C, "Using User-Agent : " + colors.CYAN + name)
             verbout(colors.GR, "Value : " + colors.ORANGE + agent)
@@ -187,15 +190,17 @@ def Persistence(url, postq):
             # We will append this to stuff only when set-cookie is being supplied.
             if req.headers.get("Set-Cookie"):
                 resps.append(req.headers.get("Set-Cookie"))
+
         HEADER_VALUES.pop("User-Agent", None)
         HEADER_VALUES[
             "User-Agent"
         ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36"
+
         if resps:
             if checkDuplicates(resps):
                 verbout(
                     colors.G,
-                    "Set-Cookie header does not change with varied User-Agents...",
+                    "Set-Cookie header does not change with different User-Agents...",
                 )
                 verbout(
                     colors.ORANGE, " [+] Possible persistent session cookies found..."
@@ -220,7 +225,7 @@ def Persistence(url, postq):
                 )
             else:
                 verbout(
-                    colors.G, "Set-Cookie header changes with varied User-Agents..."
+                    colors.G, "Set-Cookie header changes with different User-Agents..."
                 )
                 verbout(colors.R, "No possible persistent session cookies found...")
                 verbout(
@@ -239,6 +244,6 @@ def Persistence(url, postq):
                     + " No Persistent Cookies "
                     + colors.END,
                 )
-                NovulLogger(url, "No Persistent Cookies.")
+                NovulLogger(url, "No Persistent Cookies (via different User-Agent).")
         else:
             verbout(colors.R, "No cookies are being set on any requests.")
