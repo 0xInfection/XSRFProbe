@@ -32,14 +32,18 @@ def inputin():
     web = ""
     if SITE_URL:
         web = SITE_URL  # If already assigned
+
     if not web.endswith("/"):
         web = web + "/"
+
     if "http" not in web:  # add protocol to site
         web = "http://" + web
+
     try:
         web0 = urlparse(web).netloc
     except Exception:
         web0 = re.search(IP, web).group(0)
+
     try:
         print(
             colors.O + "Testing site " + colors.CYAN + web0 + colors.END + " status..."
@@ -49,6 +53,7 @@ def inputin():
     except requests.exceptions.RequestException:  # if site is down
         print(colors.R + "Site seems to be down...")
         quit()
+
     # We'll test for endpoint only when the --crawl isn't supplied.
     if not CRAWL_SITE:
         try:
