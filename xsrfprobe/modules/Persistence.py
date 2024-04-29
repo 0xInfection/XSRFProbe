@@ -68,17 +68,17 @@ def Persistence(url, postq):
         for cook in req.cookies:
             if cook.expires:
                 print(
-                    colors.GREEN + " [+] Persistent Cookies found in Response Headers!"
+                    f"{colors.GREEN} [+] Persistent Cookies found in Response Headers!"
                 )
-                print(colors.GREY + " [+] Cookie: " + colors.CYAN + cook.__str__())
-                # cookie.expires returns a timestamp value. I didn't know it. :( Spent over 2+ hours scratching my head
-                # over this, until I stumbled upon a stackoverflow answer comment. So to decode this, we'd need to
+                print(f"{colors.GREY} [+] Cookie: {colors.CYAN}{cook}")
+                # cookie.expires returns a timestamp value. I didn't know it.
+                # :( Spent over 2+ hours scratching my head
+                # over this, until I stumbled upon a stackoverflow answer comment.
+                # So to decode this, we'd need to
                 # convert it a human readable format.
                 print(
-                    colors.GREEN
-                    + " [+] Cookie Expiry Period: "
-                    + colors.ORANGE
-                    + datetime.fromtimestamp(cook.expires).__str__()
+                    f"{colors.GREEN} [+] Cookie Expiry Period: "
+                    f"{colors.ORANGE}{datetime.fromtimestamp(cook.expires)}"
                 )
                 found = 0x01
                 VulnLogger(
@@ -96,17 +96,13 @@ def Persistence(url, postq):
 
     verbout(
         colors.C,
-        "Proceeding to test cookie persistence on "
-        + colors.CYAN
-        + "POST Requests"
-        + colors.END
-        + "...",
+        f"Proceeding to test cookie persistence on {colors.CYAN}POST Requests{colors.END}...",
     )
     # Now its time for POST Based requests.
     #
     # NOTE: As a standard method, every web application should supply a cookie upon a POST query.
     # It might or might not be in case of GET requests.
-    if postq.cookies:
+    if postq is not None and postq.cookies:
         for cookie in postq.cookies:
             if cookie.expires:
                 print(
