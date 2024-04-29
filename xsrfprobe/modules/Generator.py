@@ -77,7 +77,7 @@ def GenNormalPoC(
     fi.write(content.prettify())
     fi.close()
     print(
-        G
+        colors.G
         + "PoC successfully saved under "
         + colors.ORANGE
         + OUTPUT_DIR
@@ -114,7 +114,7 @@ def GenMalicious(
                 for field in literal_eval(fields):
                     if not field["value"]:
                         val = input(
-                            C
+                            colors.C
                             + "Enter value for form field "
                             + colors.GREEN
                             + field["name"].title()
