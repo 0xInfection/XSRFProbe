@@ -107,7 +107,7 @@ class Handler:  # Main Crawler Handler
         response = query.content  # Read the response contents
 
         try:
-            verbout(colors.O, "Trying to parse response...")
+            verbout(colors.O, "Trying to parse crawler response...")
             soup = BeautifulSoup(response)  # Parser init
 
         except Exception:
