@@ -9,6 +9,14 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
+import os
+import sys
+
+# Allow loading of the module from the path where we are when you
+#  didn't install it using pip
+SCRIPT_DIR = os.path.realpath(os.path.dirname("."))
+sys.path.append(SCRIPT_DIR)
+
 from xsrfprobe import xsrfprobe
 
 if __name__ == '__main__':

@@ -1,49 +1,62 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#-:-:-:-:-:-:-::-:-:#
+# -:-:-:-:-:-:-::-:-:#
 #    XSRF Probe     #
-#-:-:-:-:-:-:-::-:-:#
+# -:-:-:-:-:-:-::-:-:#
 
 # Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import requests
-from xsrfprobe.core.colors import *
-from xsrfprobe.files.config import *
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
+from xsrfprobe.files.config import HEADER_VALUES, REFERER_URL, COOKIE_VALUE
 from xsrfprobe.core.verbout import verbout
 from xsrfprobe.core.request import Get
 from xsrfprobe.core.logger import VulnLogger, NovulLogger
+
 
 def Referer(url):
     """
     Check if the remote web application verifies the Referer before
                     processing the HTTP request.
     """
-    verbout(color.RED, '\n +--------------------------------------+')
-    verbout(color.RED, ' |   Referer Based Request Validation   |')
-    verbout(color.RED, ' +--------------------------------------+\n')
+    verbout(colors.RED, "\n +--------------------------------------+")
+    verbout(colors.RED, " |   Referer Based Request Validation   |")
+    verbout(colors.RED, " +--------------------------------------+\n")
     # Make the request normally and get content
-    verbout(O,'Making request on normal basis...')
+    verbout(colors.O, "Making request on normal basis...")
     req0x01 = Get(url)
 
     # Set normal headers...
-    verbout(GR,'Setting generic headers...')
+    verbout(colors.GR, "Setting generic headers...")
     gen_headers = HEADER_VALUES
 
     # Set a fake Referer along with UA (pretending to be a
     # legitimate request from a browser)
-    gen_headers['Referer'] = REFERER_URL
+    gen_headers["Referer"] = REFERER_URL
 
     # We put the cookie in request, if cookie supplied :D
     if COOKIE_VALUE:
-        gen_headers['Cookie'] = ','.join(cookie for cookie in COOKIE_VALUE)
+        gen_headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
 
     # Make the request with different referer header and get the content
-    verbout(O,'Making request with '+color.CYAN+'Tampered Referer Header'+color.END+'...')
+    verbout(
+        colors.O,
+        f"Making request with {colors.CYAN}Tampered Referer Header{colors.END}...",
+    )
     req0x02 = Get(url, headers=gen_headers)
-    HEADER_VALUES.pop('Referer', None)
+    HEADER_VALUES.pop("Referer", None)
+
+    if req0x01 is None or req0x02 is None:
+        verbout(
+            colors.RED,
+            " [!] Cannot compare the two requests as at least one of them is None",
+        )
+        return False
 
     # Comparing the length of the requests' responses. If both content
     # lengths are same, then the site actually does not validate referer
@@ -59,15 +72,39 @@ def Referer(url):
     #
     # TODO: This algorithm has lots of room for improvement.
     if len(req0x01.content) != len(req0x02.content):
-        print(color.GREEN+' [+] Endoint '+color.ORANGE+'Referer Validation'+color.GREEN+' Present!')
-        print(color.GREEN+' [-] Heuristics reveal endpoint might be '+color.BG+' NOT VULNERABLE '+color.END+'...')
-        print(color.ORANGE+' [+] Mitigation Method: '+color.BG+' Referer Based Request Validation '+color.END)
-        NovulLogger(url, 'Presence of Referer Header based Request Validation.')
+        print(
+            f"{colors.GREEN} [+] Endoint {colors.ORANGE}Referer Validation{colors.GREEN} Present!"
+        )
+        print(
+            f"{colors.GREEN} [-] Heuristics reveal endpoint might be "
+            f"{colors.BG} NOT VULNERABLE {colors.END}..."
+        )
+        print(
+            f"{colors.ORANGE} [+] Mitigation Method: {colors.BG} "
+            f"Referer Based Request Validation {colors.END}"
+        )
+        NovulLogger(url, "Presence of Referer Header based Request Validation.")
         return True
-    else:
-        verbout(R,'Endpoint '+color.RED+'Referer Validation Not Present'+color.END+'!')
-        verbout(R,'Heuristics reveal endpoint might be '+color.BY+' VULNERABLE '+color.END+' to Origin Based CSRFs...')
-        print(color.CYAN+ ' [+] Possible CSRF Vulnerability Detected : '+color.GREY+url+'!')
-        print(color.ORANGE+' [+] Possible Vulnerability Type: '+color.BY+' No Referer Based Request Validation '+color.END)
-        VulnLogger(url, 'No Referer Header based Request Validation presence.', '[i] Response Headers: '+str(req0x02.headers))
-        return False
+
+    verbout(
+        colors.R,
+        f"Endpoint {colors.RED}Referer Validation Not Present{colors.END}",
+    )
+    verbout(
+        colors.R,
+        f"Heuristics reveal endpoint might be {colors.BY} "
+        f"VULNERABLE {colors.END} to Origin Based CSRFs...",
+    )
+    print(
+        f"{colors.CYAN} [+] Possible CSRF Vulnerability Detected : {colors.GREY}{url}"
+    )
+    print(
+        f"{colors.ORANGE} [+] Possible Vulnerability Type: {colors.BY} "
+        f"No Referer Based Request Validation {colors.END}"
+    )
+    VulnLogger(
+        url,
+        "No Referer Header based Request Validation presence.",
+        f"[i] Response Headers: {req0x02.headers}",
+    )
+    return False

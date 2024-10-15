@@ -1,48 +1,221 @@
 #!/usr/bin/env python3
-#coding: utf-8
+# coding: utf-8
 
-#-:-:-:-:-:-:-::-:-:#
+# -:-:-:-:-:-:-::-:-:#
 #    XSRF Probe     #
-#-:-:-:-:-:-:-::-:-:#
+# -:-:-:-:-:-:-::-:-:#
 
-#Author: 0xInfection
-#This module requires XSRF-Probe
-#https://github.com/0xInfection/XSRF-Probe
+# Author: 0xInfection
+# This module requires XSRF-Probe
+# https://github.com/0xInfection/XSRF-Probe
 
 # Just for some fancy benner to appear at beginning
 
 import time
 from xsrfprobe import __version__
-from xsrfprobe.core.colors import *
+import xsrfprobe.core.colors
+
+colors = xsrfprobe.core.colors.color()
+
+SLEEP_TIME = 0
+
 
 def banner():
+    """Display the program banner"""
+    print("\n\n")
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.ORANGE
+        + "     _____       _____       _____      _____       _____                                    "
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.RED
+        + "  __"
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "__ "
+        + colors.ORANGE
+        + "  |_  "
+        + colors.RED
+        + "__"
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "___ "
+        + colors.ORANGE
+        + " |_  "
+        + colors.RED
+        + "__"
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "___  "
+        + colors.ORANGE
+        + "|_  "
+        + colors.RED
+        + "_"
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "____ "
+        + colors.ORANGE
+        + "|_"
+        + colors.RED
+        + "   _"
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "____ "
+        + colors.ORANGE
+        + "|_ "
+        + colors.RED
+        + " _____   _____  ______  ______  "
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.RED
+        + " \  `  /    "
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "|   ___|   "
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "|  _  _|   "
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "|   ___|  "
+        + colors.ORANGE
+        + "| "
+        + colors.RED
+        + "|   _  |  "
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "|  _ ,' /     \|  _   )|   ___| "
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.RED
+        + "  >   <     "
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + " `-.`-.    "
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "|     \    "
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "|   ___|  "
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + " |    __|  "
+        + colors.ORANGE
+        + "|"
+        + colors.RED
+        + "|     \ |  -  || |_  { |   ___| "
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.RED
+        + " /__/__\   "
+        + colors.ORANGE
+        + "_|"
+        + colors.RED
+        + "|______|  "
+        + colors.ORANGE
+        + "_|"
+        + colors.RED
+        + "|__|\__\ "
+        + colors.ORANGE
+        + " _|"
+        + colors.RED
+        + "|___|   "
+        + colors.ORANGE
+        + " _|"
+        + colors.RED
+        + " |___|   "
+        + colors.ORANGE
+        + " _|"
+        + colors.RED
+        + "|__|\__\\\_____/|______)|______| "
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.ORANGE
+        + "    |_____|     |_____|     |_____|    |_____|     |_____| \n\n"
+    )
+    time.sleep(SLEEP_TIME)
 
-    print('\n\n')
-    time.sleep(0.05)
-    print(color.ORANGE+'     _____       _____       _____      _____       _____                                    ')
-    time.sleep(0.05)
-    print(color.RED+'  __'+color.ORANGE+'|'+color.RED+'__ '+color.ORANGE+'  |_  '+color.RED+'__'+color.ORANGE+'|'+color.RED+'___ '+color.ORANGE+' |_  '+color.RED+'__'+color.ORANGE+'|'+color.RED+'___  '+color.ORANGE+'|_  '+color.RED+'_'+color.ORANGE+'|'+color.RED+'____ '+color.ORANGE+'|_'+color.RED+'   _'+color.ORANGE+'|'+color.RED+'____ '+color.ORANGE+'|_ '+color.RED+' _____   _____  ______  ______  ')
-    time.sleep(0.05)
-    print(color.RED+" \  `  /    "+color.ORANGE+'|'+color.RED+'|   ___|   '+color.ORANGE+'|'+color.RED+'|  _  _|   '+color.ORANGE+'|'+color.RED+'|   ___|  '+color.ORANGE+'| '+color.RED+'|   _  |  '+color.ORANGE+"|"+color.RED+"|  _ ,' /     \|  _   )|   ___| ")
-    time.sleep(0.05)
-    print(color.RED+'  >   <     '+color.ORANGE+'|'+color.RED+' `-.`-.    '+color.ORANGE+'|'+color.RED+'|     \    '+color.ORANGE+'|'+color.RED+'|   ___|  '+color.ORANGE+'|'+color.RED+' |    __|  '+color.ORANGE+'|'+color.RED+'|     \ |  -  || |_  { |   ___| ')
-    time.sleep(0.05)
-    print(color.RED+' /__/__\   '+color.ORANGE+'_|'+color.RED+'|______|  '+color.ORANGE+'_|'+color.RED+'|__|\__\ '+color.ORANGE+' _|'+color.RED+'|___|   '+color.ORANGE+' _|'+color.RED+' |___|   '+color.ORANGE+' _|'+color.RED+'|__|\__\\\_____/|______)|______| ')
-    time.sleep(0.05)
-    print(color.ORANGE+'    |_____|     |_____|     |_____|    |_____|     |_____| \n\n')
-    time.sleep(0.05)
 
-def banabout(): # some fancy banner stuff :p
-
-    print(color.BLUE+'   [---]            '+color.GREY+'XSRFProbe,'+color.RED+' A'+color.ORANGE+' Cross Site Request Forgery '+color.RED+'Audit Toolkit          '+color.BLUE+'[---]')
-    time.sleep(0.05)
-    print(color.BLUE+'   [---]                                                                           [---]')
-    time.sleep(0.05)
-    print(color.BLUE+'   [---]   '+color.PURPLE+'                    '+color.GREEN+'~  Author : '+color.CYAN+'Pinaki Mondal  ~                   '+color.BLUE+'     [---]')
-    time.sleep(0.05)
-    print(color.BLUE+'   [---]   '+color.CYAN+'                   ~  github.com / '+color.GREY+'0xInfection  ~                     '+color.BLUE+'  [---]')
-    time.sleep(0.05)
-    print(color.BLUE+'   [---]                                                                           [---]')
-    time.sleep(0.05)
-    print(color.BLUE+'   [---]  '+color.ORANGE+'                         ~  Version '+color.RED+__version__+color.ORANGE+'  ~                           '+color.BLUE+'  [---]\n')
-    time.sleep(0.05)
+def banabout():  # some fancy banner stuff :p
+    print(
+        colors.BLUE
+        + "   [---]            "
+        + colors.GREY
+        + "XSRFProbe,"
+        + colors.RED
+        + " A"
+        + colors.ORANGE
+        + " Cross Site Request Forgery "
+        + colors.RED
+        + "Audit Toolkit          "
+        + colors.BLUE
+        + "[---]"
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.BLUE
+        + "   [---]                                                                           [---]"
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.BLUE
+        + "   [---]   "
+        + colors.PURPLE
+        + "                    "
+        + colors.GREEN
+        + "~  Author : "
+        + colors.CYAN
+        + "Pinaki Mondal  ~                   "
+        + colors.BLUE
+        + "     [---]"
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.BLUE
+        + "   [---]   "
+        + colors.CYAN
+        + "                   ~  github.com / "
+        + colors.GREY
+        + "0xInfection  ~                     "
+        + colors.BLUE
+        + "  [---]"
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.BLUE
+        + "   [---]                                                                           [---]"
+    )
+    time.sleep(SLEEP_TIME)
+    print(
+        colors.BLUE
+        + "   [---]  "
+        + colors.ORANGE
+        + "                         ~  Version "
+        + colors.RED
+        + __version__
+        + colors.ORANGE
+        + "  ~                           "
+        + colors.BLUE
+        + "  [---]\n"
+    )
+    time.sleep(SLEEP_TIME)
