@@ -19,6 +19,9 @@
   <a href="https://travis-ci.org/0xInfection/XSRFProbe">
     <img src="https://img.shields.io/badge/Build-Passing-brightgreen.svg?logo=travis">
   </a>
+  <a href="https://gurubase.io/g/xsrfprobe">
+    <img src="https://img.shields.io/badge/Gurubase-Ask%20XSRFProbe%20Guru-006BFF">
+  </a>
 </p>
 
 ### About:
