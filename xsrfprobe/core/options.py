@@ -17,6 +17,7 @@ import os
 import re
 
 import tld
+import tld.exceptions
 
 from xsrfprobe.files import config
 from xsrfprobe.core.updater import updater

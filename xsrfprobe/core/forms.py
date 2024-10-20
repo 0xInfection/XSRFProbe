@@ -37,7 +37,7 @@ def testFormx1():  # an example xsrfprobe-test-form to make sure the stuff works
 
 def testFormx2():  # an example of a xsrfprobe-test-form (used drupal)
     test_form_0x02 = """
-<form name='shit' id="contact" action="/nibba.php" method="post">
+<form name='test' id="contact" action="/post.php" method="post">
     <h3>Colorlib Contact Form</h3>
     <h4>Contact us for custom quote</h4>
     <fieldset>
