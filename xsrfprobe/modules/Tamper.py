@@ -11,15 +11,10 @@
 
 from re import search, I
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.core.request import Post
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.utils import replaceStrIndex
-from xsrfprobe.files.paramlist import TOKEN_ERRORS
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from core.verbout import verbout
+from core.utils import replaceStrIndex
+from files.paramlist import TOKEN_ERRORS
+from core.logger import VulnLogger, NovulLogger
 
 
 def Tamper(url, action, req, body, query, para):
@@ -52,14 +47,14 @@ def Tamper(url, action, req, body, query, para):
     # same char we are going to replace with.
     verbout(
         colors.GR,
-        "Tampering Token by " + colors.GREY + "index replacement" + colors.END + "...",
+        "Tampering Token by " + "index replacement" + "...",
     )
     if value[3] != "a":
         tampvalx1 = replaceStrIndex(value, 3, "a")
     else:
         tampvalx1 = replaceStrIndex(value, 3, "x")
-    verbout(colors.BLUE, " [+] Original Token: " + colors.CYAN + value)
-    verbout(colors.BLUE, " [+] Tampered Token: " + colors.CYAN + tampvalx1)
+    verbout(colors.BLUE, " [+] Original Token: " + value)
+    verbout(colors.BLUE, " [+] Tampered Token: " + tampvalx1)
     # Lets build up the request...
     req[query] = tampvalx1
     resp = Post(url, action, req)
@@ -106,11 +101,11 @@ def Tamper(url, action, req, body, query, para):
     # at a specific position and test the response body.
     verbout(
         colors.GR,
-        "Tampering Token by " + colors.GREY + "index removal" + colors.END + "...",
+        "Tampering Token by " + "index removal" + "...",
     )
     tampvalx2 = replaceStrIndex(value, 3)
-    verbout(colors.BLUE, " [+] Original Token: " + colors.CYAN + value)
-    verbout(colors.BLUE, " [+] Tampered Token: " + colors.CYAN + tampvalx2)
+    verbout(colors.BLUE, " [+] Original Token: " + value)
+    verbout(colors.BLUE, " [+] Tampered Token: " + tampvalx2)
     # Lets build up the request...
     req[query] = tampvalx2
     resp = Post(url, action, req)
@@ -154,7 +149,7 @@ def Tamper(url, action, req, body, query, para):
     # anticsrf token and test the response body.
     verbout(
         colors.GR,
-        "Tampering Token by " + colors.GREY + "Token removal" + colors.END + "...",
+        "Tampering Token by " + "Token removal" + "...",
     )
     # Removing the anti-csrf token from request
     del req[query]

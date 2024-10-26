@@ -12,12 +12,8 @@
 from time import sleep
 from re import search
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.files.dcodelist import HASH_DB
+from core.verbout import verbout
+from files.dcodelist import HASH_DB
 
 
 def Encoding(val):

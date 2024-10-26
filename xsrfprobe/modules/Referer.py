@@ -9,14 +9,9 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.files.config import HEADER_VALUES, REFERER_URL, COOKIE_VALUE
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.request import Get
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from files.config import HEADER_VALUES, REFERER_URL, COOKIE_VALUE
+from core.verbout import verbout
+from core.logger import VulnLogger, NovulLogger
 
 
 def Referer(url):

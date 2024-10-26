@@ -12,15 +12,10 @@
 import time
 from datetime import datetime
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.files.config import HEADER_VALUES, COOKIE_VALUE
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.request import Get
-from xsrfprobe.core.utils import checkDuplicates
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from files.config import HEADER_VALUES, COOKIE_VALUE
+from core.verbout import verbout
+from core.utils import checkDuplicates
+from core.logger import VulnLogger, NovulLogger
 
 # Response storing list init
 resps = []

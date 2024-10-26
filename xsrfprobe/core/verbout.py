@@ -9,10 +9,10 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-from xsrfprobe.files.config import DEBUG as verbose
+from files.config import DEBUG as verbose
 
 
-def verbout(stat, content_info):
+def verbout(content_info):
     """
     This module is for giving a verbose
                 output.
@@ -20,4 +20,4 @@ def verbout(stat, content_info):
     # If debug mode is chosen as True
     if verbose:
         # Concatenate the stat type and string value and print out
-        print(stat + content_info)
+        print(content_info)

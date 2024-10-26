@@ -10,16 +10,12 @@
 # https://github.com/0xInfection/XSRFProbe
 
 from re import I
-from xsrfprobe.files import config
+from files import config
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.files import discovered
+from core.verbout import verbout
+from files import discovered
 from urllib.parse import urlencode, unquote
-from xsrfprobe.files.paramlist import COMMON_CSRF_NAMES, COMMON_CSRF_HEADERS
+from files.paramlist import COMMON_CSRF_NAMES, COMMON_CSRF_HEADERS
 
 
 def Token(req, headers):

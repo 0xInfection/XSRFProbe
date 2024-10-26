@@ -13,12 +13,8 @@ import re
 import string
 from random import Random
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.files.config import EMAIL_VALUE, TEXT_VALUE, TOKEN_GENERATION_LENGTH
-from xsrfprobe.core.verbout import verbout
+from files.config import EMAIL_VALUE, TEXT_VALUE, TOKEN_GENERATION_LENGTH
+from core.verbout import verbout
 
 
 class Form_Debugger:

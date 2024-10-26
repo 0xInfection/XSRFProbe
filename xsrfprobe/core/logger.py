@@ -10,14 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import json
-
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.files.config import OUTPUT_DIR, JSON_OUTPUT
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.files.discovered import (
+from files.discovered import (
     INTERNAL_URLS,
     FILES_EXEC,
     SCAN_ERRORS,
@@ -26,6 +19,7 @@ from xsrfprobe.files.discovered import (
     REQUEST_TOKENS,
     STRENGTH_LIST,
 )
+from files.config import OUTPUT_DIR, JSON_OUTPUT
 
 
 def logger(filename, content):
@@ -41,39 +35,6 @@ def logger(filename, content):
         else:
             f.write(content)  # else we write out as it is... ;)
         f.write("\n")
-
-
-def preqheaders(tup):
-    """
-    This module prints out the headers as received in the
-                    requests normally.
-    """
-    verbout(colors.GR, "Receiving headers...\n")
-    verbout(
-        colors.GREY,
-        f"  {colors.UNDERLINE}REQUEST HEADERS{colors.END}{colors.GREY}:\n",
-    )
-    for key, val in tup.items():
-        verbout("  ", f"{colors.CYAN}{key}: {colors.ORANGE}{val}")
-
-    verbout("", "")
-
-
-def presheaders(tup):
-    """
-    This module prints out the headers as received in the
-                    requests normally.
-    """
-    verbout(colors.GR, "Receiving headers...\n")
-    verbout(
-        colors.GREY,
-        f"  {colors.UNDERLINE}RESPONSE HEADERS{colors.END}{colors.GREY}:\n",
-    )
-    for key, val in tup.items():
-        verbout("  ", f"{colors.CYAN}{key}: {colors.ORANGE}{val}")
-
-    verbout("", "")
-
 
 def GetLogger():
     """Write out the results"""

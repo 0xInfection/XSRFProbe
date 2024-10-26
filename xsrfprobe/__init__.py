@@ -9,5 +9,5 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-__version__ = "4.4.29"
+__version__ = "3.0.0"
 __license__ = "GNU General Public License v3 (GPLv3)"

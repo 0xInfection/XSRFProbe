@@ -10,32 +10,24 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import time
-from urllib.parse import urljoin
-
 import requests
+import traceback
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.files.config import (
+from files.config import (
     HEADER_VALUES,
     COOKIE_VALUE,
     USER_AGENT_RANDOM,
     USER_AGENT,
     DELAY_VALUE,
-    DISPLAY_HEADERS,
     TIMEOUT_VALUE,
     VERIFY_CERT,
-    FILE_EXTENSIONS,
-    EXECUTABLES,
+    DEBUG
 )
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.randua import RandomAgent
-from xsrfprobe.files.discovered import FILES_EXEC
-from xsrfprobe.core.logger import presheaders, preqheaders, ErrorLogger  # import ends
+from core.verbout import verbout
+from core.randua import RandomAgent
+from core.logger import ErrorLogger
 
-headers = HEADER_VALUES  # set the headers
+headers = HEADER_VALUES.copy()
 
 # Set Cookie
 if COOKIE_VALUE:
@@ -47,123 +39,39 @@ if USER_AGENT_RANDOM:
 if USER_AGENT:
     headers["User-Agent"] = USER_AGENT
 
-
-def Post(url, action, data):
+def requestMaker(url, method, session: requests.Session=requests.Session(), data: str='', headers: dict={}):
     """
-    The main use of this function is as a
-           Form Requester [POST].
+    This function is intended to make requests
+                to the target URL.
     """
-    global headers, TIMEOUT_VALUE, VERIFY_CERT
-    time.sleep(DELAY_VALUE)  # If delay param has been supplied
-    verbout(colors.GR, "Preparing the request...")
+    if DELAY_VALUE > 0:
+        time.sleep(DELAY_VALUE)
 
-    if DISPLAY_HEADERS:
-        preqheaders(headers)
-
-    verbout(colors.GR, f"Processing the {colors.GREY}POST{colors.END} Request...")
-    main_url = urljoin(url, action)  # join url and action
     try:
-        # Make the POST Request.
-        response = requests.post(
-            main_url,
-            headers=headers,
+        resp = session.request(
+            method=method,
+            url=url,
             data=data,
-            timeout=TIMEOUT_VALUE,
-            verify=VERIFY_CERT,
-        )
-        if DISPLAY_HEADERS:
-            presheaders(response.headers)
-        return response  # read data content
-    except requests.exceptions.HTTPError as e:  # if error
-        verbout(colors.R, "HTTP Error : " + main_url)
-        ErrorLogger(main_url, e.__str__())
-        return None
-    except requests.exceptions.ConnectionError as e:
-        verbout(colors.R, "Connection Aborted : " + main_url)
-        ErrorLogger(main_url, e.__str__())
-        return None
-    except requests.exceptions.ReadTimeout as e:
-        verbout(colors.R, "Exception at: " + colors.GREY + url)
-        verbout(
-            colors.R,
-            "Error: Read Timeout. Consider increasing the timeout value via --timeout.",
-        )
-        ErrorLogger(url, e.__str__())
-        return None
-    except ValueError as e:  # again if valuerror
-        verbout(colors.R, "Value Error : " + main_url)
-        ErrorLogger(main_url, e.__str__())
-        return None
-    except Exception as e:
-        verbout(colors.R, "Exception Caught: " + e.__str__())
-        ErrorLogger(main_url, e.__str__())
-        return None  # if at all nothing happens :(
-
-
-def Get(url, headers=headers):
-    """
-    The main use of this function is as a
-            Url Requester [GET].
-    """
-    global TIMEOUT_VALUE, VERIFY_CERT
-    # We do not verify the request while GET requests
-    time.sleep(DELAY_VALUE)  # We make requests after the time delay
-    # Making sure the url is not a file
-    if url.split(".")[-1].lower() in (FILE_EXTENSIONS or EXECUTABLES):
-        FILES_EXEC.append(url)
-        verbout(colors.G, "Found File: " + colors.BLUE + url)
-        return None
-    try:
-        verbout(colors.GR, "Preparing the request...")
-
-        if DISPLAY_HEADERS:
-            preqheaders(headers)
-
-        verbout(
-            colors.GR,
-            f"Processing the {colors.GREY}GET{colors.END} Request...",
-        )
-
-        req = requests.get(
-            url,
             headers=headers,
             timeout=TIMEOUT_VALUE,
-            stream=False,
             verify=VERIFY_CERT,
         )
+        verbout(f"[+] Request made to {url} with status code: {resp.status_code}")
+        verbout(f"\n  [REQUEST]\n\n")
+        verbout(f"{method} {url} HTTP/1.1")
+        for k, v in resp.request.headers.items():
+            verbout(f"{k}: {v}")
+        if data:
+            verbout(f"\n{data}")
 
-        if req is None:
-            verbout(colors.RED, f" [!] Failed to get a response from: {url}")
-            return None
+        verbout(f"\n  [RESPONSE]\n\n")
+        for k, v in resp.headers.items():
+            verbout(f"{k}: {v}")
+        verbout(f"\n{resp.text}")
 
-        # Displaying headers if DISPLAY_HEADERS is 'True'
-        if DISPLAY_HEADERS:
-            presheaders(req.headers)
+        return resp
 
-        # Return the object
-        return req
-    except requests.exceptions.MissingSchema as e:
-        verbout(colors.R, "Exception at: " + colors.GREY + url)
-        verbout(colors.R, "Error: Invalid URL Format")
-        ErrorLogger(url, e.__str__())
-        return None
-    except requests.exceptions.ReadTimeout as e:
-        verbout(colors.R, "Exception at: " + colors.GREY + url)
-        verbout(
-            colors.R,
-            "Error: Read Timeout. Consider increasing the timeout value via --timeout.",
-        )
-        ErrorLogger(url, e.__str__())
-        return None
-    except requests.exceptions.HTTPError as e:  # if error
-        verbout(colors.R, "HTTP Error Encountered : " + url)
-        ErrorLogger(url, e.__str__())
-        return None
-    except requests.exceptions.ConnectionError as e:
-        verbout(colors.R, "Connection Aborted : " + url)
-        ErrorLogger(url, e.__str__())
-        return None
     except Exception as e:
-        verbout(colors.R, "Exception Caught: " + e.__str__())
-        ErrorLogger(url, e.__str__())
+        print('Error during request processing:', e.__str__())
+        ErrorLogger(url, traceback.format_exc())
         return None

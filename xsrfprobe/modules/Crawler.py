@@ -14,24 +14,19 @@ import urllib.error
 import urllib.parse
 from bs4 import BeautifulSoup
 
-from xsrfprobe.modules import Parser
+from modules import Parser
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.files.config import EXCLUDE_DIRS
-from xsrfprobe.files.dcodelist import (
+from files.config import EXCLUDE_DIRS
+from files.dcodelist import (
     RID_DOUBLE,
     RID_COMPILE,
     RID_SINGLE,
     NUM_COM,
     NUM_SUB,
 )
-from xsrfprobe.core.request import Get
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.logger import ErrorLogger
-from xsrfprobe.files.discovered import INTERNAL_URLS
+from core.verbout import verbout
+from core.logger import ErrorLogger
+from files.discovered import INTERNAL_URLS
 
 
 class Handler:  # Main Crawler Handler
@@ -131,7 +126,7 @@ class Handler:  # Main Crawler Handler
                 app = Parser.buildUrl(url, m["href"])
 
             # If we get a valid link
-            if app != "" and re.search(root, app):
+            if app != "" and re.search(root, app) is not None:
                 # Getting rid of Urls starting with '../../../..'
                 res = urllib.parse.urlparse(app)
                 path = res.path

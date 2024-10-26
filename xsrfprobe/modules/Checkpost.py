@@ -14,14 +14,10 @@ import time
 import difflib
 from urllib.parse import urlencode
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.logger import VulnLogger
-from xsrfprobe.files.config import POC_GENERATION, GEN_MALICIOUS
-from xsrfprobe.modules.Generator import GenNormalPoC, GenMalicious
+from core.verbout import verbout
+from core.logger import VulnLogger
+from files.config import POC_GENERATION, GEN_MALICIOUS
+from modules.Generator import GenNormalPoC, GenMalicious
 
 
 def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=""):
@@ -87,12 +83,12 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=""):
                     + m_action.rsplit("/", 1)[1]
                 )  # action
             else:
-                print(colors.GREEN + " [+] Action : " + colors.END + m_action)  # action
+                print(" [+] Action : " + m_action)  # action
         else:  # if value m['name'] not there :(
             print(f"{colors.RED} \n +-----------------+")
             print(f"{colors.RED}  |   Request PoC   |")
             print(f"{colors.RED}  +-----------------+\n")
-            print(colors.BLUE + " [+] URL : " + colors.CYAN + url)  # the url
+            print(" [+] URL : " + url)  # the url
             if m_action.count("/") > 1:
                 print(
                     colors.GREEN
@@ -102,7 +98,7 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=""):
                     + m_action.rsplit("/", 1)[1]
                 )  # action
             else:
-                print(colors.GREEN + " [+] Action : " + colors.END + m_action)  # action
+                print(" [+] Action : " + m_action)  # action
         print(
             colors.ORANGE
             + " [+] POST Query : "

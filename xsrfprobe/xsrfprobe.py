@@ -10,7 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 
-def startEngine():
-    from xsrfprobe.core import main  # import stuff
+from core import main  # import stuff
 
-    main.Engine()  # start the Scanner Engine ;)
+if __name__ == "__main__":
+    main.Engine()  # call the main function

@@ -11,14 +11,9 @@
 
 import re
 from urllib.parse import urlsplit
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.files.dcodelist import PROTOCOLS
-from xsrfprobe.files.paramlist import EXCLUSIONS_LIST
-
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
+from core.verbout import verbout
+from files.dcodelist import PROTOCOLS
+from files.paramlist import EXCLUSIONS_LIST
 
 def buildUrl(url, href):  # receive form input type / url
     """

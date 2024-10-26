@@ -12,14 +12,10 @@
 import urllib.parse
 from math import log
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.modules.Token import Token
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.files.discovered import REQUEST_TOKENS
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from modules.Token import Token
+from core.verbout import verbout
+from files.discovered import REQUEST_TOKENS
+from core.logger import VulnLogger, NovulLogger
 
 
 def Entropy(req, url, headers, form, m_action, m_name=""):
@@ -129,7 +125,7 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
 
         entropy = calcEntropy(value)
         verbout(colors.GR, "Calculating Entropy...")
-        verbout(colors.BLUE, " [+] Entropy Calculated: " + colors.CYAN + str(entropy))
+        verbout(colors.BLUE, " [+] Entropy Calculated: " + str(entropy))
 
         if entropy >= min_entropy:
             verbout(
@@ -187,21 +183,21 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
 
     if found == 0x00:
         if m_name:
-            print(colors.RED + "\n +---------+")
-            print(colors.RED + " |   PoC   |")
-            print(colors.RED + " +---------+\n")
-            print(colors.BLUE + " [+] URL : " + colors.CYAN + url)
-            print(colors.CYAN + " [+] Name : " + colors.ORANGE + m_name)
-            print(colors.GREEN + " [+] Action : " + colors.ORANGE + m_action)
+            print("\n +---------+")
+            print(" |   PoC   |")
+            print(" +---------+\n")
+            print(" [+] URL : " + url)
+            print(" [+] Name : " + m_name)
+            print(" [+] Action : " + m_action)
         else:  # if value m_name not there :(
-            print(colors.RED + "\n +---------+")
-            print(colors.RED + " |   PoC   |")
-            print(colors.RED + " +---------+\n")
-            print(colors.BLUE + " [+] URL : " + colors.CYAN + url)
-            print(colors.GREEN + " [+] Action : " + colors.ORANGE + m_action)
+            print("\n +---------+")
+            print(" |   PoC   |")
+            print(" +---------+\n")
+            print(" [+] URL : " + url)
+            print(" [+] Action : " + m_action)
         # Print out the params
         print(
-            colors.ORANGE + " [+] Query : " + colors.GREY + urllib.parse.urlencode(req)
+            " [+] Query : " + urllib.parse.urlencode(req)
         )
         print("")
 

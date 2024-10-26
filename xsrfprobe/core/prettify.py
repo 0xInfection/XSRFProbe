@@ -11,11 +11,6 @@
 
 import re
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-
 def formPrettify(response):
     """
     The main aim for this is to beautify the forms
@@ -30,23 +25,23 @@ def formPrettify(response):
         for grp in pattern:
             starttag = "".join(grp)
             if starttag:
-                line = line.replace(starttag, colors.BLUE + starttag + colors.END)
+                line = line.replace(starttag, starttag + colors.END)
         # Find attributes
         pattern = re.findall(r"""(\s\w+=)""", line)
         for grp in pattern:
             stu = "".join(grp)
             if stu:
-                line = line.replace(stu, colors.CYAN + stu + colors.END)
+                line = line.replace(stu, stu + colors.END)
         # Find ending tags
         pattern = re.findall(r"""(</.*>)""", line)
         for grp in pattern:
             endtag = "".join(grp)
             if endtag:
-                line = line.replace(endtag, colors.CYAN + endtag + colors.END)
+                line = line.replace(endtag, endtag + colors.END)
         if line != newLine:
             highlighted.append(line)
         else:
-            highlighted.append(colors.GREY + newLine)
+            highlighted.append(newLine)
     for h in highlighted:
         print("  " + h)
 

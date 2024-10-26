@@ -11,56 +11,26 @@
 
 # Standard Package imports
 import os
-import sys
-import ssl
 import time
+import requests
 import warnings
-import http.cookiejar
 from bs4 import BeautifulSoup
 
 # This needs to be first, so that the options are loaded, as well as things like
 #  colors are disabled
-import xsrfprobe.core.options
-
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-
-try:
-    from urllib.parse import urlencode
-    from urllib.error import HTTPError, URLError
-    from urllib.request import build_opener, HTTPCookieProcessor
-except ImportError:  # Throws exception in Case of Python2
-    print(
-        f"{colors.RED} [-] {colors.ORANGE}XSRFProbe{colors.END} isn't compatible with Python 2.x versions.\n"
-        f"{colors.RED} [-] {colors.END}Use Python 3.x to run {colors.ORANGE}XSRFProbe."
-    )
-    quit()
-
-try:
-    import requests, stringdist, bs4
-except ImportError:
-    print(
-        " [-] Required dependencies are not installed.\n"
-        " [-] Run {colors.ORANGE}pip3 install -r requirements.txt{colors.END} to fix it."
-    )
+import files.config as config
 
 # Imports from core
-from xsrfprobe.files.discovered import FORMS_TESTED
+from files.discovered import FORMS_TESTED
 
-from xsrfprobe.core.inputin import inputin
-from xsrfprobe.core.request import Get, Post
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.prettify import formPrettify
-from xsrfprobe.core.banner import banner, banabout
-from xsrfprobe.core.forms import testFormx1, testFormx2
-from xsrfprobe.core.logger import ErrorLogger, GetLogger
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from core.verbout import verbout
+from core.inputin import inputin
+from core.prettify import formPrettify
+from core.logger import ErrorLogger, GetLogger
+from core.logger import VulnLogger, NovulLogger
 
 # Imports from files
-from xsrfprobe.files.config import (
-    VERIFY_CERT,
+from files.config import (
     COOKIE_VALUE,
     HEADER_VALUES,
     CRAWL_SITE,
@@ -71,17 +41,17 @@ from xsrfprobe.files.config import (
 )
 
 # Imports from modules
-from xsrfprobe.modules import Debugger
-from xsrfprobe.modules import Parser
-from xsrfprobe.modules import Crawler
-from xsrfprobe.modules.Origin import Origin
-from xsrfprobe.modules.Cookie import Cookie
-from xsrfprobe.modules.Tamper import Tamper
-from xsrfprobe.modules.Entropy import Entropy
-from xsrfprobe.modules.Referer import Referer
-from xsrfprobe.modules.Encoding import Encoding
-from xsrfprobe.modules.Analysis import Analysis
-from xsrfprobe.modules.Checkpost import PostBased
+from modules import Debugger
+from modules import Parser
+from modules import Crawler
+from modules.Origin import Origin
+from modules.Cookie import Cookie
+from modules.Tamper import Tamper
+from modules.Entropy import Entropy
+from modules.Referer import Referer
+from modules.Encoding import Encoding
+from modules.Analysis import Analysis
+from modules.Checkpost import PostBased
 
 # Import Ends
 
@@ -90,27 +60,14 @@ warnings.filterwarnings("ignore")
 
 
 def Engine():  # lets begin it!
-    os.system("clear")  # Clear terminal :p
-    banner()  # Print the banner
-    banabout()  # The second banner
     web, fld = inputin()  # Take the input
-    form1 = testFormx1()  # Get the form 1 ready
-    form2 = testFormx2()  # Get the form 2 ready
-    # For the cookies that we encounter during requests...
-    Cookie0 = http.cookiejar.CookieJar()  # First as User1
-    Cookie1 = http.cookiejar.CookieJar()  # Then as User2
-    if not VERIFY_CERT:
-        context = ssl._create_unverified_context()
-        sslHandler = urllib.request.HTTPSHandler(context=context)
-        resp1 = build_opener(HTTPCookieProcessor(Cookie0), sslHandler)
-        resp2 = build_opener(HTTPCookieProcessor(Cookie1), sslHandler)
-    else:
-        resp1 = build_opener(HTTPCookieProcessor(Cookie0))
-        resp2 = build_opener(HTTPCookieProcessor(Cookie1))
-    actionDone = []  # init to the done stuff
-    csrf = ""  # no token initialise / invalid token
-    ref_detect = 0x00  # Null Char Flag
-    ori_detect = 0x00  # Null Char Flags
+    session1 = requests.Session()  # First as User1
+    session2 = requests.Session()  # Then as User2
+
+    actionDone = []  # init to whatever was done
+    csrf = ""  # no token initialised / invalid token
+    ref_detect = 0x00
+    ori_detect = 0x00
     form = Debugger.Form_Debugger()  # init to the form parser+token generator
     bs1 = BeautifulSoup(form1).findAll("form", action=True)[
         0
@@ -521,7 +478,7 @@ def Engine():  # lets begin it!
                 except HTTPError as e:
                     if str(e.code) == "403":
                         verbout(colors.R, "HTTP Authentication Error!")
-                        verbout(colors.R, "Error Code : " + colors.O + str(e.code))
+                        verbout(colors.R, "Error Code : " + str(e.code))
                         ErrorLogger(url, e)
                         quit()
                 except URLError as e:  # if again...
@@ -538,13 +495,12 @@ def Engine():  # lets begin it!
         verbout(colors.R, "User Interrupt!")
         time.sleep(1.5)
         Analysis()  # For Post scan Analysis
-        print(colors.R + "Aborted!")  # say goodbye
+        print("Aborted!")  # say goodbye
         ErrorLogger("KeyBoard Interrupt", "Aborted")
-        GetLogger()  # The scanning has interrupted, so now we can log out all the links ;)
-        sys.exit(1)
     except Exception as e:
-        print("\n" + colors.R + "Encountered an error. \n")
-        print(colors.R + "Please view the error log files to view what went wrong.")
+        print("\n" + "Encountered an error. \n")
+        print("Please view the error log files to view what went wrong.")
         verbout(colors.R, e.__str__())
         ErrorLogger(url, e)
+    finally:
         GetLogger()

@@ -10,13 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 # this module holds values for controlling the entire scan interface.
-
-# Lets assign some global variables...
-global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALUE
-global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
-global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR, VERIFY_CERT
-global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS, GEN_MALICIOUS
-global NO_COLORS
+# You can modify these values as per your need.
 
 # Site Url to be scanned (Required)
 SITE_URL = ""
@@ -28,8 +22,8 @@ CRAWL_SITE = False
 # Turning off is Highly Discouraged, since you will miss what the tool is doing.
 DEBUG = True
 
-# Debug level of the output (beta test feature)
-DEBUG_LEVEL = 3
+# Paths found with forms
+PATHS_WITH_FORMS = []
 
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
 USER_AGENT_RANDOM = False
@@ -71,7 +65,7 @@ HEADER_VALUES = {
 
 # Email value to be supplied when parsing/filling forms
 # You can modify it as per your need :)
-EMAIL_VALUE = "csrf.testing@xsrfprobe.tld"
+EMAIL_VALUE = "csrf.testing@test"
 
 # Plaintext value to be supplied when parsing/filling forms
 TEXT_VALUE = "csrftesting"
@@ -166,7 +160,7 @@ GEN_MALICIOUS = False
 
 # A list of file extensions that might be come across while scanning
 # and crawling
-FILE_EXTENSIONS = [
+IGNORE_FILE_EXTENSIONS = [
     "png",
     "jpg",
     "jpeg",
@@ -181,9 +175,6 @@ FILE_EXTENSIONS = [
     "xls",
     "csv",
     "docx",
-]
-# These are a list of executable files that are found on the web
-EXECUTABLES = [
     "deb",
     "bat",
     "exe",
@@ -201,4 +192,35 @@ EXECUTABLES = [
     "ws",
     "msp",
     "jse",
+    "ps1",
+    "ps1xml",
+    "ps2",
+    "ps2xml",
+    "psc1",
+    "psc2",
+    "msh",
+    "msh1",
+    "msh2",
+    "mshxml",
+    "msh1xml",
+    "msh2xml",
+    "scf",
+    "scr",
+    "url",
+    "vbs",
+    "wsf",
+    "jar",
+    "zip",
+    "rar",
+    "tar",
+    "gz",
+    "7z",
+    "bz2",
+    "xz",
+    "z",
+    "iso",
+    "img",
+    "dmg",
+    "pkg",
+    "rpm",
 ]

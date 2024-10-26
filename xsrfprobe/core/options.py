@@ -19,10 +19,12 @@ import re
 import tld
 import tld.exceptions
 
-from xsrfprobe.files import config
-from xsrfprobe.core.updater import updater
-from xsrfprobe.files.dcodelist import IP
+from files import config
+from core.banner import banner
+from core.updater import updater
 from xsrfprobe import __version__, __license__
+
+banner()
 
 # Processing command line arguments
 parser = argparse.ArgumentParser(usage="xsrfprobe -u <url> <args>")
@@ -86,7 +88,7 @@ optional.add_argument(
 optional.add_argument(
     "-E",
     "--exclude",
-    help="Comma separated list of paths or directories to be excluded which are not in scope. These paths/dirs won't be scanned. For example: `--exclude somepage/, sensitive-dir/, pleasedontscan/`",
+    help="Comma-separated paths / file containing paths (separated by newlines) to exclude when crawling and scanning.",
     dest="exclude",
     type=str,
 )
@@ -136,15 +138,9 @@ optional.add_argument(
     action="store_true",
 )
 optional.add_argument(
-    "--display",
-    help="Print out response headers of requests while making requests.",
-    dest="disphead",
-    action="store_true",
-)
-optional.add_argument(
-    "--no-colors",
-    help="Disable colors.",
-    dest="nocolors",
+    "--debug",
+    help="Print out requests and responses while making requests.",
+    dest="debug",
     action="store_true",
 )
 optional.add_argument(
@@ -173,22 +169,6 @@ optional.add_argument(
 )
 args = parser.parse_args()
 
-# Hide colors if user doesn't want it
-if args.nocolors:
-    config.NO_COLORS = True
-
-# Support hiding the colors "early"
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-print(
-    f"""
-   {colors.RED}XSRFProbe{colors.END}, {colors.GREY}A {colors.ORANGE}Cross Site Request Forgery """
-    f"""{colors.GREY}Audit Toolkit{colors.END}
-"""
-)
-
 if not len(sys.argv) > 1:
     parser.print_help()
     quit()
@@ -200,15 +180,40 @@ if args.update:
 
 # Print out XSRFProbe version
 if args.version:
-    print(
-        f"{colors.CYAN} [+] {colors.RED}XSRFProbe Version{colors.END} : v" + __version__
-    )
-    print(
-        f"{colors.CYAN} [+] {colors.RED}XSRFProbe License{colors.END} : "
-        + __license__
-        + "\n"
-    )
+    print("[+] XSRFProbe Version: v%s" % __version__)
+    print("[+] XSRFProbe License: %s\n" % __license__)
     quit()
+
+if not args.url:
+    print("[-] You must supply a URL to test.")
+    quit()
+else:
+    config.SITE_URL = args.url
+    parsed_uri = urllib.parse.urlparse(args.url)
+
+    if not parsed_uri.scheme:
+        print("[-] Invalid URL format. Please provide a valid URL including a scheme.")
+        quit()
+
+    hostname = parsed_uri.hostname
+    if args.output:
+        if not args.output.endswith("/"):
+            args.output = args.output + "/"
+        # If output directory is mentioned...
+        try:
+            if not os.path.exists(f"{args.output}{hostname}"):
+                os.makedirs(f"{args.output}{hostname}")
+        except FileExistsError:
+            pass
+
+        config.OUTPUT_DIR = f"{args.output}{hostname}/"
+    else:
+        try:
+            os.makedirs(f"xsrfprobe-output/{hostname}")
+        except FileExistsError:
+            pass
+
+        config.OUTPUT_DIR = f"xsrfprobe-output/{hostname}/"
 
 # Now lets update some global config variables
 if args.maxchars:
@@ -230,21 +235,10 @@ if args.skippoc:
 if args.malicious:
     config.GEN_MALICIOUS = True
 
-# Updating main root url
-if not args.version and not args.update:
-    if args.url:  # and not args.help:
-        if "http" in args.url:
-            config.SITE_URL = args.url
-        else:
-            config.SITE_URL = "http://" + args.url
-    else:
-        print(colors.R + "You must supply a url/endpoint.")
-
 # Crawl the site if --crawl supplied.
 if args.crawl:
     config.CRAWL_SITE = True
     # Turning off the display header feature due to too much log generation.
-    config.DISPLAY_HEADERS = False
 
 if args.cookie:
     # Assigning Cookie
@@ -255,10 +249,6 @@ if args.cookie:
         # from time to time, the remote site might trigger up
         # security mechanisms (or worse, perhaps block your ip?)
         config.USER_AGENT_RANDOM = False
-
-# Set the headers displayer to 1 (actively display headers)
-if args.disphead:
-    config.DISPLAY_HEADERS = True
 
 # Set the requests not to verify SSL certificates
 if args.no_verify:
@@ -277,65 +267,38 @@ if args.headers:
     # they make a request.
     #
     # config.HEADER_VALUES = {}
-    for m in args.headers.split(","):
-        config.HEADER_VALUES[m.split("=")[0].strip()] = m.split("=")[
-            1
-        ].strip()  # nice hack ;)
+    for head in args.headers.split(","):
+        key, val = head.split("=")
+        config.HEADER_VALUES[key.strip()] = val.strip()
 
 if args.exclude:
-    exc = args.exclude
-    # config.EXCLUDE_URLS = [s for s in exc.split(',').strip()]
-    m = exc.split(",").strip()
-    for s in m:
-        config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s))
+    # check if the exclude parameter has a file path
+    if os.path.exists(args.exclude):
+        with open(args.exclude, "r") as f:
+            m = f.readlines()
+            for s in m:
+                if not s.endswith("/"):
+                    s += "/"
+                config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s))
+    else:
+        exc = args.exclude
+        m = exc.split(",").strip()
+        path = config.SITE_URL.split("://")[1]
+        for s in m:
+            if not s.endswith("/"):
+                s += "/"
+
+            config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s))
 
 if args.randagent:
     # If random-agent argument supplied...
     config.USER_AGENT_RANDOM = True
+    print("[*] Random User-Agent mode activated.")
     # Turn off a single User-Agent mechanism...
     config.USER_AGENT = ""
 
-if config.SITE_URL:
-    try:
-        if args.output:
-            # If output directory is mentioned...
-            try:
-                if not os.path.exists(f"{args.output}{tld.get_fld(config.SITE_URL)}"):
-                    os.makedirs(f"{args.output}{tld.get_fld(config.SITE_URL)}")
-            except FileExistsError:
-                pass
-
-            config.OUTPUT_DIR = f"{args.output}{tld.get_fld(config.SITE_URL)}/"
-        else:
-            try:
-                os.makedirs(f"xsrfprobe-output/{tld.get_fld(config.SITE_URL)}")
-            except FileExistsError:
-                pass
-
-            config.OUTPUT_DIR = f"xsrfprobe-output/{tld.get_fld(config.SITE_URL)}/"
-
-    # When this exception turns out, we know the user has supplied a IP not domain
-    except tld.exceptions.TldDomainNotFound:
-        direc = re.search(IP, config.SITE_URL).group(0)
-        if args.output:
-            # If output directory is mentioned...
-            try:
-                if not os.path.exists(f"{args.output}{direc}"):
-                    os.makedirs(f"{args.output}{direc}")
-            except FileExistsError:
-                pass
-
-            config.OUTPUT_DIR = f"{args.output}{direc}/"
-        else:
-            try:
-                os.makedirs(f"xsrfprobe-output/{direc}")
-            except FileExistsError:
-                pass
-
-            config.OUTPUT_DIR = f"xsrfprobe-output/{direc}/"
-
-if args.quiet:
-    config.DEBUG = False
+if args.debug:
+    config.DEBUG = True
 
 if args.json:
     config.JSON_OUTPUT = True

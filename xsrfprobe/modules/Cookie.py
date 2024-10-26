@@ -12,16 +12,12 @@
 import sys
 from re import search, I
 
-import xsrfprobe.core.colors
 
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.files.config import HEADER_VALUES, USER_AGENT, COOKIE_VALUE, REFERER_URL
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.request import Get
-from xsrfprobe.core.randua import RandomAgent
-from xsrfprobe.modules.Persistence import Persistence
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from files.config import HEADER_VALUES, USER_AGENT, COOKIE_VALUE, REFERER_URL
+from core.verbout import verbout
+from core.randua import RandomAgent
+from modules.Persistence import Persistence
+from core.logger import VulnLogger, NovulLogger
 from urllib.parse import urlsplit
 
 resps = []
@@ -60,7 +56,7 @@ def SameSite(url):
             verbout(colors.G, "Found cookie header value...")
             cookieval = head[h]
             verbout(
-                colors.ORANGE, " [+] Cookie Received: " + colors.CYAN + str(cookieval)
+                colors.ORANGE, " [+] Cookie Received: " + str(cookieval)
             )
             m = cookieval.split(";")
             verbout(colors.GR, "Examining Cookie...")
@@ -68,11 +64,11 @@ def SameSite(url):
                 if search("SameSite", q, I):
                     verbout(
                         colors.G,
-                        "SameSite Flag " + colors.ORANGE + " detected on cookie!",
+                        "SameSite Flag " + " detected on cookie!",
                     )
                     foundx1 = 0x01
                     q = q.split("=")[1].strip()
-                    verbout(colors.C, "Cookie: " + colors.ORANGE + q)
+                    verbout(colors.C, "Cookie: " + q)
                     break
         else:
             foundx3 = 0x02
@@ -108,7 +104,7 @@ def SameSite(url):
             verbout(colors.G, "Found cookie header value...")
             cookieval = head[h]
             verbout(
-                colors.ORANGE, " [+] Cookie Received: " + colors.CYAN + str(cookieval)
+                colors.ORANGE, " [+] Cookie Received: " + str(cookieval)
             )
             m = cookieval.split(";")
             verbout(colors.GR, "Examining Cookie...")
@@ -116,11 +112,11 @@ def SameSite(url):
                 if search("SameSite", q, I):
                     verbout(
                         colors.G,
-                        "SameSite Flag " + colors.ORANGE + " detected on cookie!",
+                        "SameSite Flag " + " detected on cookie!",
                     )
                     foundx2 = 0x01
                     q = q.split("=")[1].strip()
-                    verbout(colors.C, "Cookie: " + colors.ORANGE + q)
+                    verbout(colors.C, "Cookie: " + q)
                     break
         else:
             foundx3 = 0x02
@@ -161,7 +157,7 @@ def SameSite(url):
             verbout(colors.G, "Found cookie header value...")
             cookieval = head[h]
             verbout(
-                colors.ORANGE, " [+] Cookie Received: " + colors.CYAN + str(cookieval)
+                colors.ORANGE, " [+] Cookie Received: " + str(cookieval)
             )
             m = cookieval.split(";")
             verbout(colors.GR, "Examining Cookie...")
@@ -175,7 +171,7 @@ def SameSite(url):
                     )
                     foundx3 = 0x01
                     q = q.split("=")[1].strip()
-                    verbout(colors.C, "Cookie: " + colors.ORANGE + q)
+                    verbout(colors.C, "Cookie: " + q)
                     break
         else:
             foundx3 = 0x02
@@ -209,9 +205,9 @@ def SameSite(url):
         # If a SameSite flag is set on cookies, then the application is totally fool-proof
         # against CSRF attacks unless there is some XSS stuff on it. So for now the job of
         # this application is done. We need to confirm before we quit.
-        oq = input(colors.BLUE + " [+] Continue scanning? (y/N) :> ")
+        oq = input(" [+] Continue scanning? (y/N) :> ")
         if oq.lower().startswith("n"):
-            sys.exit("\n" + colors.R + "Shutting down XSRFProbe...\n")
+            sys.exit("\n" + "Shutting down ..\n")
     elif foundx1 == 0x02 and foundx2 == 0x02 and foundx3 == 0x02:
         print(
             colors.GREEN

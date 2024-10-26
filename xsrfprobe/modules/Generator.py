@@ -13,14 +13,10 @@ from ast import literal_eval
 from bs4 import BeautifulSoup
 from yattag import Doc
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.files.config import OUTPUT_DIR
-from xsrfprobe.core.prettify import formPrettify
-from xsrfprobe.core.prettify import indentPrettify
+from core.verbout import verbout
+from files.config import OUTPUT_DIR
+from core.prettify import formPrettify
+from core.prettify import indentPrettify
 
 doc, tag, text = Doc().tagtext()
 
@@ -31,7 +27,7 @@ def GenNormalPoC(
     """
     Generate a normal CSRF PoC using basic form data
     """
-    print(colors.GR + "Generating normal PoC Form...")
+    print("Generating normal PoC Form...")
     verbout(colors.RED, "\n +---------------------+")
     verbout(colors.RED, " |   Normal Form PoC   |")
     verbout(colors.RED, " +---------------------+\n" + colors.CYAN)

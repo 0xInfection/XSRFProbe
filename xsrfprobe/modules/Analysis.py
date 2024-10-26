@@ -13,15 +13,11 @@ import stringdist
 import itertools
 import time
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.modules.Entropy import calcEntropy
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.utils import sameSequence, byteString
-from xsrfprobe.files.discovered import REQUEST_TOKENS
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from modules.Entropy import calcEntropy
+from core.verbout import verbout
+from core.utils import sameSequence, byteString
+from files.discovered import REQUEST_TOKENS
+from core.logger import VulnLogger, NovulLogger
 
 
 def Analysis():
@@ -36,7 +32,7 @@ def Analysis():
         verbout(colors.RED, "\n +--------------+")
         verbout(colors.RED, " |   Analysis   |")
         verbout(colors.RED, " +--------------+\n")
-        print(colors.GR + "Proceeding for post-scan analysis of tokens gathered...")
+        print("Proceeding for post-scan analysis of tokens gathered...")
         verbout(
             colors.G,
             "A total of %s tokens was discovered during the scan"
@@ -50,14 +46,14 @@ def Analysis():
                 verbout(
                     colors.GR, "Analysing 2 Anti-CSRF Tokens from gathered requests..."
                 )
-                verbout(colors.CYAN, " [+] First Token: " + colors.BLUE + tokenx1)
+                verbout(colors.CYAN, " [+] First Token: " + tokenx1)
                 verbout(
                     colors.ORANGE,
                     " [+] Shannon Entropy: "
                     + colors.GREEN
                     + "%s" % (calcEntropy(tokenx1)),
                 )
-                verbout(colors.CYAN, " [+] Second Token: " + colors.BLUE + tokenx2)
+                verbout(colors.CYAN, " [+] Second Token: " + tokenx2)
                 verbout(
                     colors.ORANGE,
                     " [+] Shannon Entropy: "
@@ -68,13 +64,13 @@ def Analysis():
                 m = stringdist.rdlevenshtein(tokenx1, tokenx2)
                 verbout(
                     colors.CYAN,
-                    " [+] Edit Distance Calculated: " + colors.GREY + str(m) + "%",
+                    " [+] Edit Distance Calculated: " + str(m) + "%",
                 )
                 # Now its time to detect the alignment ratio
                 n = stringdist.rdlevenshtein_norm(tokenx1, tokenx2)
                 verbout(
                     colors.CYAN,
-                    " [+] Alignment Ratio Calculated: " + colors.GREY + str(n),
+                    " [+] Alignment Ratio Calculated: " + str(n),
                 )
                 # If both tokens are same, then
                 if len(tokenx1) == len(tokenx2):
@@ -163,7 +159,7 @@ def Analysis():
                 elif n < 0.5 or m < len(tokenx1) / 2:
                     verbout(
                         colors.R,
-                        "Token distance calculated is " + colors.RED + "less than 0.5!",
+                        "Token distance calculated is " + "less than 0.5!",
                     )
                     verbout(
                         colors.C,
@@ -202,7 +198,7 @@ def Analysis():
                         + " VULNERABLE "
                         + colors.END,
                     )
-                    print(colors.GREEN + " [+] Possible CSRF Vulnerability Detected!")
+                    print(" [+] Possible CSRF Vulnerability Detected!")
                     print(
                         colors.ORANGE
                         + " [!] Vulnerability Type: "
@@ -289,4 +285,4 @@ def Analysis():
             except KeyboardInterrupt:
                 ctr += 1
                 continue
-        print(colors.C + "Post-Scan Analysis Completed!")
+        print("Post-Scan Analysis Completed!")

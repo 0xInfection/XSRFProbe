@@ -9,8 +9,10 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
+import requests
 from difflib import SequenceMatcher
-
+import files.config as config
+from core.verbout import verbout
 
 def sameSequence(str1, str2):
     """

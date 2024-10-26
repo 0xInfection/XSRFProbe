@@ -13,31 +13,31 @@ import os
 from requests import get
 from xsrfprobe import __version__
 
-import xsrfprobe.core.colors
+import core.colors
 
-colors = xsrfprobe.core.colors.color()
+colors = core.colors.color()
 
 
 def updater():
     """
     Function to update XSRFProbe seamlessly.
     """
-    print(colors.GR + "Checking for updates...")
+    print("Checking for updates...")
     vno = get(
         "https://raw.githubusercontent.com/0xInfection/XSRFProbe/master/xsrfprobe/files/VersionNum",
         timeout=1,
     ).text
 
-    print(colors.GR + "Version on GitHub: " + colors.CYAN + vno.strip())
-    print(colors.GR + "Version You Have : " + colors.CYAN + __version__)
+    print("Version on GitHub: " + vno.strip())
+    print("Version You Have : " + __version__)
     if vno != __version__:
-        print(colors.G + "A new version of XSRFProbe is available!")
+        print("A new version of XSRFProbe is available!")
         current_path = os.getcwd().split("/")  # if you know it, you know it
         folder = current_path[-1]  # current directory name
         path = "/".join(current_path)  # current directory path
-        choice = input(colors.O + "Would you like to update? [Y/n] :> ").lower()
+        choice = input("Would you like to update? [Y/n] :> ").lower()
         if choice != "n":
-            print(colors.GR + "Updating XSRFProbe...")
+            print("Updating ..")
             os.system(
                 "git clone --quiet https://github.com/0xInfection/XSRFProbe %s"
                 % (folder)
@@ -46,7 +46,7 @@ def updater():
                 "cp -r %s/%s/* %s && rm -r %s/%s/ 2>/dev/null"
                 % (path, folder, path, path, folder)
             )
-            print(colors.G + "Update successful!")
+            print("Update successful!")
     else:
-        print(colors.G + "XSRFProbe is up to date!")
+        print("XSRFProbe is up to date!")
     quit()
