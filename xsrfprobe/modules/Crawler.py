@@ -1,14 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# -:-:-:-:-:-:-:-:-:#
-#    XSRFProbe     #
-# -:-:-:-:-:-:-:-:-:#
-
-# Author: 0xInfection
-# This module requires XSRFProbe
-# https://github.com/0xInfection/XSRFProbe
-
+import logging
 import re
 import urllib.error
 import urllib.parse
@@ -24,178 +14,128 @@ from files.dcodelist import (
     NUM_COM,
     NUM_SUB,
 )
-from core.verbout import verbout
 from core.logger import ErrorLogger
+from core.request import requestMaker
 from files.discovered import INTERNAL_URLS
 
 
-class Handler:  # Main Crawler Handler
+class Handler:
     """
-    This is a crawler that is used to fetch all the Urls
-        associated to the HTML page, and susequently
-            crawl them and build checks for CSRFs.
+    Crawler Handler to fetch URLs from an HTML page and check for CSRF vulnerabilities.
     """
 
     def __init__(self, start, opener):
-        self.visited = []  # Visited stuff
-        self.toVisit = []  # To visit
-        self.uriPatterns = []  # Patterns to follow
-        self.currentURI = ""  # What is it now?
-        self.opener = opener  # Init build_opener
-        self.toVisit.append(start)  # Lets add up urls
+        self.visited = []
+        self.to_visit = [start]
+        self.uri_patterns = []
+        self.current_uri = ""
+        self.opener = opener
 
     def __next__(self):
-        self.currentURI = self.toVisit[0]  # To visit
-        self.toVisit.remove(self.currentURI)  # After its done
-        return self.currentURI
+        self.current_uri = self.to_visit.pop(0)
+        return self.current_uri
 
-    def getVisited(self):
+    def get_visited(self):
         return self.visited
 
-    def getToVisit(self):
-        return self.toVisit
+    def get_to_visit(self):
+        return self.to_visit
 
-    def noinit(self):
-        if self.toVisit:  # Incase there are urls left
-            return True  # +1
-        return False  # -1
+    def has_urls_to_visit(self):
+        return bool(self.to_visit)
 
-    def addToVisit(self, Parser):
-        self.toVisit.append(Parser)  # Add what we have got
+    def add_to_visit(self, url):
+        self.to_visit.append(url)
 
     def process(self, root):
-        # Our first task is to remove urls that aren't to be scanned and have been
-        # passed via the --exclude parameter.
         if EXCLUDE_DIRS:
-            for link in EXCLUDE_DIRS:
-                self.toVisit.remove(link)
-        url = self.currentURI  # Main Url (Current)
+            self.to_visit = [url for url in self.to_visit if url not in EXCLUDE_DIRS]
+
+        url = self.current_uri
         try:
-            query = Get(url)  # Open it (to check if it exists)
-            if query != None and not str(query.status_code).startswith(
-                "40"
-            ):  # Avoiding 40x errors
-                INTERNAL_URLS.append(url)  # We append it to the list of valid urls
+            query = requestMaker(
+                url=url,
+                method="GET",
+            )
+            if query and not str(query.status_code).startswith("40"):
+                INTERNAL_URLS.append(url)
             else:
-                if url in self.toVisit:
-                    self.toVisit.remove(url)
-
-        except (
-            urllib.error.HTTPError,
-            urllib.error.URLError,
-        ) as msg:  # Incase there is an exception connecting to Url
-            verbout(colors.R, "HTTP Request Error: " + msg.__str__())
-            ErrorLogger(url, msg.__str__())
-            if url in self.toVisit:
-                self.toVisit.remove(url)  # Remove non-existent / errored urls
+                if url in self.to_visit:
+                    self.to_visit.remove(url)
+        except (urllib.error.HTTPError, urllib.error.URLError) as e:
+            logging.error(f"HTTP Request Error: {e}")
+            ErrorLogger(url, str(e))
+            if url in self.to_visit:
+                self.to_visit.remove(url)
             return None
 
-        # Making sure the content type is in HTML format, so that BeautifulSoup
-        # can parse it...
-        if not query or not re.search("html", query.headers["Content-Type"]):
+        if not query or "html" not in query.headers.get("Content-Type", ""):
             return None
-
-        # Just in case there is a redirection, we are supposed to follow it :D
-        verbout(colors.GR, "Making request to new location...")
 
         if hasattr(query.headers, "Location"):
             url = query.headers["Location"]
 
-        verbout(colors.O, "Reading response...")
-        response = query.content  # Read the response contents
-
+        response = query.content
         try:
-            verbout(colors.O, "Trying to parse crawler response...")
-            soup = BeautifulSoup(response)  # Parser init
-            verbout(colors.O, "Done parsing crawler response...")
-
+            soup = BeautifulSoup(response, "html.parser")
         except Exception:
-            verbout(colors.R, f"BeautifulSoup Error: {url}")
+            logging.error(f"BeautifulSoup Error: {url}")
             self.visited.append(url)
-            if url in self.toVisit:
-                self.toVisit.remove(url)
+            if url in self.to_visit:
+                self.to_visit.remove(url)
             return None
 
-        verbout(colors.O, "Processing 'a' elements...")
-        for m in soup.findAll("a", href=True):  # find out all href^?://*
+        for link in soup.find_all("a", href=True):
             app = ""
-            # Making sure that href is not a function or doesn't begin with http://
-            if not re.match(r"javascript:", m["href"]) or re.match(
-                r"http(s?)://", m["href"]
-            ):
-                app = Parser.buildUrl(url, m["href"])
+            if not re.match(r"javascript:", link["href"]) and not re.match(r"http(s?)://", link["href"]):
+                app = Parser.buildUrl(url, link["href"])
 
-            # If we get a valid link
-            if app != "" and re.search(root, app) is not None:
-                # Getting rid of Urls starting with '../../../..'
-                res = urllib.parse.urlparse(app)
-                path = res.path
+            if app and re.search(root, app):
+                app = self._clean_path(app)
+                uri_pattern = self._remove_ids(app)
+                if uri_pattern not in self.uri_patterns and app != url:
+                    logging.info(f"Added: {app}")
+                    self.to_visit.append(app)
+                    self.uri_patterns.append(uri_pattern)
 
-                if "../" in path:  # lets remove it
-                    # Remove starting ""/../"
-                    while path.startswith("/../"):
-                        path = path[len("/..") :]
+        self.visited.append(url)
+        return soup
 
-                    endless_loop = 0
-                    while re.search(pattern=RID_DOUBLE, string=path):
-                        endless_loop += 1
+    def _clean_path(self, url):
+        res = urllib.parse.urlparse(url)
+        path = res.path
 
-                        # Prevent an endless loop here
-                        if endless_loop > 100:
-                            verbout(
-                                colors.R,
-                                f"URL is causing an endless loop: {app}, "
-                                "resetting path to: /",
-                            )
-                            path = "/"
-                            break
+        if "../" in path:
+            while path.startswith("/../"):
+                path = path[len("/../") :]
 
-                        p = re.compile(RID_COMPILE)
-                        path = p.sub(repl="/", string=path)
+            endless_loop = 0
+            while re.search(RID_DOUBLE, path):
+                endless_loop += 1
+                if endless_loop > 100:
+                    logging.warning(f"Endless loop detected for URL: {url}. Resetting path to '/'.")
+                    path = "/"
+                    break
+                path = re.sub(RID_COMPILE, "/", path)
 
-                # Getting rid of URLs starting with './'
-                p = re.compile(RID_SINGLE)
-                path = p.sub("", path)
+        path = re.sub(RID_SINGLE, "", path)
 
-                app = f"{res.scheme}://{res.hostname}"
-                if res.port:
-                    app += f":{res.port}"
-                app += path
+        app = f"{res.scheme}://{res.hostname}"
+        if res.port:
+            app += f":{res.port}"
+        app += path
+        return app
 
-                # Add new link to the queue only if its pattern has not been added yet
-                uriPattern = removeIDs(app)  # remove IDs
-                if self.notExist(uriPattern) and app != url:
-                    verbout(
-                        colors.G, f"Added :> {colors.BLUE}{app}"
-                    )  # display what we have got!
-                    self.toVisit.append(app)  # add up urls to visit
-                    self.uriPatterns.append(uriPattern)
+    def _remove_ids(self, url):
+        url = re.sub(NUM_SUB, "=", url)
+        url = re.sub(NUM_COM, "\\1", url)
+        return url
 
-        self.visited.append(url)  # add urls visited
-        return soup  # go back!
+    def not_exist(self, pattern):
+        return pattern not in self.uri_patterns
 
-    def getUriPatterns(self):  # get uri patterns
-        return self.uriPatterns
+    def add_uri_pattern(self, pattern):
+        self.uri_patterns.append(pattern)
 
-    def notExist(self, test):  # 404 stuffs
-        if test not in self.uriPatterns:  # if non-existent
-            return 1
-        return 0  # else existent
-
-    def addUriPatterns(self, Parser):  # append patterns to follow
-        self.uriPatterns.append(Parser)
-
-    def addVisited(self, Parser):  # visited stuffs added
-        self.visited.append(Parser)
-
-
-def removeIDs(Parser):
-    """
-    This function removes the Numbers from the Urls
-                    which are built.
-    """
-    p = re.compile(NUM_SUB)
-    Parser = p.sub("=", Parser)
-    p = re.compile(NUM_COM)
-    Parser = p.sub("\\1", Parser)
-    return Parser
+    def add_visited(self, url):
+        self.visited.append(url)

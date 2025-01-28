@@ -9,110 +9,79 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-from re import I
-from files import config
+import requests
+import logging
+from urllib.parse import urlparse
 
-from core.verbout import verbout
+from files import config
 from files import discovered
-from urllib.parse import urlencode, unquote
 from files.paramlist import COMMON_CSRF_NAMES, COMMON_CSRF_HEADERS
 
-
-def Token(req, headers):
+def Token(response: requests.Response) -> bool:
     """
     This method checks for whether Anti-CSRF Tokens are
                present in the request.
     """
-    verbout(colors.RED, "\n +---------------------------+")
-    verbout(colors.RED, " |   Anti-CSRF Token Check   |")
-    verbout(colors.RED, " +---------------------------+\n")
-    param = ""  # Initializing param
-    query = ""
+    logger = logging.getLogger("TokenAnalyzer")
     found = False
-    # First lets have a look at config.py and see if its set
-    if config.TOKEN_CHECKS:
-        verbout(colors.O, "Parsing request for detecting anti-csrf tokens...")
-        try:
-            # Lets check for the request values. But before that lets encode and unquote the request :D
-            con = unquote(urlencode(req)).split("&")
-            for c in con:
-                for name in COMMON_CSRF_NAMES:  # Iterate over the list
-                    qu = c.split("=")
-                    # Search if the token is there in request...
-                    if name.lower() in qu[0].lower():
-                        verbout(
-                            colors.GREEN,
-                            " [+] The form was requested with an "
-                            + colors.BG
-                            + " Anti-CSRF Token "
-                            + colors.END
-                            + colors.GREEN,
-                        )
-                        verbout(
-                            colors.GREY,
-                            " [+] Token Parameter: "
-                            + colors.CYAN
-                            + qu[0]
-                            + "="
-                            + colors.ORANGE
-                            + qu[1],
-                        )
-                        query, param = qu[0], qu[1]
-                        # We are appending the token to a variable for further analysis
-                        discovered.REQUEST_TOKENS.append(param)
-                        found = True
-                        break  # Break execution if a Anti-CSRF token is found
-            # If we haven't found the Anti-CSRF token in query, we'll search for it in headers :)
-            if not found:
-                for key, value in headers.items():
-                    for name in COMMON_CSRF_HEADERS:  # Iterate over the list
-                        # Search if the token is there in request...
-                        if name.lower() in key.lower():
-                            verbout(
-                                colors.GREEN,
-                                " [+] The form was requested with an "
-                                + colors.BG
-                                + " Anti-CSRF Token Header "
-                                + colors.END
-                                + colors.GREEN,
-                            )
-                            verbout(
-                                colors.GREY,
-                                " [+] Token Parameter: "
-                                + colors.CYAN
-                                + qu[0]
-                                + "="
-                                + colors.ORANGE
-                                + qu[1],
-                            )
-                            query, param = key, value
+
+    # first let's have a look at config.py and see if it's set
+    if not config.TOKEN_CHECKS:
+        return False
+
+    logger.info("Parsing request for detecting anti-csrf tokens...")
+
+    try:
+        parsed_uri = urlparse(response.url)
+        # check for the request query parameters
+        con = parsed_uri.query.split("&")
+        for c in con:
+            for name in COMMON_CSRF_NAMES:
+                param_name, param_value = c.split("=")
+                if name.lower() in param_name.lower():
+                    logger.debug(f"The form was requested with an Anti-CSRF Token in the query: {response.url}")
+                    logger.info(f"Anti-CSRF Query Parameter: {param_name}={param_value}")
+                    discovered.REQUEST_TOKENS.append(param_value)
+                    found = True
+                    break
+
+        if not found:
+            logger.debug("Searching for Anti-CSRF Token in Request Body...")
+            # check for the request body
+            req_body = response.request.body.__str__()
+            # handle
+            if req_body:
+                params = req_body.split("&")
+                for param in params:
+                    param_name, param_value = param.split("=")
+                    for name in COMMON_CSRF_NAMES:
+                        if name.lower() in param_name.lower():
+                            logger.debug(f"The form was requested with an Anti-CSRF Token in the body: {response.url}")
+                            logger.info(f"Anti-CSRF Request Body Parameter: {param_name}={param_value}")
                             # We are appending the token to a variable for further analysis
-                            discovered.REQUEST_TOKENS.append(param)
-                            break  # Break execution if a Anti-CSRF token is found
-        except Exception as e:
-            verbout(colors.R, "Request Parsing Exception!")
-            verbout(colors.R, "Error: " + e.__str__())
-        if param:
-            return (query, param)
-        verbout(
-            colors.ORANGE,
-            " [-] The form was requested "
-            + colors.RED
-            + " Without an Anti-CSRF Token "
-            + colors.END
-            + colors.ORANGE
-            + "...",
-        )
-        print(
-            colors.RED
-            + " [-] Endpoint seems "
-            + colors.BR
-            + " VULNERABLE "
-            + colors.END
-            + colors.RED
-            + " to "
-            + colors.BR
-            + " POST-Based Request Forgery "
-            + colors.END
-        )
-        return (None, None)
+                            discovered.REQUEST_TOKENS.append(param_value)
+                            found = True
+                            break
+
+        # if we haven't found the anti-CSRF token in the query, we'll search for it in headers
+        if not found:
+            for key, value in response.headers.items():
+                for name in COMMON_CSRF_HEADERS:  # Iterate over the list
+                    # Search if the token is there in request...
+                    if name.lower() in key.lower():
+                        logger.debug(f"The form was requested with an Anti-CSRF Token Header: {response.url}")
+                        logger.info(f"Anti-CSRF Token Header: {key}={value}")
+                        # We are appending the token to a variable for further analysis
+                        found = True
+                        discovered.REQUEST_TOKENS.append(value)
+                        break  # Break execution if an Anti-CSRF token is found
+    except Exception as e:
+        logger.error("Request Parsing Exception!")
+        logger.error(f"Error: {e}")
+
+    if found:
+        return True
+
+    logger.warning(f"The form was requested without an Anti-CSRF Token: {response.url}")
+    logger.info("Endpoint seems VULNERABLE to POST-Based Request Forgery")
+    return False

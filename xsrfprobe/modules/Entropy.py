@@ -1,33 +1,22 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# -:-:-:-:-:-:-:-:-:#
-#    XSRFProbe     #
-# -:-:-:-:-:-:-:-:-:#
-
-# Author: 0xInfection
-# This module requires XSRFProbe
-# https://github.com/0xInfection/XSRFProbe
-
-import urllib.parse
+import logging
+import requests
 from math import log
 
+from files import discovered
 from modules.Token import Token
-from core.verbout import verbout
-from files.discovered import REQUEST_TOKENS
 from core.logger import VulnLogger, NovulLogger
 
 
-def Entropy(req, url, headers, form, m_action, m_name=""):
+def Entropy(req: requests.Response, form: str) -> None:
     """
-    This function has the work of comparing and
-      calculating Shannon Entropy and related
-           POST Based requests' security.
+    Evaluate the strength of CSRF tokens based on length and Shannon Entropy.
     """
-    found = 0x00
+    logger = logging.getLogger("EntropyChecker")
+    logger.info("Starting CSRF token analysis...")
+
+    weak_token = False
     # The minimum length of a csrf token should be 6 bytes.
     min_length = 6
-
     # I have never seen a CSRF token longer than 256 bytes,
     # so the main concept here is doubling that and checking
     # to make sure we don't check parameters which are
@@ -37,8 +26,7 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
     # characters which could be misunderstood as a CSRF token.
     # This is a very important step with respect to
     # decreasing [[ False Positives ]].
-    max_length = 256 * 2
-
+    max_length = 512
     # Shannon Entropy calculated for a particular CSRF token
     # should be at least 2.4. If the token entropy is less
     # than that, the application request can be easily
@@ -46,174 +34,56 @@ def Entropy(req, url, headers, form, m_action, m_name=""):
     # presence of a CSRF token.
     min_entropy = 3.0
 
-    # Check for common CSRF token names
-    _q, para = Token(req, headers)
-    if (para and _q) == None:
+    # Fetch potential CSRF token from the request
+    token_found = Token(response=req)
+    if not token_found:
         VulnLogger(
-            url,
-            "Form Requested Without Anti-CSRF Token.",
-            f"[i] Form Requested: {form}\n[i] Request Query: {req}",
+            req.url,
+            "Form requested without Anti-CSRF Token.",
+            f"[i] Form: {form}\n[i] Request Query: {req}",
         )
-        return "", ""
+        return
 
-    verbout(colors.RED, "\n +------------------------------+")
-    verbout(colors.RED, " |   Token Strength Detection   |")
-    verbout(colors.RED, " +------------------------------+\n")
+    logger.info("Analysing Anti-CSRF Token Strength.")
 
-    for para in REQUEST_TOKENS:
-        # Coverting the token to a raw string, cause some special
-        # chars might fu*k with the Shannon Entropy operation.
-        value = r"%s" % para
-        verbout(
-            colors.CYAN,
-            f" [!] Testing Anti-CSRF Token: {colors.ORANGE}{value}",
-        )
+    for token in discovered.REQUEST_TOKENS:
+        logger.info(f"Testing Anti-CSRF Token: {token}")
 
-        # Check length
-        if len(value) <= min_length:
-            print(
-                f"{colors.RED} [-] CSRF Token Length less than 5 bytes. {colors.ORANGE}"
-                "Token value can be guessed/bruteforced..."
-            )
-            print(
-                f"{colors.ORANGE} [-] Endpoint likely {colors.BR} VULNERABLE {colors.END}"
-                f"{colors.ORANGE} to CSRF Attacks..."
-            )
-            print(
-                f"{colors.RED} [!] Vulnerability Type: "
-                f"{colors.BR} Very Short/No Anti-CSRF Tokens {colors.END}"
-            )
-            VulnLogger(url, "Very Short Anti-CSRF Tokens.", f"Token: {value}")
+        # Check token length
+        if len(token) <= min_length:
+            logger.warning("CSRF Token length is less than 6 bytes. Token can be guessed/bruteforced.")
+            VulnLogger(req.url, "Very Short Anti-CSRF Token.", f"Token: {token}")
+            weak_token = True
+        elif len(token) >= max_length:
+            logger.info("CSRF Token length is equal to / exceeds 256 bytes. Token is robust.")
+            NovulLogger(req.url, f"Long Anti-CSRF tokens with Good Strength. Token: {token}")
 
-        if len(value) >= max_length:
-            print(
-                colors.ORANGE
-                + " [+] CSRF Token Length greater than "
-                + colors.CYAN
-                + "256 bytes. "
-                + colors.GREEN
-                + "Token value cannot be guessed/bruteforced..."
-            )
-            print(
-                colors.GREEN
-                + " [+] Endpoint likely "
-                + colors.BG
-                + " NOT VULNERABLE "
-                + colors.END
-                + colors.GREEN
-                + " to CSRF Attacks..."
-            )
-            print(
-                colors.GREEN
-                + " [!] CSRF Mitigation Method: "
-                + colors.BG
-                + " Long Anti-CSRF Tokens "
-                + colors.END
-            )
-            NovulLogger(url, "Long Anti-CSRF tokens with Good Strength.")
-            found = 0x01
-
-        # Checking entropy
-        verbout(
-            colors.O,
-            "Proceeding to calculate "
-            + colors.GREY
-            + "Shannon Entropy"
-            + colors.END
-            + " of Token audited...",
-        )
-
-        entropy = calcEntropy(value)
-        verbout(colors.GR, "Calculating Entropy...")
-        verbout(colors.BLUE, " [+] Entropy Calculated: " + str(entropy))
+        # Calculate entropy
+        logger.info("Calculating Shannon Entropy...")
+        entropy = calcEntropy(token)
+        logger.info(f"Calculated entropy: {token}")
 
         if entropy >= min_entropy:
-            verbout(
-                colors.ORANGE,
-                " [+] Anti-CSRF Token Entropy Calculated is "
-                + colors.BY
-                + " GREATER than 3.0 "
-                + colors.END
-                + "... ",
-            )
-            print(
-                colors.ORANGE
-                + " [+] Endpoint "
-                + colors.BY
-                + " PROBABLY NOT VULNERABLE "
-                + colors.END
-                + colors.ORANGE
-                + " to CSRF Attacks..."
-            )
-            print(
-                colors.ORANGE
-                + " [!] CSRF Mitigation Method: "
-                + colors.BY
-                + " High Entropy Anti-CSRF Tokens "
-                + colors.END
-            )
-            NovulLogger(url, "High Entropy Anti-CSRF Tokens.")
-            found = 0x01
+            logger.info("High entropy detected. Endpoint is likely not vulnerable to CSRF attacks.")
+            NovulLogger(req.url, f"High Entropy Anti-CSRF Tokens. Token: {token}")
         else:
-            verbout(
-                colors.RED,
-                " [-] Anti-CSRF Token Entropy Calculated is "
-                + colors.BY
-                + " LESS than 3.0 "
-                + colors.END
-                + "... ",
-            )
-            print(
-                colors.RED
-                + " [-] Endpoint likely "
-                + colors.BR
-                + " VULNERABLE "
-                + colors.END
-                + colors.RED
-                + " to CSRF Attacks inspite of CSRF Tokens..."
-            )
-            print(
-                colors.RED
-                + " [!] Vulnerability Type: "
-                + colors.BR
-                + " Low Entropy Anti-CSRF Tokens "
-                + colors.END
-            )
-            VulnLogger(url, "Low Entropy Anti-CSRF Tokens.", "Token: " + value)
+            logger.warning("Low entropy detected. Endpoint is likely vulnerable to CSRF attacks.")
+            VulnLogger(req.url, "Low Entropy Anti-CSRF Tokens.", f"Token: {token}")
+            weak_token = True
 
-    if found == 0x00:
-        if m_name:
-            print("\n +---------+")
-            print(" |   PoC   |")
-            print(" +---------+\n")
-            print(" [+] URL : " + url)
-            print(" [+] Name : " + m_name)
-            print(" [+] Action : " + m_action)
-        else:  # if value m_name not there :(
-            print("\n +---------+")
-            print(" |   PoC   |")
-            print(" +---------+\n")
-            print(" [+] URL : " + url)
-            print(" [+] Action : " + m_action)
-        # Print out the params
-        print(
-            " [+] Query : " + urllib.parse.urlencode(req)
-        )
-        print("")
-
-    return (_q, para)  # Return the query paramter and anti-csrf token
+        if weak_token:
+            logger.critical(f"No robust CSRF tokens found. The CSRF tokens can possibly be bruteforced. Token: {token}")
+            discovered.WEAK_TOKENS.append(token)
 
 
 def calcEntropy(data):
     """
-    This function is used to calculate
-              Shannon Entropy.
+    Calculate Shannon Entropy of a given string.
     """
     if not data:
         return 0
 
-    entropy = 0  # init
-
+    entropy = 0
     for x in range(256):
         p_x = float(data.count(chr(x))) / len(data)
         if p_x > 0:

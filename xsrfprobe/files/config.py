@@ -22,6 +22,9 @@ CRAWL_SITE = False
 # Turning off is Highly Discouraged, since you will miss what the tool is doing.
 DEBUG = True
 
+# Switch between verbosity levels
+DEBUG_LEVEL = 30
+
 # Paths found with forms
 PATHS_WITH_FORMS = []
 
@@ -224,3 +227,23 @@ IGNORE_FILE_EXTENSIONS = [
     "pkg",
     "rpm",
 ]
+
+INPUT_TYPES_DEAULTS = {
+    "text": TEXT_VALUE,
+    "email": EMAIL_VALUE,
+    "password": TEXT_VALUE,
+    "hidden": TEXT_VALUE,
+    "number": "0",
+    "date": "2023-01-01",
+    "file": "",  # No default value for file inputs
+    "checkbox": "on",  # Default browser behavior
+    "radio": "on",     # Default browser behavior
+    "url": "https://example.com",
+    "tel": "+1234567890",
+    "range": "50",
+    "color": "#000000",
+    "submit": "Submit",
+    "reset": "Reset",
+    "button": "Button",
+    "search": "Search"
+}

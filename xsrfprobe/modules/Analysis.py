@@ -12,13 +12,16 @@
 import stringdist
 import itertools
 import time
+import logging
 
 from modules.Entropy import calcEntropy
-from core.verbout import verbout
 from core.utils import sameSequence, byteString
 from files.discovered import REQUEST_TOKENS
 from core.logger import VulnLogger, NovulLogger
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger("Analysis")
 
 def Analysis():
     """
@@ -29,260 +32,82 @@ def Analysis():
     ctr = 0  # Counter variable set to 0
     # Checking if the no of tokens is greater than 1
     if len(REQUEST_TOKENS) > 1:
-        verbout(colors.RED, "\n +--------------+")
-        verbout(colors.RED, " |   Analysis   |")
-        verbout(colors.RED, " +--------------+\n")
-        print("Proceeding for post-scan analysis of tokens gathered...")
-        verbout(
-            colors.G,
-            "A total of %s tokens was discovered during the scan"
-            % (len(REQUEST_TOKENS)),
-        )
-        # The idea behind this is to generate all possible combinations (not
-        # considering permutations) from the given list of discovered tokens
-        # and generate anti-CSRF token generation pattern.
+        logger.info("\n+--------------+")
+        logger.info("|   Analysis   |")
+        logger.info("+--------------+\n")
+        logger.info("Proceeding with post-scan analysis of tokens gathered...")
+        logger.info("A total of %s tokens were discovered during the scan", len(REQUEST_TOKENS))
+
         for tokenx1, tokenx2 in itertools.combinations(REQUEST_TOKENS, 2):
             try:
-                verbout(
-                    colors.GR, "Analysing 2 Anti-CSRF Tokens from gathered requests..."
-                )
-                verbout(colors.CYAN, " [+] First Token: " + tokenx1)
-                verbout(
-                    colors.ORANGE,
-                    " [+] Shannon Entropy: "
-                    + colors.GREEN
-                    + "%s" % (calcEntropy(tokenx1)),
-                )
-                verbout(colors.CYAN, " [+] Second Token: " + tokenx2)
-                verbout(
-                    colors.ORANGE,
-                    " [+] Shannon Entropy: "
-                    + colors.GREEN
-                    + "%s" % (calcEntropy(tokenx2)),
-                )
+                logger.info("Analyzing 2 Anti-CSRF Tokens from gathered requests...")
+                logger.info("[+] First Token: %s", tokenx1)
+                logger.info("[+] Shannon Entropy: %s", calcEntropy(tokenx1))
+                logger.info("[+] Second Token: %s", tokenx2)
+                logger.info("[+] Shannon Entropy: %s", calcEntropy(tokenx2))
+
                 # Calculating the edit distance via Damerau Levenshtein algorithm
                 m = stringdist.rdlevenshtein(tokenx1, tokenx2)
-                verbout(
-                    colors.CYAN,
-                    " [+] Edit Distance Calculated: " + str(m) + "%",
-                )
-                # Now its time to detect the alignment ratio
+                logger.info("[+] Edit Distance Calculated: %s%%", m)
+
+                # Detecting the alignment ratio
                 n = stringdist.rdlevenshtein_norm(tokenx1, tokenx2)
-                verbout(
-                    colors.CYAN,
-                    " [+] Alignment Ratio Calculated: " + str(n),
-                )
-                # If both tokens are same, then
+                logger.info("[+] Alignment Ratio Calculated: %s", n)
+
                 if len(tokenx1) == len(tokenx2):
-                    verbout(
-                        colors.C,
-                        "Token length calculated is same: "
-                        + colors.ORANGE
-                        + "Each %s bytes" % len(byteString(tokenx1)),
-                    )
+                    logger.info("Token length is the same: Each %s bytes", len(byteString(tokenx1)))
                 else:
-                    verbout(
-                        colors.C,
-                        "Token length calculated is different: "
-                        + colors.ORANGE
-                        + "By %s bytes"
-                        % (len(byteString(tokenx1)) - len(byteString(tokenx2))),
+                    logger.info(
+                        "Token length is different: By %s bytes",
+                        len(byteString(tokenx1)) - len(byteString(tokenx2))
                     )
+
                 time.sleep(0.5)
-                # In my experience with web security assessments, often the Anti-CSRF token
-                # is composed of two parts, one of them remains static while the other one dynamic.
-                #
-                # For example, if the Anti CSRF Tokens “837456mzy29jkd911139” for one request, the
-                # other is “837456mzy29jkd337221”, “837456mzy29jkd” part of the token remains same
-                # in both requests.
-                #
-                # The main idea behind this is to detect the static and dynamic part via DL Algorithm
-                # as discussed above by calculating edit distance.
+
                 p = sameSequence(tokenx1, tokenx2)
                 tokenx01 = tokenx1.replace(p, "")
                 tokenx02 = tokenx2.replace(p, "")
+
                 if n == 0.5 or m == len(tokenx1) / 2:
-                    verbout(
-                        colors.GR,
-                        "The tokens are composed of 2 parts (one static and other dynamic)... ",
-                    )
-                    verbout(
-                        colors.C,
-                        "Static Part : "
-                        + colors.GREY
-                        + p
-                        + colors.END
-                        + " | Length: "
-                        + colors.CYAN
-                        + str(len(p)),
-                    )
-                    verbout(
-                        colors.O,
-                        "Dynamic Part of Token 0x1: "
-                        + colors.GREY
-                        + tokenx01
-                        + colors.END
-                        + " | Length: "
-                        + colors.CYAN
-                        + str(len(tokenx01)),
-                    )
-                    verbout(
-                        colors.O,
-                        "Dynamic Part of Token 0x2: "
-                        + colors.GREY
-                        + tokenx02
-                        + colors.END
-                        + " | Length: "
-                        + colors.CYAN
-                        + str(len(tokenx02)),
-                    )
-                    if len(len(tokenx1) / 2) <= 6:
-                        verbout(
-                            colors.RED,
-                            " [-] Post-Analysis reveals that token might be "
-                            f"{colors.BR} VULNERABLE {colors.END}",
-                        )
-                        print(f"{colors.RED} [+] Possible CSRF Vulnerability Detected!")
-                        print(
-                            f"{colors.ORANGE} [!] Vulnerability Type: "
-                            f"{colors.BR} Weak Dynamic Part of Tokens {colors.END}"
-                        )
-                        print(
-                            f"{colors.GREY} [+] Tokens can easily be "
-                            f"{colors.RED}Forged by Bruteforcing/Guessing{colors.END}!"
-                        )
+                    logger.warning("Tokens are composed of 2 parts (one static and one dynamic)...")
+                    logger.info("Static Part: %s | Length: %s", p, len(p))
+                    logger.info("Dynamic Part of Token 0x1: %s | Length: %s", tokenx01, len(tokenx01))
+                    logger.info("Dynamic Part of Token 0x2: %s | Length: %s", tokenx02, len(tokenx02))
+
+                    if len(tokenx1) / 2 <= 6:
+                        logger.error("Post-Analysis reveals that token might be VULNERABLE")
+                        logger.info("Possible CSRF Vulnerability Detected!")
+                        logger.info("[!] Vulnerability Type: Weak Dynamic Part of Tokens")
+                        logger.info("Tokens can easily be Forged by Bruteforcing/Guessing!")
                         VulnLogger(
                             "Analysis",
                             "Tokens can easily be Forged by Bruteforcing/Guessing.",
                             "[i] Token 1: " + tokenx1 + "\n[i] Token 2: " + tokenx2,
                         )
                 elif n < 0.5 or m < len(tokenx1) / 2:
-                    verbout(
-                        colors.R,
-                        "Token distance calculated is " + "less than 0.5!",
-                    )
-                    verbout(
-                        colors.C,
-                        "Static Part : "
-                        + colors.GREY
-                        + p
-                        + colors.END
-                        + " | Length: "
-                        + colors.CYAN
-                        + str(len(p)),
-                    )
-                    verbout(
-                        colors.O,
-                        "Dynamic Part of Token 0x1: "
-                        + colors.GREY
-                        + tokenx01
-                        + colors.END
-                        + " | Length: "
-                        + colors.CYAN
-                        + str(len(tokenx01)),
-                    )
-                    verbout(
-                        colors.O,
-                        "Dynamic Part of Token 0x2: "
-                        + colors.GREY
-                        + tokenx02
-                        + colors.END
-                        + " | Length: "
-                        + colors.CYAN
-                        + str(len(tokenx02)),
-                    )
-                    verbout(
-                        colors.RED,
-                        " [-] Post-Analysis reveals that token might be "
-                        + colors.BR
-                        + " VULNERABLE "
-                        + colors.END,
-                    )
-                    print(" [+] Possible CSRF Vulnerability Detected!")
-                    print(
-                        colors.ORANGE
-                        + " [!] Vulnerability Type: "
-                        + colors.BR
-                        + " Weak Dynamic Part of Tokens "
-                        + colors.END
-                    )
-                    print(
-                        colors.GREY
-                        + " [+] Tokens can easily be "
-                        + colors.RED
-                        + "Forged by Bruteforcing/Guessing"
-                        + colors.END
-                        + "!\n"
-                    )
+                    logger.warning("Token distance is less than 0.5!")
+                    logger.info("Static Part: %s | Length: %s", p, len(p))
+                    logger.info("Dynamic Part of Token 0x1: %s | Length: %s", tokenx01, len(tokenx01))
+                    logger.info("Dynamic Part of Token 0x2: %s | Length: %s", tokenx02, len(tokenx02))
+
                     VulnLogger(
                         "Analysis",
                         "Tokens can easily be Forged by Bruteforcing/Guessing.",
                         "[i] Token 1: " + tokenx1 + "\n[i] Token 2: " + tokenx2,
                     )
                 else:
-                    verbout(
-                        colors.R,
-                        "Token distance calculated is "
-                        + colors.GREEN
-                        + "greater than 0.5!",
-                    )
-                    verbout(
-                        colors.C,
-                        "Static Part : "
-                        + colors.GREY
-                        + p
-                        + colors.END
-                        + " | Length: "
-                        + colors.CYAN
-                        + str(len(p)),
-                    )
-                    verbout(
-                        colors.O,
-                        "Dynamic Part of Token 0x1: "
-                        + colors.GREY
-                        + tokenx01
-                        + colors.END
-                        + " | Length: "
-                        + colors.CYAN
-                        + str(len(tokenx01)),
-                    )
-                    verbout(
-                        colors.O,
-                        "Dynamic Part of Token 0x2: "
-                        + colors.GREY
-                        + tokenx02
-                        + colors.END
-                        + " | Length: "
-                        + colors.CYAN
-                        + str(len(tokenx02)),
-                    )
-                    verbout(
-                        colors.GREEN,
-                        " [+] Post-Analysis reveals that tokens are "
-                        + colors.BG
-                        + " NOT VULNERABLE "
-                        + colors.END,
-                    )
-                    print(
-                        colors.ORANGE
-                        + " [!] Vulnerability Mitigation: "
-                        + colors.BG
-                        + " Strong Dynamic Part of Tokens "
-                        + colors.END
-                    )
-                    print(
-                        colors.GREY
-                        + " [+] Tokens "
-                        + colors.GREEN
-                        + "Cannot be Forged by Bruteforcing/Guessing"
-                        + colors.END
-                        + "!\n"
-                    )
+                    logger.info("Token distance is greater than 0.5!")
+                    logger.info("Static Part: %s | Length: %s", p, len(p))
+                    logger.info("Dynamic Part of Token 0x1: %s | Length: %s", tokenx01, len(tokenx01))
+                    logger.info("Dynamic Part of Token 0x2: %s | Length: %s", tokenx02, len(tokenx02))
+
                     NovulLogger(
                         "Analysis", "Tokens cannot be Forged by Bruteforcing/Guessing."
                     )
+
                 time.sleep(1)
             except KeyboardInterrupt:
                 ctr += 1
                 continue
-        print("Post-Scan Analysis Completed!")
+
+        logger.info("Post-Scan Analysis Completed!")

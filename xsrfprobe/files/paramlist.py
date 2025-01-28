@@ -59,10 +59,14 @@ COMMON_CSRF_HEADERS = (
     "X-CSRF-Header",
     "X-XSRF-Header",
     "X-CSRF-Protection",
+    "X-XSRF-Protection",
 )
 
 # TODO: Add and replace with more valid and arguable exclusion lists
 EXCLUSIONS_LIST = (
+    "sign-out",
+    "signout",
+    "logoff",
     "logout",
     "action=out",
     "action=logoff",
@@ -70,6 +74,7 @@ EXCLUSIONS_LIST = (
     "UserLogout",
     "osCsid",
     "action=logout",
+    "action=signout"
 )
 
 # List of common errors shown when token is tampered.
@@ -82,7 +87,8 @@ TOKEN_ERRORS = (
     "not valid",
     "please check your request",
     "your browser did something unexpected",
-    "csrf" "clearing your cookies",
+    "csrf",
+    "clearing your cookies",
     "tampered token",
     "null",
     "unacceptable",

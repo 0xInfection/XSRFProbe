@@ -9,10 +9,12 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import requests
+import string
+import logging
+from random import Random
 from difflib import SequenceMatcher
+
 import files.config as config
-from core.verbout import verbout
 
 def sameSequence(str1, str2):
     """
@@ -88,3 +90,30 @@ def subSequence(str1, str2):
 
     # If all characters of str1 matched, then j is equal to m
     return j == m
+
+
+def calcLogLevel(args):
+    '''
+    Calculate logging level based on verbose options
+    '''
+    baseloglevel = config.DEBUG_LEVEL
+
+    if args.verbose is not None:
+        if args.verbose >= 3:
+            baseloglevel = 10
+        else:
+            baseloglevel = 30 - (args.verbose * 10)
+
+    if args.quiet:
+        baseloglevel = 50
+
+    return baseloglevel
+
+
+def randString():
+    """
+    Generates a random string of length TOKEN_GENERATION_LENGTH.
+    """
+    logger = logging.getLogger("RandomString")
+    logger.info("Generating a random string...")
+    return "".join(Random().sample(string.ascii_letters, config.TOKEN_GENERATION_LENGTH))

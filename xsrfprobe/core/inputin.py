@@ -9,21 +9,21 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import re
+import logging
 import requests
 import traceback
 
+from files.config import SITE_URL
 from urllib.parse import urlparse
-from files.dcodelist import IP
 from core.logger import ErrorLogger
-from files.config import TIMEOUT_VALUE
-from files.config import SITE_URL, VERIFY_CERT
+from core.request import requestMaker
 
 
-def inputin():
+def inputProcessor():
     """
     This module actually parses the url passed by the user.
     """
+    logger = logging.getLogger("inputProcessor")
     web = ""
     if SITE_URL:
         web = SITE_URL  # If already assigned
@@ -32,31 +32,39 @@ def inputin():
         web = web + "/"
 
     if "://" not in web:  # add protocol to site
-        print("[*] Protocol not provided. Assuming HTTP...")
+        logger.warning("[*] Protocol not provided. Assuming HTTP.")
         web = "http://" + web  # assume http if not provided
 
     try:
         parsed_uri = urlparse(web).netloc
-        print("[+] URL seems to be a domain.")
+        logger.debug("URL seems to be a domain.")
+
     except Exception:
-        print("[-] Invalid URL format. Please provide a valid URL.")
+        logger.critical("[-] Invalid URL format. Please provide a valid URL.")
         quit()
 
     resp = None
     try:
-        end_point = web.split("://")[1].split("/", 1)[1]
-        if end_point == "":
-            end_point = "/"
+        endpoint = web.split("://")[1].split("/", 1)[1]
+        if endpoint == "":
+            endpoint = "/"
 
-        print("[*] Testing %s endpoint status..." % end_point)
-        resp = requests.get(web, timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
-        print(f"[+] Endpoint seems to be up! Status code: {resp.status_code}")
+        logger.info("Testing %s endpoint status..." % endpoint)
+        resp = requestMaker(web)
+        if resp is None:
+            logger.critical("Endpoint seems to be not reachable.")
+            ErrorLogger(web, "Endpoint seems to be not reachable.")
+            quit()
+
+        logger.info(f"[+] Endpoint seems to be up! Status code: {resp.status_code}")
+
     except requests.exceptions.RequestException as e:
-        print("Endpoint error: ", e.__str__())
+        logger.critical("Endpoint error: ", e.__str__())
         ErrorLogger(parsed_uri, traceback.format_exc())
         quit()
+
     except Exception as e:
-        print("Exception Caught: ", e.__str__())
+        logger.critical("Exception Caught: ", e.__str__())
         ErrorLogger(parsed_uri, traceback.format_exc())
         quit()
 

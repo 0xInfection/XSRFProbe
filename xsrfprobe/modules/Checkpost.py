@@ -14,11 +14,14 @@ import time
 import difflib
 from urllib.parse import urlencode
 
-from core.verbout import verbout
+import logging
 from core.logger import VulnLogger
 from files.config import POC_GENERATION, GEN_MALICIOUS
 from modules.Generator import GenNormalPoC, GenMalicious
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=""):
     """
@@ -26,91 +29,58 @@ def PostBased(url, r1, r2, r3, m_action, result, genpoc, form, m_name=""):
         on basis of fuzzy string matching and comparison
             based on Ratcliff-Obershelp Algorithm.
     """
-    verbout(colors.RED, "\n +------------------------------+")
-    verbout(colors.RED, " |   POST-Based Forgery Check   |")
-    verbout(colors.RED, " +------------------------------+\n")
-    verbout(colors.O, "Matching response query differences...")
-    checkdiffx1 = difflib.ndiff(
-        r1.splitlines(1), r2.splitlines(1)
-    )  # check the diff noted
-    checkdiffx2 = difflib.ndiff(
-        r1.splitlines(1), r3.splitlines(1)
-    )  # check the diff noted
-    result12 = []  # an init
-    verbout(colors.O, "Matching results...")
+    logger.info("+------------------------------+")
+    logger.info("|   POST-Based Forgery Check   |")
+    logger.info("+------------------------------+")
+    logger.info("Matching response query differences...")
 
-    for n in checkdiffx1:
-        if re.match(r"\+|-", n):  # get regex matching stuff only +/-
-            result12.append(n)  # append to existing list
+    checkdiffx1 = difflib.ndiff(r1.splitlines(1), r2.splitlines(1))
+    checkdiffx2 = difflib.ndiff(r1.splitlines(1), r3.splitlines(1))
 
-    result13 = []  # an init
-    for n in checkdiffx2:
-        if re.match(r"\+|-", n):  # get regex matching stuff
-            result13.append(n)  # append to existing list
+    result12 = [n for n in checkdiffx1 if re.match(r"\+|-", n)]
+    result13 = [n for n in checkdiffx2 if re.match(r"\+|-", n)]
 
-    # This logic is based purely on the assumption on the difference of various requests
-    # and response body.
-    # If the number of differences of result12 are less than the number of differences
-    # than result13 then we have the vulnerability. (very basic check)
-    #
-    # NOTE: The algorithm has lots of scopes of improvement...
+    logger.info("Matching results...")
+
     if len(result12) <= len(result13):
-        print(f"{colors.GREEN} [+] CSRF Vulnerability Detected : {colors.ORANGE}{url}!")
-        print(
-            f"{colors.ORANGE} [!] Vulnerability Type: {colors.BR} POST-Based Request Forgery {colors.END}"
-        )
+        logger.info(f"CSRF Vulnerability Detected: {url}!")
+        logger.info("Vulnerability Type: POST-Based Request Forgery")
+
         VulnLogger(
             url,
             "POST-Based Request Forgery on Forms.",
-            f"[i] Form: {form}\n" f"[i] POST Query: {result}\n",
+            f"[i] Form: {form}\n[i] POST Query: {result}\n",
         )
+
         time.sleep(0.3)
-        verbout(colors.O, "PoC of response and request...")
+        logger.info("Generating PoC of response and request...")
 
         if m_name:
-            print(f"{colors.RED}\n +-----------------+")
-            print(f"{colors.RED} |   Request PoC   |")
-            print(f"{colors.RED} +-----------------+\n")
-            print(f"{colors.BLUE} [+] URL : {colors.CYAN}{url}")  # url part
-            print(f"{colors.CYAN} [+] Name : {colors.ORANGE}{m_name}")  # name
+            logger.info("+-----------------+")
+            logger.info("|   Request PoC   |")
+            logger.info("+-----------------+")
+            logger.info(f"URL: {url}")
+            logger.info(f"Name: {m_name}")
 
             if m_action.count("/") > 1:
-                print(
-                    colors.GREEN
-                    + " [+] Action : "
-                    + colors.END
-                    + "/"
-                    + m_action.rsplit("/", 1)[1]
-                )  # action
+                logger.info(f"Action: /{m_action.rsplit('/', 1)[1]}")
             else:
-                print(" [+] Action : " + m_action)  # action
-        else:  # if value m['name'] not there :(
-            print(f"{colors.RED} \n +-----------------+")
-            print(f"{colors.RED}  |   Request PoC   |")
-            print(f"{colors.RED}  +-----------------+\n")
-            print(" [+] URL : " + url)  # the url
+                logger.info(f"Action: {m_action}")
+        else:
+            logger.info("+-----------------+")
+            logger.info("|   Request PoC   |")
+            logger.info("+-----------------+")
+            logger.info(f"URL: {url}")
+
             if m_action.count("/") > 1:
-                print(
-                    colors.GREEN
-                    + " [+] Action : "
-                    + colors.END
-                    + "/"
-                    + m_action.rsplit("/", 1)[1]
-                )  # action
+                logger.info(f"Action: /{m_action.rsplit('/', 1)[1]}")
             else:
-                print(" [+] Action : " + m_action)  # action
-        print(
-            colors.ORANGE
-            + " [+] POST Query : "
-            + colors.GREY
-            + urlencode(result).strip()
-        )
-        # If option --skip-poc hasn't been supplied...
+                logger.info(f"Action: {m_action}")
+
+        logger.info(f"POST Query: {urlencode(result).strip()}")
+
         if POC_GENERATION:
-            # If --malicious has been supplied
             if GEN_MALICIOUS:
-                # Generates a malicious CSRF form
                 GenMalicious(url, genpoc.__str__())
             else:
-                # Generates a normal PoC
                 GenNormalPoC(url, genpoc.__str__())

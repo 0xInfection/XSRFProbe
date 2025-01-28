@@ -10,6 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import json
+import logging
 from files.discovered import (
     INTERNAL_URLS,
     FILES_EXEC,
@@ -21,6 +22,47 @@ from files.discovered import (
 )
 from files.config import OUTPUT_DIR, JSON_OUTPUT
 
+
+class CustomFormatter(logging.Formatter):
+    '''
+    Customising my style of logging the results
+    '''
+    ftl_fmt  = "[-] FATAL: %(msg)s"
+    info_fmt = "[*] %(msg)s"
+    err_fmt  = "[-] ERROR: %(msg)s"
+    crt_fmt  = "[+] %(msg)s"
+    dbg_fmt  = "[~] DEBUG: %(module)s: %(msg)s"
+    wrg_fmt  = "[!] WARNING: %(msg)s"
+
+    def __init__(self):
+        super().__init__(fmt="%(levelno)d: %(msg)s", datefmt=None, style='%')
+
+    def format(self, record):
+
+        format_orig = self._style._fmt
+
+        if record.levelno == logging.DEBUG:
+            self._style._fmt = CustomFormatter.dbg_fmt
+
+        elif record.levelno == logging.INFO:
+            self._style._fmt = CustomFormatter.info_fmt
+
+        elif record.levelno == logging.ERROR:
+            self._style._fmt = CustomFormatter.err_fmt
+
+        elif record.levelno == logging.WARNING:
+            self._style._fmt = CustomFormatter.wrg_fmt
+
+        elif record.levelno == logging.CRITICAL:
+            self._style._fmt = CustomFormatter.crt_fmt
+
+        elif record.levelno == logging.FATAL:
+            self._style._fmt = CustomFormatter.ftl_fmt
+
+        result = logging.Formatter.format(self, record)
+        self._style._fmt = format_orig
+
+        return result
 
 def logger(filename, content):
     """

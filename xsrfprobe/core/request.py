@@ -10,8 +10,10 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import time
+import logging
 import requests
 import traceback
+from typing import Any
 
 from files.config import (
     HEADER_VALUES,
@@ -21,31 +23,60 @@ from files.config import (
     DELAY_VALUE,
     TIMEOUT_VALUE,
     VERIFY_CERT,
-    DEBUG
 )
 from core.verbout import verbout
 from core.randua import RandomAgent
 from core.logger import ErrorLogger
 
-headers = HEADER_VALUES.copy()
+default_headers = HEADER_VALUES.copy()
 
 # Set Cookie
 if COOKIE_VALUE:
-    headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
+    default_headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
 
 # Set User-Agent
 if USER_AGENT_RANDOM:
-    headers["User-Agent"] = RandomAgent()
-if USER_AGENT:
-    headers["User-Agent"] = USER_AGENT
+    default_headers["User-Agent"] = RandomAgent()
 
-def requestMaker(url, method, session: requests.Session=requests.Session(), data: str='', headers: dict={}):
+if USER_AGENT:
+    default_headers["User-Agent"] = USER_AGENT
+
+SESSION = requests.Session()
+
+def getRequestRaw(response: requests.Response):
+    """
+    This function is intended to return the raw
+                response of the request.
+    """
+    raw_request = f"{response.request.method} {response.request.url} HTTP/{'.'.join(list(str(response.raw.version)))}\n"
+    for k, v in response.request.headers.items():
+        raw_request += f"{k}: {v}\n"
+    if response.request.body:
+        raw_request += f"\n{response.request.body}"
+    return raw_request
+
+def getResponseRaw(response: requests.Response):
+    """
+    This function is intended to return the raw
+                response of the request.
+    """
+    raw_response = f"HTTP/{'.'.join(list(str(response.raw.version)))} {response.status_code} {response.reason}\n"
+    for k, v in response.headers.items():
+        raw_response += f"{k}: {v}\n"
+    raw_response += f"\n{response.text}"
+    return raw_response
+
+def requestMaker(url, method: str="GET", session: requests.Session=SESSION, data: Any | None=None, headers: dict={}):
     """
     This function is intended to make requests
                 to the target URL.
     """
+    logger = logging.getLogger("requestMaker")
     if DELAY_VALUE > 0:
         time.sleep(DELAY_VALUE)
+
+    if not headers:
+        headers = default_headers
 
     try:
         resp = session.request(
@@ -56,18 +87,13 @@ def requestMaker(url, method, session: requests.Session=requests.Session(), data
             timeout=TIMEOUT_VALUE,
             verify=VERIFY_CERT,
         )
-        verbout(f"[+] Request made to {url} with status code: {resp.status_code}")
-        verbout(f"\n  [REQUEST]\n\n")
-        verbout(f"{method} {url} HTTP/1.1")
-        for k, v in resp.request.headers.items():
-            verbout(f"{k}: {v}")
-        if data:
-            verbout(f"\n{data}")
-
-        verbout(f"\n  [RESPONSE]\n\n")
-        for k, v in resp.headers.items():
-            verbout(f"{k}: {v}")
-        verbout(f"\n{resp.text}")
+        if resp is None:
+            logger.error(f"No response received; the site is likely down: {url}")
+            ErrorLogger(url, "No response received; the site is likely down.")
+            return None
+        logger.debug(f"Request made to {url} with method: {method}")
+        logger.debug(f"\nRequest Raw: \n{getRequestRaw(resp)}\n")
+        logger.debug(f"\nResponse Raw: \n{getResponseRaw(resp)}\n")
 
         return resp
 

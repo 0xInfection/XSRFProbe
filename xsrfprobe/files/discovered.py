@@ -24,6 +24,9 @@ STRENGTH_LIST = []
 # generating them.
 REQUEST_TOKENS = []
 
+# List of all weak tokens discovered
+WEAK_TOKENS = []
+
 # List of all Urls that we found
 INTERNAL_URLS = []
 
