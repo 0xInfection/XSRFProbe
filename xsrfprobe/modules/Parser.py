@@ -24,7 +24,7 @@ class FormParser:
         Extracts all forms with method='POST' from the given BeautifulSoup object.
         """
         self.logger.info("Extracting all forms with method='POST'...")
-        return self.soup.findAll("form", method=re.compile("post", re.IGNORECASE))
+        return self.soup.findAll("form")
 
     def processInput(self, input_tag: Tag, input_type: str) -> None:
         """

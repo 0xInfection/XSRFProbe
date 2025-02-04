@@ -9,98 +9,46 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-from files.config import HEADER_VALUES, ORIGIN_URL, COOKIE_VALUE
-from core.verbout import verbout
+import logging
+from core.request import requestMaker
+from core.diff import DiffEngine
+from files.config import HEADER_VALUES, ORIGIN_URL
 from core.logger import VulnLogger, NovulLogger
 
 
-def Origin(url):
-    """
-    Check if the remote web application verifies the Origin before
-                    processing the HTTP request.
-    """
-    global HEADER_VALUES
+class OriginAnalyser:
+    def __init__(self) -> None:
+        self.origin_value = ORIGIN_URL
 
-    verbout(colors.RED, "\n +-------------------------------------+")
-    verbout(colors.RED, " |   Origin Based Request Validation   |")
-    verbout(colors.RED, " +-------------------------------------+\n")
-    # Make the request normally and get content
-    verbout(colors.O, "Making request on normal basis...")
-    req0x01 = Get(url)
-    # Set a fake Origin along with UA (pretending to be a
-    # legitimate request from a browser)
-    verbout(colors.GR, "Setting generic headers...")
-    gen_headers = HEADER_VALUES
-    gen_headers["Origin"] = ORIGIN_URL
+    def performBasicHeuristics(self, url: str) -> bool:
+        '''
+        Performs basic heuristics to check if the Origin header is being validated using GET.
+        '''
+        logger = logging.getLogger("OriginHeuristics")
+        logger.info("Performing basic Origin header heuristics using GET requests...")
 
-    # We put the cookie in request, if cookie supplied :D
-    if COOKIE_VALUE:
-        gen_headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
+        # these requests will be used to prepare the benchmark response
+        r1 = requestMaker(url)
+        r2 = requestMaker(url)
+        # modify the origin header and check if the response changes
+        r3 = requestMaker(url, headers={HEADER_VALUES["Origin"]: self.origin_value})
 
-    # Make the request with different Origin header and get the content
-    verbout(
-        colors.O,
-        f"Making request with {colors.CYAN}Tampered Origin Header{colors.END}...",
-    )
-    req0x02 = Get(url, headers=gen_headers)
-    HEADER_VALUES.pop("Origin", None)
+        if r1 is None or r2 is None or r3 is None:
+            logger.error("No response received for the Origin heuristic checks.")
+            return False
 
-    # Comparing the length of the requests' responses. If both content
-    # lengths are same, then the site actually does not validate Origin
-    # before processing the HTTP request which makes the site more
-    # vulnerable to CSRF attacks.
-    #
-    # IMPORTANT NOTE: I'm aware that checking for the Origin header does
-    # NOT protect the application against all cases of CSRF, but it's a
-    # very good first step. In order to exploit a CSRF in an application
-    # that protects using this method an intruder would have to identify
-    # other vulnerabilities, such as XSS or open redirects, in the same
-    # domain.
-    #
-    # TODO: This algorithm has lots of room for improvement
-    if req0x01 is None or req0x02 is None:
-        verbout(
-            colors.RED,
-            " [!] Cannot compare the two requests as at least one of them is None",
+        diff = DiffEngine()
+        benchmark = diff.prepareBenchmarkResponse(
+            response_bodies=(r1.text, r2.text),
+            statuses=(r1.status_code, r2.status_code),
+            headers=(r1.headers, r2.headers)
         )
-        return False
 
-    if len(req0x01.content) != len(req0x02.content):
-        verbout(
-            colors.GREEN,
-            f" [+] Endoint {colors.ORANGE}Origin Validation{colors.GREEN} Present!",
-        )
-        print(
-            f"{colors.GREEN} [-] Heuristics reveal endpoint might be "
-            f"{colors.BG} NOT VULNERABLE {colors.END}..."
-        )
-        print(
-            f"{colors.ORANGE} [+] Mitigation Method: "
-            f"{colors.BG} Origin Based Request Validation {colors.END}"
-        )
-        NovulLogger(url, "Presence of Origin Header based request Validation.")
+        if diff.benchmarkPassed(benchmark, r3.text, r3.status_code):
+            logger.warning("Origin header is not validated in GET requests.")
+            VulnLogger(url, "Origin header is not validated in GET requests.")
+            return False
+
+        logger.info("Origin header is validated in GET requests.")
+        NovulLogger(url, "Origin header is validated in GET requests.")
         return True
-
-    verbout(
-        colors.R,
-        "Endpoint " + "Origin Validation Not Present" + colors.END,
-    )
-    verbout(
-        colors.R,
-        "Heuristics reveal endpoint might be "
-        f"{colors.BY} VULNERABLE {colors.END} to Origin Based CSRFs...",
-    )
-    print(
-        f"{colors.CYAN} [+] Possible CSRF Vulnerability Detected : "
-        f"{colors.GREY}{url}"
-    )
-    print(
-        f"{colors.ORANGE} [!] Possible Vulnerability Type: {colors.BY}"
-        f" No Origin Based Request Validation {colors.END}"
-    )
-    VulnLogger(
-        url,
-        "No Origin Header based request validation presence.",
-        "[i] Response Headers: " + str(req0x02.headers),
-    )
-    return False

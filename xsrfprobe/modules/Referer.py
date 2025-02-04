@@ -9,97 +9,147 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-from files.config import HEADER_VALUES, REFERER_URL, COOKIE_VALUE
-from core.verbout import verbout
+import logging
+from core.request import requestMaker
+from core.diff import DiffEngine
+from urllib.parse import urlparse
+from files.config import HEADER_VALUES, REFERER_URL
 from core.logger import VulnLogger, NovulLogger
+from core.schema import BenchmarkResult
 
+class RefererAnalyser:
+    def __init__(self) -> None:
+        self.referer_value = REFERER_URL
+        self.diff = DiffEngine()
 
-def Referer(url):
-    """
-    Check if the remote web application verifies the Referer before
-                    processing the HTTP request.
-    """
-    verbout(colors.RED, "\n +--------------------------------------+")
-    verbout(colors.RED, " |   Referer Based Request Validation   |")
-    verbout(colors.RED, " +--------------------------------------+\n")
-    # Make the request normally and get content
-    verbout(colors.O, "Making request on normal basis...")
-    req0x01 = Get(url)
+    def performBasicHeuristics(self, url: str) -> bool:
+        '''
+        Performs basic heuristics to check if the Referer header is being validated using GET.
+        '''
+        logger = logging.getLogger("RefererHeuristics")
+        logger.info("Performing basic Referer header heuristics using GET requests...")
+        headers = HEADER_VALUES.copy()
 
-    # Set normal headers...
-    verbout(colors.GR, "Setting generic headers...")
-    gen_headers = HEADER_VALUES
+        # these requests will be used to prepare the benchmark response
+        r1 = requestMaker(url)
+        r2 = requestMaker(url)
+        # modify the referer header and check if the response changes
+        r3 = requestMaker(url, headers={headers["Referer"]: self.referer_value})
 
-    # Set a fake Referer along with UA (pretending to be a
-    # legitimate request from a browser)
-    gen_headers["Referer"] = REFERER_URL
+        if r1 is None or r2 is None or r3 is None:
+            logger.error("No response received for the Referer heuristic checks.")
+            return False
 
-    # We put the cookie in request, if cookie supplied :D
-    if COOKIE_VALUE:
-        gen_headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
-
-    # Make the request with different referer header and get the content
-    verbout(
-        colors.O,
-        f"Making request with {colors.CYAN}Tampered Referer Header{colors.END}...",
-    )
-    req0x02 = Get(url, headers=gen_headers)
-    HEADER_VALUES.pop("Referer", None)
-
-    if req0x01 is None or req0x02 is None:
-        verbout(
-            colors.RED,
-            " [!] Cannot compare the two requests as at least one of them is None",
+        benchmark = self.diff.prepareBenchmarkResponse(
+            response_bodies=(r1.text, r2.text),
+            statuses=(r1.status_code, r2.status_code),
+            headers=(r1.headers, r2.headers)
         )
-        return False
 
-    # Comparing the length of the requests' responses. If both content
-    # lengths are same, then the site actually does not validate referer
-    # before processing the HTTP request which makes the site more
-    # vulnerable to CSRF attacks.
-    #
-    # IMPORTANT NOTE: I'm aware that checking for the referer header does
-    # NOT protect the application against all cases of CSRF, but it's a
-    # very good first step. In order to exploit a CSRF in an application
-    # that protects using this method an intruder would have to identify
-    # other vulnerabilities, such as XSS or open redirects, in the same
-    # domain.
-    #
-    # TODO: This algorithm has lots of room for improvement.
-    if len(req0x01.content) != len(req0x02.content):
-        print(
-            f"{colors.GREEN} [+] Endoint {colors.ORANGE}Referer Validation{colors.GREEN} Present!"
-        )
-        print(
-            f"{colors.GREEN} [-] Heuristics reveal endpoint might be "
-            f"{colors.BG} NOT VULNERABLE {colors.END}..."
-        )
-        print(
-            f"{colors.ORANGE} [+] Mitigation Method: {colors.BG} "
-            f"Referer Based Request Validation {colors.END}"
-        )
-        NovulLogger(url, "Presence of Referer Header based Request Validation.")
+        if self.diff.benchmarkPassed(benchmark, r3.text, r3.status_code):
+            logger.warning("Referer header is not validated in GET requests.")
+            VulnLogger(url, "Referer header is not validated in GET requests.")
+            return False
+
+        logger.info("Referer header is validated in GET requests.")
+        NovulLogger(url, "Referer header is validated in GET requests.")
         return True
 
-    verbout(
-        colors.R,
-        f"Endpoint {colors.RED}Referer Validation Not Present{colors.END}",
-    )
-    verbout(
-        colors.R,
-        f"Heuristics reveal endpoint might be {colors.BY} "
-        f"VULNERABLE {colors.END} to Origin Based CSRFs...",
-    )
-    print(
-        f"{colors.CYAN} [+] Possible CSRF Vulnerability Detected : {colors.GREY}{url}"
-    )
-    print(
-        f"{colors.ORANGE} [+] Possible Vulnerability Type: {colors.BY} "
-        f"No Referer Based Request Validation {colors.END}"
-    )
-    VulnLogger(
-        url,
-        "No Referer Header based Request Validation presence.",
-        f"[i] Response Headers: {req0x02.headers}",
-    )
-    return False
+    def checkRefererValidation(self, url: str, benchmark: BenchmarkResult, method: str, params: dict) -> bool:
+        '''
+        Checks if the Referer header is validated in form submissions.
+        '''
+        logger = logging.getLogger("RefererValidationCheck")
+        logger.info("Checking Referer header validation in form submissions...")
+
+        method = method.upper()
+        headers = HEADER_VALUES.copy()
+        headers["Referer"] = self.referer_value
+
+        r = requestMaker(
+            url=url,
+            headers=headers,
+            method=method,
+            params=params if method == "GET" else None,
+            data=params if method == "POST" else None
+        )
+        if r is None:
+            logger.error("No response received for the Referer validation checks.")
+            return False
+
+        if self.diff.benchmarkPassed(benchmark, r.text, r.status_code):
+            logger.warning("Referer header is not validated in form submissions.")
+            NovulLogger(url, "Referer header is not validated in form submissions.")
+            return True
+
+        logger.info("Referer header is validated in form submissions.")
+        VulnLogger(url, "Referer header is validated in form submissions.")
+        return False
+
+    def bypassRefererPresenceCheck(self, url: str, benchmark: BenchmarkResult, method: str, params: dict) -> None:
+        '''
+        Performs Referer header validation checks when submitting forms.
+        '''
+        logger = logging.getLogger("RefererPresenceBypass")
+        logger.info("Performing Referer header presence bypass checks...")
+
+        method = method.upper()
+        headers = HEADER_VALUES.copy()
+        headers.pop("Referer")
+        headers.pop("Origin")
+        r = requestMaker(
+            url=url,
+            headers=headers,
+            method=method,
+            params=params if method == "GET" else None,
+            data=params if method == "POST" else None
+        )
+        if r is None:
+            logger.error("No response received for the Referer presence bypass checks.")
+            return
+
+        if self.diff.benchmarkPassed(benchmark, r.text, r.status_code):
+            logger.warning("Referer header is not validated in form submissions.")
+            VulnLogger(url, "Referer header is not validated in form submissions.")
+            return
+
+        logger.info("Referer header is validated in form submissions.")
+        NovulLogger(url, "Referer header is validated in form submissions.")
+
+    def bypassRefererValidationCheck(self, url: str, benchmark: BenchmarkResult, method: str, params: dict) -> None:
+        '''
+        Performs Referer header validation checks when submitting forms.
+        '''
+        logger = logging.getLogger("RefererValidationBypass")
+        logger.info("Performing Referer header validation bypass checks...")
+
+        method = method.upper()
+        headers = HEADER_VALUES.copy()
+        parsed_original = urlparse(url)
+        parsed_modified = urlparse(self.referer_value)
+        headers["Referer"] = f"{parsed_original.scheme}://{parsed_original}.{parsed_modified}/{parsed_modified.path}"
+
+        r = requestMaker(
+            url=url,
+            headers=headers,
+            method=method,
+            params=params if method == "GET" else None,
+            data=params if method == "POST" else None
+        )
+        if r is None:
+            logger.error("No response received for the Referer validation bypass checks.")
+            return
+
+        if self.diff.benchmarkPassed(benchmark, r.text, r.status_code):
+            logger.warning("Referer header is not validated in form submissions.")
+            VulnLogger(url, "Referer header is not validated in form submissions.")
+            return
+
+        logger.info("Referer header is validated in form submissions.")
+
+    def performRefererBypassChecks(self, url: str, benchmark: BenchmarkResult, method: str, params: dict) -> None:
+        '''
+        Performs Referer header bypass checks.
+        '''
+        self.bypassRefererPresenceCheck(url, benchmark, method, params)
+        self.bypassRefererValidationCheck(url, benchmark, method, params)

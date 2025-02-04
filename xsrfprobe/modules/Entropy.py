@@ -3,7 +3,7 @@ import requests
 from math import log
 
 from files import discovered
-from modules.Token import Token
+from modules.Token import detectTokens
 from core.logger import VulnLogger, NovulLogger
 
 
@@ -35,7 +35,7 @@ def Entropy(req: requests.Response, form: str) -> None:
     min_entropy = 3.0
 
     # Fetch potential CSRF token from the request
-    token_found = Token(response=req)
+    token_found = detectTokens(response=req)
     if not token_found:
         VulnLogger(
             req.url,

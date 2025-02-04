@@ -17,11 +17,23 @@ from files.discovered import (
     SCAN_ERRORS,
     VULN_LIST,
     FORMS_TESTED,
-    REQUEST_TOKENS,
+    ANTI_CSRF_TOKENS,
     STRENGTH_LIST,
 )
 from files.config import OUTPUT_DIR, JSON_OUTPUT
 
+GOOD_LEVEL = 25
+BAD_LEVEL = 15
+
+logging.addLevelName(GOOD_LEVEL, "GOOD")
+logging.addLevelName(BAD_LEVEL, "BAD")
+
+class CustomLogger(logging.getLoggerClass()):
+    def good(self, msg, *args, **kwargs):
+        self._log(GOOD_LEVEL, msg, args, **kwargs)
+
+    def bad(self, msg, *args, **kwargs):
+        self._log(BAD_LEVEL, msg, args, **kwargs)
 
 class CustomFormatter(logging.Formatter):
     '''
@@ -89,8 +101,8 @@ def GetLogger():
     if FILES_EXEC:
         logger("files-found", FILES_EXEC)
 
-    if REQUEST_TOKENS:
-        logger("anti-csrf-tokens", REQUEST_TOKENS)
+    if ANTI_CSRF_TOKENS:
+        logger("anti-csrf-tokens", ANTI_CSRF_TOKENS)
 
     if FORMS_TESTED:
         logger("forms-tested", FORMS_TESTED)
@@ -106,7 +118,7 @@ def GetLogger():
             "internal-links": INTERNAL_URLS,
             "errors": SCAN_ERRORS,
             "files-found": FILES_EXEC,
-            "anti-csrf-tokens": REQUEST_TOKENS,
+            "anti-csrf-tokens": ANTI_CSRF_TOKENS,
             "forms-tested": FORMS_TESTED,
             "vulnerabilities": VULN_LIST,
             "strengths": STRENGTH_LIST,

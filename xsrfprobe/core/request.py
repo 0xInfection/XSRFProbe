@@ -14,8 +14,10 @@ import logging
 import requests
 import traceback
 from typing import Any
+from urllib.parse import urlparse
 
 from files.config import (
+    SITE_URL,
     HEADER_VALUES,
     COOKIE_VALUE,
     USER_AGENT_RANDOM,
@@ -24,11 +26,14 @@ from files.config import (
     TIMEOUT_VALUE,
     VERIFY_CERT,
 )
-from core.verbout import verbout
 from core.randua import RandomAgent
 from core.logger import ErrorLogger
 
 default_headers = HEADER_VALUES.copy()
+parsed_uri = urlparse(SITE_URL)
+
+default_headers["Origin"] = f"{parsed_uri.scheme}://{parsed_uri.netloc}"
+default_headers["Referer"] = SITE_URL
 
 # Set Cookie
 if COOKIE_VALUE:
@@ -66,7 +71,7 @@ def getResponseRaw(response: requests.Response):
     raw_response += f"\n{response.text}"
     return raw_response
 
-def requestMaker(url, method: str="GET", session: requests.Session=SESSION, data: Any | None=None, headers: dict={}):
+def requestMaker(url, method: str="GET", session: requests.Session=SESSION, params: Any | None=None, data: Any | None=None, headers: dict={}):
     """
     This function is intended to make requests
                 to the target URL.
@@ -83,6 +88,7 @@ def requestMaker(url, method: str="GET", session: requests.Session=SESSION, data
             method=method,
             url=url,
             data=data,
+            params=params,
             headers=headers,
             timeout=TIMEOUT_VALUE,
             verify=VERIFY_CERT,

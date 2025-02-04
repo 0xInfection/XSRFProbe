@@ -81,6 +81,12 @@ TIMEOUT_VALUE = 7
 # or a Firewall (WAF).
 DELAY_VALUE = 0
 
+# The similarity threshold for the diff engine to determine whether
+# the responses are similar or not.
+# (Recommended keeping 90)
+# Values range between 0-100
+SIMILARITY_THRESHOLD = 90
+
 # Whether to include Cookie Based Checks everywhere
 #
 # Note: If you keep this to 'True', you must supply a
@@ -115,7 +121,7 @@ VERIFY_CERT = True
 
 # Referer Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-REFERER_URL = "http://not-a-valid-referer.xsrfprobe-csrftesting.0xinfection.xyz"
+REFERER_URL = "http://not-a-valid-referer.xsrfprobe-csrftesting.0xinfection.xyz/csrf.html"
 
 # Origin Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))

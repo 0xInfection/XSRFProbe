@@ -12,6 +12,8 @@
 # INFO: This file is for storing the various important parts of
 # requests discovered during making of various requests.
 
+from core.schema import DiscoveredToken
+
 # Vulnerabilities which were noticed
 VULN_LIST = []
 
@@ -22,7 +24,7 @@ STRENGTH_LIST = []
 # during making the requests. This will be used for various
 # analysis of token generation prototypes and logic used in
 # generating them.
-REQUEST_TOKENS = []
+ANTI_CSRF_TOKENS: list[DiscoveredToken] = []
 
 # List of all weak tokens discovered
 WEAK_TOKENS = []
@@ -38,3 +40,6 @@ FORMS_TESTED = []
 
 # Errors that were encountered
 SCAN_ERRORS = []
+
+# Same Site Cookie Storage
+SAME_SITE_COOKIES = []

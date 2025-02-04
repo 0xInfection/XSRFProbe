@@ -12,7 +12,7 @@ from core.inputin import inputProcessor
 from core.utils import calcLogLevel
 from core.handler import noCrawlProcessor
 from files.discovered import FORMS_TESTED
-from core.logger import ErrorLogger, GetLogger, VulnLogger, NovulLogger, CustomFormatter
+from core.logger import ErrorLogger, GetLogger, VulnLogger, NovulLogger, CustomFormatter, CustomLogger
 from files.config import (
     CRAWL_SITE,
     REFERER_ORIGIN_CHECKS,
@@ -43,6 +43,7 @@ def Engine():
     handler.setFormatter(formatter)
     logging.root.addHandler(handler)
     logging.root.setLevel(calcLogLevel(args))
+    logging.setLoggerClass(CustomLogger)
 
     timestart = time.time()
     web, fld = inputProcessor()
