@@ -3,7 +3,6 @@ import requests
 from math import log
 
 from files import discovered
-from modules.Token import detectTokens
 from core.logger import VulnLogger, NovulLogger
 
 
@@ -33,20 +32,10 @@ def Entropy(req: requests.Response, form: str) -> None:
     # forged making the application vulnerable even in
     # presence of a CSRF token.
     min_entropy = 3.0
-
-    # Fetch potential CSRF token from the request
-    token_found = detectTokens(response=req)
-    if not token_found:
-        VulnLogger(
-            req.url,
-            "Form requested without Anti-CSRF Token.",
-            f"[i] Form: {form}\n[i] Request Query: {req}",
-        )
-        return
-
     logger.info("Analysing Anti-CSRF Token Strength.")
 
-    for token in discovered.REQUEST_TOKENS:
+    for xsrftoken in discovered.ANTI_CSRF_TOKENS:
+        token = xsrftoken.token
         logger.info(f"Testing Anti-CSRF Token: {token}")
 
         # Check token length
@@ -76,7 +65,7 @@ def Entropy(req: requests.Response, form: str) -> None:
             discovered.WEAK_TOKENS.append(token)
 
 
-def calcEntropy(data):
+def calcEntropy(data: str):
     """
     Calculate Shannon Entropy of a given string.
     """

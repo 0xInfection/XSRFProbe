@@ -98,10 +98,6 @@ SIMILARITY_THRESHOLD = 90
 # (Recommended Keeping True)
 COOKIE_BASED = True
 
-# Include checks for Form Based CSRFs (POST method)
-# (Recommended keeping True)
-POST_BASED = True
-
 # Anti-CSRF Token Checks (Recommended keeping True)
 TOKEN_CHECKS = True
 

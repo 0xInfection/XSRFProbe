@@ -13,7 +13,7 @@ import logging
 import requests
 import traceback
 
-from files.config import SITE_URL
+from files import config
 from urllib.parse import urlparse
 from core.logger import ErrorLogger
 from core.request import requestMaker
@@ -25,14 +25,14 @@ def inputProcessor():
     """
     logger = logging.getLogger("inputProcessor")
     web = ""
-    if SITE_URL:
-        web = SITE_URL  # If already assigned
+    if config.SITE_URL:
+        web = config.SITE_URL  # If already assigned
 
     if not web.endswith("/"):
         web = web + "/"
 
     if "://" not in web:  # add protocol to site
-        logger.warning("[*] Protocol not provided. Assuming HTTP.")
+        logger.warning("Protocol not provided. Assuming HTTP.")
         web = "http://" + web  # assume http if not provided
 
     try:
@@ -40,7 +40,7 @@ def inputProcessor():
         logger.debug("URL seems to be a domain.")
 
     except Exception:
-        logger.critical("[-] Invalid URL format. Please provide a valid URL.")
+        logger.critical("Invalid URL format. Please provide a valid URL.")
         quit()
 
     resp = None

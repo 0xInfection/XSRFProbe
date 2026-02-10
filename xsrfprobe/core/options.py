@@ -17,8 +17,7 @@ import os
 
 from files import config
 from core.banner import banner
-from core.updater import updater
-from xsrfprobe import __version__, __license__
+from core import __version__, __license__
 
 
 def options() -> argparse.Namespace:
@@ -175,10 +174,6 @@ def options() -> argparse.Namespace:
         parser.print_help()
         quit()
 
-    # Update XSRFProbe to latest version
-    if args.update:
-        updater()
-        quit()
 
     # Print out XSRFProbe version
     if args.version:

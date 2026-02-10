@@ -12,6 +12,7 @@
 # INFO: This file is for storing the various important parts of
 # requests discovered during making of various requests.
 
+from collections import defaultdict
 from core.schema import DiscoveredToken
 
 # Vulnerabilities which were noticed
@@ -36,7 +37,8 @@ INTERNAL_URLS = []
 FILES_EXEC = []
 
 # Forms that were tested
-FORMS_TESTED = []
+# format: {url: [form1, form2, ...]}
+FORMS_TESTED = defaultdict(list)
 
 # Errors that were encountered
 SCAN_ERRORS = []

@@ -152,22 +152,23 @@ class TokenAnalyser:
                 logger.debug("Searching for Anti-CSRF Token in Request Cookies...")
                 # finally check if the token is in the cookie we sent
                 for key, value in response.request.headers.items():
-                    if key.lower() == "cookie" and name.lower() in value.lower():
+                    if key.lower() == "cookie":
                         for name in COMMON_CSRF_HEADERS:
-                            cookie_values = value.split(",")
-                            for cookie_val in cookie_values:
-                                cookie_name, cookie_value = cookie_val.split("=")
-                                logger.debug(f"The form was requested with an Anti-CSRF Token in the cookie: {response.url}")
-                                logger.info(f"Anti-CSRF Token Cookie: {cookie_value}")
-                                found = True
-                                discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
-                                    name=cookie_name,
-                                    token=cookie_value,
-                                    url=response.url,
-                                    mode=TokenDiscoveryModeEnum.ACTIVE,
-                                    discovery_part=TokenDiscoveryPartEnum.COOKIE
-                                ))
-                                break
+                            if name.lower() in value.lower():
+                                cookie_values = value.split(",")
+                                for cookie_val in cookie_values:
+                                    cookie_name, cookie_value = cookie_val.split("=")
+                                    logger.debug(f"The form was requested with an Anti-CSRF Token in the cookie: {response.url}")
+                                    logger.info(f"Anti-CSRF Token Cookie: {cookie_value}")
+                                    found = True
+                                    discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
+                                        name=cookie_name,
+                                        token=cookie_value,
+                                        url=response.url,
+                                        mode=TokenDiscoveryModeEnum.ACTIVE,
+                                        discovery_part=TokenDiscoveryPartEnum.COOKIE
+                                    ))
+                                    break
 
         except Exception as e:
             logger.error("Request Parsing Exception!")

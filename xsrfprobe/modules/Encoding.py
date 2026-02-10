@@ -37,8 +37,6 @@ class Encoding:
         # it turns out to be 0a09c8844ba8f0936c20bd791130d6b6, then it is
         # not at all strong, since the next request is probably 145 and can
         # be easily forged! Ofc, if there is no salt in the encryption.
-        #
-        # This module aims to automate and simplify the task. ;)
         for hash_type, regex in HASH_DB.items():
             if self.hashcheck(hash_type, re.compile(regex), token):
                 return hash_type
@@ -49,7 +47,7 @@ class Encoding:
             return True
         return False
 
-    def performTokenEncodingChecks(self) -> None:
+    def performTokenEncodingChecks(self) -> bool:
         """
         This function performs the token encoding checks.
         """
@@ -58,7 +56,9 @@ class Encoding:
             encoding = self.detectEncoding(token.token)
             if encoding:
                 self.logger.warning("Detected weak hash encoding type: %s on token: %s" % (encoding, token.token))
+                return True
             else:
                 self.logger.info("No encoding detected for the token.")
 
         self.logger.info("Token encoding checks completed.")
+        return False

@@ -6,7 +6,6 @@ import logging
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup, Tag
 
-from core.utils import randString
 from files.dcodelist import PROTOCOLS
 from files.paramlist import EXCLUSIONS_LIST
 from files.config import INPUT_TYPES_DEAULTS, TEXT_VALUE
@@ -25,6 +24,72 @@ class FormParser:
         """
         self.logger.info("Extracting all forms with method='POST'...")
         return self.soup.findAll("form")
+
+    def checkBadInputs(self, form: Tag) -> bool:
+        """
+        Checks if the form has any inputs that are not of type 'submit'.
+        """
+        self.logger.debug("Checking for bad inputs in form...")
+        if form.find("input", {"type": "image"}):
+            self.logger.warning("Form contains an input of type 'image'. Skipping...")
+            return True
+
+        return False
+
+    def extractFormAction(self, form: Tag) -> str:
+        """
+        Extracts the action attribute from the form tag.
+        """
+        action = form.get("action")
+        if action:
+            self.logger.debug(f"Extracted form action: {action}")
+            return action  # type: ignore
+
+        self.logger.debug("No action attribute found in form. Trying to extract from <input> attributes...")
+        submit = form.find("input", {"type": "submit"})
+        if submit:
+            action = submit.get("formaction")  # type: ignore
+            if action:
+                self.logger.debug(f"Extracted form action from <input>: {action}")
+                return action  # type: ignore
+
+        self.logger.warning("No action attribute found in form. Trying to extract from <button> attributes...")
+        button = form.find("button", {"type": "submit"})
+        if button:
+            action = button.get("formaction")  # type: ignore
+            if action:
+                self.logger.debug(f"Extracted form action from <button>: {action}")
+                return action  # type: ignore
+
+        return ""
+
+    def extractFormMethod(self, form: Tag) -> str:
+        """
+        Extracts the method attribute from the form tag.
+        """
+        method = form.get("method")
+        if method:
+            self.logger.debug(f"Extracted form method: {method}")
+            return method.upper()  # type: ignore
+
+        # extract from button
+        button = form.find("button", {"type": "submit"})
+        if button:
+            method = button.get("formmethod")  # type: ignore
+            if method:
+                self.logger.debug(f"Extracted form method from <button>: {method}")
+                return method.upper()  # type: ignore
+
+        #extract from input type submit
+        submit = form.find("input", {"type": "submit"})
+        if submit:
+            method = submit.get("formmethod")  # type: ignore
+            if method:
+                self.logger.debug(f"Extracted form method from <input>: {method}")
+                return method.upper()  # type: ignore
+
+        self.logger.debug("No method attribute found in form. Defaulting to 'GET'.")
+        return "GET"
 
     def processInput(self, input_tag: Tag, input_type: str) -> None:
         """

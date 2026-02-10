@@ -37,7 +37,7 @@ default_headers["Referer"] = SITE_URL
 
 # Set Cookie
 if COOKIE_VALUE:
-    default_headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
+    default_headers["Cookie"] = ", ".join(cookie for cookie in COOKIE_VALUE)
 
 # Set User-Agent
 if USER_AGENT_RANDOM:
@@ -50,8 +50,7 @@ SESSION = requests.Session()
 
 def getRequestRaw(response: requests.Response):
     """
-    This function is intended to return the raw
-                response of the request.
+    This function is intended to return the raw response of the request.
     """
     raw_request = f"{response.request.method} {response.request.url} HTTP/{'.'.join(list(str(response.raw.version)))}\n"
     for k, v in response.request.headers.items():
@@ -62,8 +61,7 @@ def getRequestRaw(response: requests.Response):
 
 def getResponseRaw(response: requests.Response):
     """
-    This function is intended to return the raw
-                response of the request.
+    This function is intended to return the raw response of the request.
     """
     raw_response = f"HTTP/{'.'.join(list(str(response.raw.version)))} {response.status_code} {response.reason}\n"
     for k, v in response.headers.items():
@@ -71,10 +69,9 @@ def getResponseRaw(response: requests.Response):
     raw_response += f"\n{response.text}"
     return raw_response
 
-def requestMaker(url, method: str="GET", session: requests.Session=SESSION, params: Any | None=None, data: Any | None=None, headers: dict={}):
+def requestMaker(url, method: str="GET", session: requests.Session=SESSION, params: Any | None=None, data: Any | None=None, headers: dict={}) -> requests.Response | None:
     """
-    This function is intended to make requests
-                to the target URL.
+    This function is intended to make requests to the target URL.
     """
     logger = logging.getLogger("requestMaker")
     if DELAY_VALUE > 0:

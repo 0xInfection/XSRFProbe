@@ -16,7 +16,7 @@ import logging
 
 from modules.Entropy import calcEntropy
 from core.utils import sameSequence, byteString
-from files.discovered import REQUEST_TOKENS
+from files.discovered import ANTI_CSRF_TOKENS as REQUEST_TOKENS
 from core.logger import VulnLogger, NovulLogger
 
 # Configure logging
@@ -42,9 +42,9 @@ def Analysis():
             try:
                 logger.info("Analyzing 2 Anti-CSRF Tokens from gathered requests...")
                 logger.info("[+] First Token: %s", tokenx1)
-                logger.info("[+] Shannon Entropy: %s", calcEntropy(tokenx1))
+                logger.info("[+] Shannon Entropy: %s", calcEntropy(tokenx1.token))
                 logger.info("[+] Second Token: %s", tokenx2)
-                logger.info("[+] Shannon Entropy: %s", calcEntropy(tokenx2))
+                logger.info("[+] Shannon Entropy: %s", calcEntropy(tokenx2.token))
 
                 # Calculating the edit distance via Damerau Levenshtein algorithm
                 m = stringdist.rdlevenshtein(tokenx1, tokenx2)
@@ -54,7 +54,7 @@ def Analysis():
                 n = stringdist.rdlevenshtein_norm(tokenx1, tokenx2)
                 logger.info("[+] Alignment Ratio Calculated: %s", n)
 
-                if len(tokenx1) == len(tokenx2):
+                if len(tokenx1.token) == len(tokenx2.token):
                     logger.info("Token length is the same: Each %s bytes", len(byteString(tokenx1)))
                 else:
                     logger.info(
