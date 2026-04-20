@@ -10,6 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import io
+import re
 from setuptools import setup, find_packages
 from os import path
 
@@ -17,9 +18,15 @@ this_directory = path.abspath(path.dirname(__file__))
 with io.open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     desc = f.read()
 
+# Read version from core/__init__.py without importing the package
+# (avoids needing dependencies installed at build time).
+with io.open(path.join(this_directory, "xsrfprobe", "core", "__init__.py"), encoding="utf-8") as f:
+    _version_match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', f.read())
+    _version = _version_match.group(1) if _version_match else "0.0.0"
+
 setup(
     name="xsrfprobe",
-    version=__import__("xsrfprobe").__version__,
+    version=_version,
     description="The Prime Cross Site Request Forgery (CSRF) Audit & Exploitation Toolkit",
     long_description=desc,
     long_description_content_type="text/markdown",
@@ -27,11 +34,10 @@ setup(
     author_email="theinfecteddrake@gmail.com",
     license="GPLv3",
     url="https://github.com/0xInfection/XSRFProbe",
-    download_url="https://github.com/0xInfection/XSRFProbe/archive/v%s.zip"
-    % __import__("xsrfprobe").__version__,
+    download_url="https://github.com/0xInfection/XSRFProbe/archive/v%s.zip" % _version,
     packages=find_packages(),
     scripts=["xsrfprobe/bin/xsrfprobe"],
-    install_requires=["requests", "bs4", "stringdist", "tld", "yattag"],
+    install_requires=["requests", "bs4", "rapidfuzz", "tld", "yattag", "pydantic", "selenium"],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: System Administrators",

@@ -2,8 +2,8 @@ import logging
 import requests
 from math import log
 
-from files import discovered
-from core.logger import VulnLogger, NovulLogger
+from xsrfprobe.files import discovered
+from xsrfprobe.core.logger import VulnLogger, NovulLogger
 
 
 def Entropy(req: requests.Response, form: str) -> None:

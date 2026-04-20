@@ -12,41 +12,40 @@
 import time
 import logging
 import requests
-import traceback
 from typing import Any
 from urllib.parse import urlparse
 
-from files.config import (
-    SITE_URL,
-    HEADER_VALUES,
-    COOKIE_VALUE,
-    USER_AGENT_RANDOM,
-    USER_AGENT,
-    DELAY_VALUE,
-    TIMEOUT_VALUE,
-    VERIFY_CERT,
-)
-from core.randua import RandomAgent
-from core.logger import ErrorLogger
-
-default_headers = HEADER_VALUES.copy()
-parsed_uri = urlparse(SITE_URL)
-
-default_headers["Origin"] = f"{parsed_uri.scheme}://{parsed_uri.netloc}"
-default_headers["Referer"] = SITE_URL
-
-# Set Cookie
-if COOKIE_VALUE:
-    default_headers["Cookie"] = ", ".join(cookie for cookie in COOKIE_VALUE)
-
-# Set User-Agent
-if USER_AGENT_RANDOM:
-    default_headers["User-Agent"] = RandomAgent()
-
-if USER_AGENT:
-    default_headers["User-Agent"] = USER_AGENT
+from xsrfprobe.files import config
+from xsrfprobe.core.randua import RandomAgent
+from xsrfprobe.core.logger import ErrorLogger
 
 SESSION = requests.Session()
+
+_default_headers: dict | None = None
+
+def _build_default_headers() -> dict:
+    """Build default headers lazily, after CLI has populated config values."""
+    global _default_headers
+    if _default_headers is not None:
+        return _default_headers
+
+    headers = config.HEADER_VALUES.copy()
+    parsed_uri = urlparse(config.SITE_URL)
+
+    headers["Origin"] = f"{parsed_uri.scheme}://{parsed_uri.netloc}"
+    headers["Referer"] = config.SITE_URL
+
+    if config.COOKIE_VALUE:
+        headers["Cookie"] = ", ".join(cookie for cookie in config.COOKIE_VALUE)
+
+    if config.USER_AGENT_RANDOM:
+        headers["User-Agent"] = RandomAgent()
+
+    if config.USER_AGENT:
+        headers["User-Agent"] = config.USER_AGENT
+
+    _default_headers = headers
+    return _default_headers
 
 def getRequestRaw(response: requests.Response):
     """
@@ -69,16 +68,16 @@ def getResponseRaw(response: requests.Response):
     raw_response += f"\n{response.text}"
     return raw_response
 
-def requestMaker(url, method: str="GET", session: requests.Session=SESSION, params: Any | None=None, data: Any | None=None, headers: dict={}) -> requests.Response | None:
+def requestMaker(url: str, method: str="GET", session: requests.Session=SESSION, params: Any | None=None, data: Any | None=None, headers: dict | None=None) -> requests.Response | None:
     """
     This function is intended to make requests to the target URL.
     """
     logger = logging.getLogger("requestMaker")
-    if DELAY_VALUE > 0:
-        time.sleep(DELAY_VALUE)
+    if config.DELAY_VALUE > 0:
+        time.sleep(config.DELAY_VALUE)
 
-    if not headers:
-        headers = default_headers
+    if headers is None:
+        headers = _build_default_headers()
 
     try:
         resp = session.request(
@@ -87,13 +86,14 @@ def requestMaker(url, method: str="GET", session: requests.Session=SESSION, para
             data=data,
             params=params,
             headers=headers,
-            timeout=TIMEOUT_VALUE,
-            verify=VERIFY_CERT,
+            timeout=config.TIMEOUT_VALUE,
+            verify=config.VERIFY_CERT,
         )
         if resp is None:
             logger.error(f"No response received; the site is likely down: {url}")
             ErrorLogger(url, "No response received; the site is likely down.")
             return None
+
         logger.debug(f"Request made to {url} with method: {method}")
         logger.debug(f"\nRequest Raw: \n{getRequestRaw(resp)}\n")
         logger.debug(f"\nResponse Raw: \n{getResponseRaw(resp)}\n")
@@ -101,6 +101,5 @@ def requestMaker(url, method: str="GET", session: requests.Session=SESSION, para
         return resp
 
     except Exception as e:
-        print('Error during request processing:', e.__str__())
-        ErrorLogger(url, traceback.format_exc())
+        logger.error(f"Error during request processing: {e.__str__()}")
         return None

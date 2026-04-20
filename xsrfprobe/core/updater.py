@@ -12,7 +12,7 @@
 import os
 import sys
 import requests
-from core import __version__
+from xsrfprobe.core import __version__
 
 
 def updater():

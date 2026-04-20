@@ -9,12 +9,12 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import string
 import logging
+import string
 from random import Random
 from difflib import SequenceMatcher
 
-import files.config as config
+import xsrfprobe.files.config as config
 
 def sameSequence(str1, str2):
     """
@@ -98,14 +98,11 @@ def calcLogLevel(args):
     '''
     baseloglevel = config.DEBUG_LEVEL
 
-    if args.verbose is not None:
-        if args.verbose >= 3:
-            baseloglevel = 10
-        else:
-            baseloglevel = 30 - (args.verbose * 10)
+    if args.verbose:
+        baseloglevel = logging.DEBUG
 
     if args.quiet:
-        baseloglevel = 50
+        baseloglevel = logging.CRITICAL
 
     return baseloglevel
 

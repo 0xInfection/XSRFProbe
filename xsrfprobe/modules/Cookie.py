@@ -2,9 +2,9 @@ import logging
 from re import search, I
 from http.cookies import SimpleCookie
 
-from files.config import COOKIE_VALUE
-from core.request import requestMaker
-from core.logger import VulnLogger, NovulLogger
+from xsrfprobe.files.config import COOKIE_VALUE
+from xsrfprobe.core.request import requestMaker
+from xsrfprobe.core.logger import VulnLogger, NovulLogger
 
 resps = []
 
@@ -69,10 +69,11 @@ class CookieAnalyzer:
 
         return True
 
-    def performSameSiteTests(self, url):
+    def performSameSiteTests(self, url) -> bool:
         """
         This function performs SameSite cookie tests.
+        Returns True if cookies lack SameSite protections (vulnerable).
         """
         logger = logging.getLogger("CookieAnalyser")
         logger.info("Starting SameSite cookie tests...")
-        self.SameSite(url)
+        return not self.SameSite(url)

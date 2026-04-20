@@ -1,11 +1,10 @@
 import logging
 import re
-import urllib.error
 import urllib.parse
 from bs4 import BeautifulSoup
-from files.config import EXCLUDE_DIRS
-from core.request import requestMaker
-from files.discovered import INTERNAL_URLS
+from xsrfprobe.files.config import EXCLUDE_DIRS
+from xsrfprobe.core.request import requestMaker
+from xsrfprobe.files.discovered import INTERNAL_URLS
 
 class Crawler():
     def __init__(self, start):
@@ -95,8 +94,9 @@ class Crawler():
 
         for link in soup.find_all("a", href=True):
             app = ""
-            if not re.match(r"javascript:", link["href"]) and not re.match(r"http(s?)://", link["href"]):
-                app = urllib.parse.urljoin(url, link["href"])
+            href = str(link["href"]).strip()
+            if not re.match(r"javascript:", href) and not re.match(r"https?://", href):
+                app = urllib.parse.urljoin(url, href)
 
             if app and re.search(root, app):
                 app = self._clean_path(app)
@@ -136,7 +136,7 @@ class Crawler():
 
     def _remove_junk_urls(self, url: str) -> str:
         if any(re.search(pattern, url) for pattern in self.block_patterns):
-            self.to_visit.remove(url)
+            self.to_visit.discard(url)
 
         url = re.sub(r"=[0-9]+", "=", url)
         url = re.sub(r"(title=)[^&]*", "\\1", url)

@@ -6,9 +6,9 @@ import logging
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup, Tag
 
-from files.dcodelist import PROTOCOLS
-from files.paramlist import EXCLUSIONS_LIST
-from files.config import INPUT_TYPES_DEAULTS, TEXT_VALUE
+from xsrfprobe.files.dcodelist import PROTOCOLS
+from xsrfprobe.files.paramlist import EXCLUSIONS_LIST
+from xsrfprobe.files.config import INPUT_TYPES_DEAULTS, TEXT_VALUE
 
 
 class FormParser:
@@ -23,7 +23,7 @@ class FormParser:
         Extracts all forms with method='POST' from the given BeautifulSoup object.
         """
         self.logger.info("Extracting all forms with method='POST'...")
-        return self.soup.findAll("form")
+        return self.soup.findAll("form")  # type: ignore
 
     def checkBadInputs(self, form: Tag) -> bool:
         """
@@ -114,13 +114,13 @@ class FormParser:
 
         # Process all input tags
         self.logger.debug("Processing <input> elements...")
-        for input_tag in form.findAll("input", {"name": True}):
+        for input_tag in form.findAll("input", {"name": True}):  # type: ignore
             input_type = input_tag.get("type", "text").lower()
             self.processInput(input_tag, input_type)
 
         # Process <textarea>
         self.logger.debug("Processing <textarea name='...'>")
-        for textarea in form.findAll("textarea", {"name": True}):
+        for textarea in form.findAll("textarea", {"name": True}):  # type: ignore
             value = textarea.string or textarea.get("value", TEXT_VALUE)
             self.crafted_inputs[textarea["name"]] = value
             self.structured_inputs.append({
@@ -132,7 +132,7 @@ class FormParser:
 
         # Process <select>
         self.logger.info("Processing <select name='...'>")
-        for select in form.findAll("select", {"name": True}):
+        for select in form.findAll("select", {"name": True}):  # type: ignore
             options = select.findAll("option", value=True)
             value = options[0]["value"] if options else ""
             self.crafted_inputs[select["name"]] = value

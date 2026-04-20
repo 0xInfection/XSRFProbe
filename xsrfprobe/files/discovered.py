@@ -13,7 +13,7 @@
 # requests discovered during making of various requests.
 
 from collections import defaultdict
-from core.schema import DiscoveredToken
+from xsrfprobe.core.schema import DiscoveredToken
 
 # Vulnerabilities which were noticed
 VULN_LIST = []

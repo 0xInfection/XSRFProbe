@@ -13,8 +13,8 @@ import re
 import logging
 from bs4 import BeautifulSoup
 from difflib import SequenceMatcher
-from core.schema import BenchmarkResult
-from files.config import SIMILARITY_THRESHOLD
+from xsrfprobe.core.schema import BenchmarkResult
+from xsrfprobe.files.config import SIMILARITY_THRESHOLD
 
 class DiffEngine:
     def __init__(self):

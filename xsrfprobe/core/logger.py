@@ -11,7 +11,7 @@
 
 import json
 import logging
-from files.discovered import (
+from xsrfprobe.files.discovered import (
     INTERNAL_URLS,
     FILES_EXEC,
     SCAN_ERRORS,
@@ -20,7 +20,7 @@ from files.discovered import (
     ANTI_CSRF_TOKENS,
     STRENGTH_LIST,
 )
-from files.config import OUTPUT_DIR, JSON_OUTPUT
+from xsrfprobe.files.config import OUTPUT_DIR, JSON_OUTPUT
 
 GOOD_LEVEL = 25
 BAD_LEVEL = 15
@@ -39,12 +39,12 @@ class CustomFormatter(logging.Formatter):
     '''
     Customising my style of logging the results
     '''
-    ftl_fmt  = "[-] FATAL: %(msg)s"
-    info_fmt = "[*] %(msg)s"
-    err_fmt  = "[-] ERROR: %(msg)s"
-    crt_fmt  = "[+] %(msg)s"
-    dbg_fmt  = "[~] DEBUG: %(module)s: %(msg)s"
-    wrg_fmt  = "[!] WARNING: %(msg)s"
+    ftl_fmt  = "[-] FATAL: %(message)s"
+    info_fmt = "[*] %(message)s"
+    err_fmt  = "[-] ERROR: %(message)s"
+    crt_fmt  = "[+] %(message)s"
+    dbg_fmt  = "[~] DEBUG: %(module)s: %(message)s"
+    wrg_fmt  = "[!] WARNING: %(message)s"
 
     def __init__(self):
         super().__init__(fmt="%(levelno)d: %(msg)s", datefmt=None, style='%')

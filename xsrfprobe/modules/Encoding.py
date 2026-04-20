@@ -11,9 +11,9 @@
 
 import re
 import logging
-from files.discovered import ANTI_CSRF_TOKENS
+from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
 
-from files.dcodelist import HASH_DB
+from xsrfprobe.files.dcodelist import HASH_DB
 
 class Encoding:
     def __init__(self):

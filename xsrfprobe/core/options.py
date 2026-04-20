@@ -15,9 +15,9 @@ import sys
 import urllib.parse
 import os
 
-from files import config
-from core.banner import banner
-from core import __version__, __license__
+from xsrfprobe.files import config
+from xsrfprobe.core.banner import banner
+from xsrfprobe.core import __version__, __license__
 
 
 def options() -> argparse.Namespace:
@@ -168,6 +168,48 @@ def options() -> argparse.Namespace:
         dest="json",
         action="store_true",
     )
+
+    # Browser integration
+    browser_group = parser.add_argument_group("Browser Integration")
+    browser_group.add_argument(
+        "--browser",
+        help="Enable headless Firefox browser for SameSite and browser-dependent tests.",
+        dest="browser",
+        action="store_true",
+    )
+    browser_group.add_argument(
+        "--auto-validate-poc",
+        help="Auto-validate generated PoC files in headless browser (requires --browser).",
+        dest="auto_validate_poc",
+        action="store_true",
+    )
+    browser_group.add_argument(
+        "--geckodriver-path",
+        help="Path to geckodriver binary. Default: assumes geckodriver is in PATH.",
+        dest="geckodriver_path",
+        type=str,
+        default="",
+    )
+    browser_group.add_argument(
+        "--browser-timeout",
+        help="Page load timeout for headless browser in seconds. Default: 30.",
+        dest="browser_timeout",
+        type=int,
+        default=30,
+    )
+    browser_group.add_argument(
+        "--enum-subdomains",
+        help="Enable subdomain enumeration via crt.sh for SameSite=Strict sibling domain bypass tests.",
+        dest="enum_subdomains",
+        action="store_true",
+    )
+    browser_group.add_argument(
+        "--no-form-submit",
+        help="Do not submit forms during scanning. Only perform passive token detection.",
+        dest="no_form_submit",
+        action="store_true",
+    )
+
     args = parser.parse_args()
 
     if not len(sys.argv) > 1:
@@ -279,8 +321,7 @@ def options() -> argparse.Namespace:
                     config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s))
         else:
             exc = args.exclude
-            m = exc.split(",").strip()
-            path = config.SITE_URL.split("://")[1]
+            m = [s.strip() for s in exc.split(",")]
             for s in m:
                 if not s.endswith("/"):
                     s += "/"
@@ -299,5 +340,27 @@ def options() -> argparse.Namespace:
 
     if args.json:
         config.JSON_OUTPUT = True
+
+    # Browser integration config
+    if args.browser:
+        config.BROWSER_ENABLED = True
+
+    if args.auto_validate_poc:
+        config.AUTO_VALIDATE_POC = True
+        if not config.BROWSER_ENABLED:
+            print("[!] --auto-validate-poc requires --browser. Enabling browser mode.")
+            config.BROWSER_ENABLED = True
+
+    if args.geckodriver_path:
+        config.GECKODRIVER_PATH = args.geckodriver_path
+
+    if args.browser_timeout:
+        config.BROWSER_TIMEOUT = args.browser_timeout
+
+    if args.enum_subdomains:
+        config.ENUM_SUBDOMAINS = True
+
+    if args.no_form_submit:
+        config.FORM_SUBMISSION = False
 
     return args

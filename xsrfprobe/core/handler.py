@@ -12,41 +12,110 @@
 import logging
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
-from core.request import requestMaker
-from core.diff import DiffEngine
-from core.logger import ErrorLogger, NovulLogger, VulnLogger
-from modules.Origin import OriginAnalyser
-from modules.Cookie import CookieAnalyzer
-from modules.Referer import RefererAnalyser
-from modules.Encoding import Encoding
-from modules.Parser import FormParser
-from modules.Token import TokenAnalyser
+from xsrfprobe.core.request import requestMaker, _build_default_headers
+from xsrfprobe.core.diff import DiffEngine
+from xsrfprobe.core.logger import NovulLogger, VulnLogger
+from xsrfprobe.modules.Origin import OriginAnalyser
+from xsrfprobe.modules.Cookie import CookieAnalyzer
+from xsrfprobe.modules.Referer import RefererAnalyser
+from xsrfprobe.modules.Encoding import Encoding
+from xsrfprobe.modules.Parser import FormParser
+from xsrfprobe.modules.Token import TokenAnalyser
 
-from files.config import REFERER_ORIGIN_CHECKS, FORM_SUBMISSION, COOKIE_BASED, TOKEN_CHECKS
-from files.discovered import FORMS_TESTED
+from xsrfprobe.files import config
+from xsrfprobe.files.config import REFERER_ORIGIN_CHECKS, FORM_SUBMISSION, COOKIE_BASED, TOKEN_CHECKS
+from xsrfprobe.files.discovered import FORMS_TESTED
 
-def noCrawlProcessor(endpoint: str="", soup: BeautifulSoup=None) -> None:  # type: ignore
+LOGIN_FIELD_PATTERNS = {"username", "user", "login", "email", "password", "passwd", "pass"}
+
+
+def _detect_login_csrf(form, url: str) -> None:
+    """O1: Detect login forms without CSRF tokens (login CSRF vulnerability)."""
+    logger = logging.getLogger("LoginCSRF")
+    field_names = set()
+    for inp in form.findAll("input", {"name": True}):
+        field_names.add(inp.get("name", "").lower())
+
+    has_password = any("pass" in f for f in field_names)
+    has_user = any(f in LOGIN_FIELD_PATTERNS for f in field_names)
+
+    if has_password and has_user:
+        logger.warning("[O1] Login form detected at %s. Checking for CSRF token...", url)
+        has_token = False
+        for inp in form.findAll("input", {"type": "hidden"}):
+            name = inp.get("name", "").lower()
+            if any(t in name for t in ("csrf", "token", "nonce", "authenticity", "verify")):
+                has_token = True
+                break
+
+        if not has_token:
+            logger.warning("[O1] VULNERABLE: Login form has no CSRF token. Login CSRF possible.")
+            VulnLogger(url, "Login form lacks CSRF token. Attacker can force victim to authenticate into attacker-controlled account.")
+
+
+def _bypass_content_type(url: str, base_benchmark, method: str, params: dict) -> None:
+    """M4: Re-submit form data with alternative Content-Type values."""
+    logger = logging.getLogger("ContentTypeBypass")
+    differ = DiffEngine()
+
+    if method.upper() != "POST":
+        return
+
+    alt_types = [
+        "text/plain",
+        "application/json",
+        "text/plain; application/json",
+    ]
+
+    for ct in alt_types:
+        headers = _build_default_headers().copy()
+        headers["Content-Type"] = ct
+
+        if ct == "application/json" or "json" in ct:
+            import json
+            body = json.dumps(params)
+        else:
+            body = "&".join(f"{k}={v}" for k, v in params.items())
+
+        r = requestMaker(url, method="POST", data=body, headers=headers)
+        if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
+            logger.warning(f"[M4] VULNERABLE: Server accepted Content-Type: {ct}")
+            VulnLogger(url, f"CSRF bypass via Content-Type change to: {ct}")
+
+
+def _bypass_head_method(url: str, base_benchmark, method: str, params: dict) -> None:
+    """M3: Send HEAD request to test if server processes it as GET."""
+    logger = logging.getLogger("HEADMethodBypass")
+
+    r = requestMaker(url, method="HEAD", params=params)
+    if r is None:
+        return
+
+    if r.status_code == base_benchmark.status_code and base_benchmark.status_code != 0:
+        logger.warning("[M3] HEAD request returned same status code as benchmark. Server may treat HEAD as GET.")
+        VulnLogger(url, "HEAD method may bypass CSRF checks (same status as GET).")
+
+
+def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
     """
     Handles endpoint processing and security validation.
-
     Either a URL or a BeautifulSoup object has to be passed to this function.
     """
     logger = logging.getLogger("Engine")
-    if not endpoint or not soup:
+    if not url and not soup:
         logger.error("No endpoint or BeautifulSoup object provided.")
         return
 
-    url = endpoint
     response = requestMaker(url)
     logger.debug("Parsing the response from: %s" % url)
     if response is None:
         logger.error("No response received; the site is likely down: %s" % url)
         return
 
-    if not soup:
-        parsed_uri = urlparse(url)
+    if soup is None:
         soup = BeautifulSoup(response.text, "html.parser")
 
+    parsed_uri = urlparse(url)
     action_done = set()
 
     referee = RefererAnalyser()
@@ -67,24 +136,27 @@ def noCrawlProcessor(endpoint: str="", soup: BeautifulSoup=None) -> None:  # typ
         logger.debug("\n%s", form.prettify())
         FORMS_TESTED[url].append(form.prettify())
 
+        _detect_login_csrf(form, url)
+
         if parser.checkBadInputs(form):
             continue
 
-        action_uri: str = parser.extractFormAction(form)  # type: ignore
-        action_method: str = parser.extractFormMethod(form)  # type: ignore
-        # we ignore forms with dialog action
+        action_uri: str = parser.extractFormAction(form)
+        action_method: str = parser.extractFormMethod(form)
         if action_method == "dialog":
             continue
 
         try:
             if not action_uri:
-                action_uri = parsed_uri.path  # type: ignore
+                action_uri = parsed_uri.path
                 form["action"] = action_uri
-                logger.warning(f"Form action attribute missing; defaulting to inferred value: {form['action']}.")
+                logger.warning(f"Form action attribute missing; defaulting to: {action_uri}")
 
             action = parser.buildAction(url, action=action_uri)
 
             if action and action not in action_done:
+                action_done.add(action)
+
                 if not FORM_SUBMISSION:
                     logger.warning("Form submission is turned off. Gathering tokens from basic requests / responses...")
                     token_analyzer.detectTokens(response, passive=True)
@@ -92,20 +164,19 @@ def noCrawlProcessor(endpoint: str="", soup: BeautifulSoup=None) -> None:  # typ
                 else:
                     logger.debug("Preparing form inputs for submission...")
 
-                    # make 2 requests as separate users
                     result, gen_poc = parser.prepareFormInputs(form)
-                    logger.debug("Submitting the form as first user with the following inputs: %s", result)
+                    logger.debug("Submitting the form as first user with inputs: %s", result)
                     respx = requestMaker(action, method=action_method, data=result)
 
                     result, gen_poc = parser.prepareFormInputs(form)
-                    logger.debug("Submitting the form as second user with the following inputs: %s", result)
+                    logger.debug("Submitting the form as second user with inputs: %s", result)
                     respy = requestMaker(action, method=action_method, data=result)
 
                     if not respx or not respy:
-                        logger.critical("One or more benchmark requests failed. Aborting testing form endpoint: %s", url)
+                        logger.critical("Benchmark requests failed. Aborting form: %s", url)
                         continue
 
-                    logger.debug("Benchmarking the form submission responses for a base response...")
+                    logger.debug("Benchmarking form submission responses...")
                     diff = DiffEngine()
                     base_benchmark = diff.prepareBenchmarkResponse(
                         response_bodies=(respx.text, respy.text),
@@ -114,36 +185,37 @@ def noCrawlProcessor(endpoint: str="", soup: BeautifulSoup=None) -> None:  # typ
                     )
 
                     if TOKEN_CHECKS:
-                        # detect the tokens in the response/request
                         if token_analyzer.detectTokens(respx) or token_analyzer.detectTokens(respy):
                             logger.info("Anti-CSRF tokens detected in response.")
 
                             token_analyzer.performTokenTamperTests(
                                 url=url,
-                                base_benchmark=base_benchmark,
                                 method=action_method,
-                                params=result
+                                params=result,
+                                base_benchmark=base_benchmark
                             )
 
                         else:
                             logger.warning("No Anti-CSRF tokens detected in response.")
-                            logger.info("Endpoint seems VULNERABLE to POST-Based Request Forgery")
-                            VulnLogger(url, "No Anti-CSRF tokens detected in response.")
+                            VulnLogger(url, "No Anti-CSRF tokens detected. Endpoint vulnerable to POST-Based Request Forgery.")
 
                     if COOKIE_BASED:
                         cookie_analyzer = CookieAnalyzer()
-                        results = cookie_analyzer.performSameSiteTests(url)
+                        is_vulnerable = cookie_analyzer.performSameSiteTests(url)
 
-                        if results:
-                            logger.info("No cookies with SameSite attribute detected.")
-                            logger.info("Endpoint seems VULNERABLE to CSRF attacks.")
+                        if is_vulnerable:
+                            logger.warning("No cookies with SameSite attribute detected.")
                             VulnLogger(url, "No cookies with SameSite attribute detected.")
 
                     if REFERER_ORIGIN_CHECKS:
                         logger.info("Checking Referer header validation in form submissions...")
                         if referee.checkRefererValidation(url, base_benchmark, action_method, result):
-                            logger.debug("Referer header is validated in form submissions. Trying to bypass validation checks.")
-                            referee.performRefererBypassChecks(url, base_benchmark, action, result)
+                            referee.performRefererBypassChecks(url, base_benchmark, action_method, result)
+
+                        origame.performOriginBypassChecks(url, base_benchmark, action_method, result)
+
+                    _bypass_content_type(url, base_benchmark, action_method, result)
+                    _bypass_head_method(url, base_benchmark, action_method, result)
 
                     encoding_detector = Encoding()
                     detected = encoding_detector.performTokenEncodingChecks()
@@ -153,5 +225,31 @@ def noCrawlProcessor(endpoint: str="", soup: BeautifulSoup=None) -> None:  # typ
                         logger.info("Token is not string-encoded.")
                         NovulLogger(url, "Anti-CSRF token is not string-encoded.")
 
+                    # Browser-dependent tests
+                    if config.BROWSER_ENABLED:
+                        from xsrfprobe.core.main import get_browser_session
+                        from xsrfprobe.modules.Browser import BrowserCSRFTests
+
+                        browser = get_browser_session()
+                        if browser:
+                            bt = BrowserCSRFTests(browser)
+                            bt.runAllBrowserTests(url, base_benchmark, action_method, result)
+
+                    # PoC generation
+                    if config.POC_GENERATION:
+                        from xsrfprobe.modules.Generator import PoCGenerator
+                        poc_gen = PoCGenerator()
+                        poc_paths = poc_gen.generate_all_variants(action, action_method, result)
+
+                        if config.AUTO_VALIDATE_POC and config.BROWSER_ENABLED:
+                            from xsrfprobe.core.main import get_browser_session
+                            from xsrfprobe.modules.Browser import BrowserCSRFTests
+
+                            browser = get_browser_session()
+                            if browser:
+                                bt = BrowserCSRFTests(browser)
+                                for poc_path in poc_paths:
+                                    bt.autoValidatePoC(poc_path, url, base_benchmark)
+
         except Exception as e:
-            logger.error("Error while processing the form: %s", e)
+            logger.error("Error while processing form: %s", e)

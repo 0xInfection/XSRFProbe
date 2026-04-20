@@ -20,7 +20,7 @@ CRAWL_SITE = False
 
 # Print out verbose (turn it off for only brief outputs).
 # Turning off is Highly Discouraged, since you will miss what the tool is doing.
-DEBUG = True
+DEBUG = False
 
 # Switch between verbosity levels
 DEBUG_LEVEL = 30
@@ -68,7 +68,7 @@ HEADER_VALUES = {
 
 # Email value to be supplied when parsing/filling forms
 # You can modify it as per your need :)
-EMAIL_VALUE = "csrf.testing@test"
+EMAIL_VALUE = "xsrf.probe@0xinfection.xyz"
 
 # Plaintext value to be supplied when parsing/filling forms
 TEXT_VALUE = "csrftesting"
@@ -230,13 +230,21 @@ IGNORE_FILE_EXTENSIONS = [
     "rpm",
 ]
 
+# Browser Integration
+BROWSER_ENABLED = False
+AUTO_VALIDATE_POC = False
+GECKODRIVER_PATH = ""
+BROWSER_TIMEOUT = 30
+ENUM_SUBDOMAINS = False
+
+# Input types defaults
 INPUT_TYPES_DEAULTS = {
     "text": TEXT_VALUE,
     "email": EMAIL_VALUE,
     "password": TEXT_VALUE,
     "hidden": TEXT_VALUE,
     "number": "0",
-    "date": "2023-01-01",
+    "date": "2000-01-01",
     "file": "",  # No default value for file inputs
     "checkbox": "on",  # Default browser behavior
     "radio": "on",     # Default browser behavior
