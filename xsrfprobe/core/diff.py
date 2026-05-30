@@ -61,8 +61,7 @@ class DiffEngine:
             self.logger.warning("Status codes of the base benchmark responses are different. This may lead to inaccurate results.")
 
         headersx, headersy = headers
-        diffed_headers = self.diffHeaders((headersx, headersy))
-        added_headers, removed_headers, changed_headers, common_headers = diffed_headers
+        _, _, _, common_headers = self.diffHeaders((headersx, headersy))
 
         return BenchmarkResult(
             base_benchmark=[item for sublist in common_parts for item in sublist],
@@ -82,14 +81,16 @@ class DiffEngine:
         """
         Perform the benchmark and check if the new HTML response matches the threshold.
         """
+        if not base_benchmark.base_benchmark:
+            return False
+
+        if base_benchmark.status_code == 0:
+            self.logger.debug("Benchmark has ambiguous status (baselines differed). Requiring higher body similarity.")
+            match_ratio = self.performBenchmark(base_benchmark, response_to_benchmark)
+            return match_ratio >= SIMILARITY_THRESHOLD + 5
+
         if base_benchmark.status_code != status:
-            if base_benchmark.status_code == 0:
-                pass
-            else:
-                return False
+            return False
 
         match_ratio = self.performBenchmark(base_benchmark, response_to_benchmark)
-        if match_ratio >= SIMILARITY_THRESHOLD:
-            return True
-
-        return False
+        return match_ratio >= SIMILARITY_THRESHOLD

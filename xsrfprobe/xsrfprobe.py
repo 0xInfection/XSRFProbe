@@ -12,5 +12,10 @@
 
 from xsrfprobe.core import main
 
-if __name__ == "__main__":
+
+def startEngine():
     main.Engine()
+
+
+if __name__ == "__main__":
+    startEngine()

@@ -11,7 +11,6 @@
 
 import logging
 import requests
-from typing import Any
 from urllib.parse import urlparse
 
 logger = logging.getLogger("BrowserSession")
@@ -70,7 +69,11 @@ class BrowserSession:
         parsed = urlparse(url)
         base_url = f"{parsed.scheme}://{parsed.netloc}"
 
-        self.driver.get(base_url)
+        try:
+            self.driver.get(base_url)
+        except Exception as e:
+            logger.warning("Could not navigate to %s for cookie injection: %s", base_url, e)
+            return
 
         for cookie in cookies:
             try:
@@ -126,43 +129,6 @@ class BrowserSession:
         self.sync_cookies_from_config(url)
         self.sync_cookies_from_requests(session, url)
 
-    def navigate(self, url: str) -> str:
-        """Navigate to URL, wait for page load, return page source."""
-        if not self.driver:
-            return ""
-        try:
-            self.driver.get(url)
-            return self.driver.page_source
-        except Exception as e:
-            logger.error("Navigation failed for %s: %s", url, e)
-            return ""
-
-    def execute_js(self, script: str) -> Any:
-        """Execute JavaScript in the browser context."""
-        if not self.driver:
-            return None
-        try:
-            return self.driver.execute_script(script)
-        except Exception as e:
-            logger.error("JS execution failed: %s", e)
-            return None
-
-    def get_current_url(self) -> str:
-        if not self.driver:
-            return ""
-        return self.driver.current_url
-
-    def get_page_source(self) -> str:
-        if not self.driver:
-            return ""
-        return self.driver.page_source
-
-    def get_all_cookies(self) -> list[dict]:
-        """Return all cookies currently in the browser."""
-        if not self.driver:
-            return []
-        return self.driver.get_cookies()
-
     def open_poc_file(self, poc_path: str) -> dict:
         """
         Open a local HTML PoC file in the browser.
@@ -192,6 +158,25 @@ class BrowserSession:
         except Exception as e:
             logger.error("Failed to open PoC file %s: %s", poc_path, e)
             return {"error": str(e)}
+
+    def get_iframe_source(self) -> str | None:
+        """Switch to the first iframe and return its page source, then switch back."""
+        if not self.driver:
+            return None
+        try:
+            iframes = self.driver.find_elements("tag name", "iframe")
+            if not iframes:
+                return None
+            self.driver.switch_to.frame(iframes[0])
+            source = self.driver.page_source
+            self.driver.switch_to.default_content()
+            return source
+        except Exception:
+            try:
+                self.driver.switch_to.default_content()
+            except Exception:
+                pass
+            return None
 
     def quit(self) -> None:
         """Close the browser and clean up."""

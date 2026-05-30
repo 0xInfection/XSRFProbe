@@ -52,7 +52,7 @@ def inputProcessor() -> tuple[str, str]:
         logger.exception("Error reaching the endpoint")
         sys.exit(1)
 
-    except Exception as e:
+    except Exception:
         logger.exception("Exception caught")
         sys.exit(1)
 

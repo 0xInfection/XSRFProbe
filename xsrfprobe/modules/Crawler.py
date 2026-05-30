@@ -13,6 +13,8 @@ class Crawler():
         self.to_visit: set[str] = {start}
         self.uri_patterns = []
         self.current_uri = ""
+        parsed_start = urllib.parse.urlparse(start)
+        self.target_netloc = parsed_start.netloc
         self.block_patterns = [
             r"\?date=\d{4}-\d{2}-\d{2}",
             r"javascript:void\(0\)",
@@ -41,28 +43,10 @@ class Crawler():
         self.current_uri = self.to_visit.pop()
         return self.current_uri
 
-    def get_visited(self):
-        return self.visited
-
-    def get_to_visit(self):
-        return self.to_visit
-
     def has_urls_to_visit(self):
         return bool(self.to_visit)
 
-    def add_to_visit(self, url):
-        self.to_visit.add(url)
-
-    def not_exist(self, pattern):
-        return pattern not in self.uri_patterns
-
-    def add_uri_pattern(self, pattern):
-        self.uri_patterns.append(pattern)
-
-    def add_visited(self, url):
-        self.visited.add(url)
-
-    def process(self, root: str) -> BeautifulSoup | None:
+    def process(self) -> BeautifulSoup | None:
         if EXCLUDE_DIRS:
             self.to_visit = {url for url in self.to_visit if url not in EXCLUDE_DIRS}
 
@@ -79,8 +63,8 @@ class Crawler():
         if not response or "html" not in response.headers.get("Content-Type", ""):
             return None
 
-        if 'Location' in response.headers:
-            url = response.headers["Location"]
+        if response.url != url:
+            url = response.url
 
         content = response.text
         try:
@@ -93,21 +77,29 @@ class Crawler():
             return None
 
         for link in soup.find_all("a", href=True):
-            app = ""
             href = str(link["href"]).strip()
-            if not re.match(r"javascript:", href) and not re.match(r"https?://", href):
-                app = urllib.parse.urljoin(url, href)
+            if re.match(r"javascript:|mailto:|tel:", href):
+                continue
 
-            if app and re.search(root, app):
-                app = self._clean_path(app)
-                uri_pattern = self._remove_junk_urls(app)
-                if uri_pattern not in self.uri_patterns and app != url:
-                    self.logger.debug(f"Added to crawl queue: {app}")
-                    self.to_visit.add(app)
-                    self.uri_patterns.append(uri_pattern)
+            app = urllib.parse.urljoin(url, href)
+
+            if not self._is_in_scope(app):
+                continue
+
+            app = self._clean_path(app)
+            uri_pattern = self._remove_junk_urls(app)
+            if uri_pattern not in self.uri_patterns and app != url and app not in self.visited:
+                self.logger.debug(f"Added to crawl queue: {app}")
+                self.to_visit.add(app)
+                self.uri_patterns.append(uri_pattern)
 
         self.visited.add(url)
         return soup
+
+    def _is_in_scope(self, url: str) -> bool:
+        """Check if a URL belongs to the same origin as the scan target."""
+        parsed = urllib.parse.urlparse(url)
+        return parsed.netloc == self.target_netloc
 
     def _clean_path(self, url: str) -> str:
         res = urllib.parse.urlparse(url)
@@ -132,6 +124,8 @@ class Crawler():
         if res.port:
             app += f":{res.port}"
         app += path
+        if res.query:
+            app += f"?{res.query}"
         return app
 
     def _remove_junk_urls(self, url: str) -> str:

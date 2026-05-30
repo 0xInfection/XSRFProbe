@@ -2,15 +2,13 @@ import logging
 from re import search, I
 from http.cookies import SimpleCookie
 
-from xsrfprobe.files.config import COOKIE_VALUE
 from xsrfprobe.core.request import requestMaker
 from xsrfprobe.core.logger import VulnLogger, NovulLogger
 
-resps = []
 
 class CookieAnalyzer:
     def __init__(self) -> None:
-        self.user_cookie = COOKIE_VALUE
+        pass
 
     def parseCookies(self, cookie_header: str) -> list[str]:
         """Parses cookies from a requests.Response object and checks for the SameSite attribute."""
@@ -56,18 +54,21 @@ class CookieAnalyzer:
         if not samesite_cookies:
             return False
 
+        has_protection = False
         for cookie in samesite_cookies:
             if search(r"SameSite=None", cookie, I):
-                logger.warning("Cookie with SameSite=None detected")
-                VulnLogger(url, "Cookie with SameSite=None detected")
+                logger.warning("Cookie with SameSite=None detected (offers no CSRF protection)")
+                VulnLogger(url, "Cookie with SameSite=None detected (offers no CSRF protection)")
             elif search(r"SameSite=Lax", cookie, I):
-                logger.warning("Cookie with SameSite=Lax detected")
-                VulnLogger(url, "Cookie with SameSite=Lax detected")
+                logger.info("Cookie with SameSite=Lax detected (blocks cross-site POST)")
+                NovulLogger(url, "Cookie with SameSite=Lax detected (blocks cross-site POST)")
+                has_protection = True
             elif search(r"SameSite=Strict", cookie, I):
-                logger.info("Cookie with SameSite=Strict detected")
+                logger.info("Cookie with SameSite=Strict detected (blocks all cross-site requests)")
                 NovulLogger(url, "Cookie with SameSite=Strict detected")
+                has_protection = True
 
-        return True
+        return has_protection
 
     def performSameSiteTests(self, url) -> bool:
         """

@@ -25,9 +25,6 @@ DEBUG = False
 # Switch between verbosity levels
 DEBUG_LEVEL = 30
 
-# Paths found with forms
-PATHS_WITH_FORMS = []
-
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
 USER_AGENT_RANDOM = False
 
@@ -143,14 +140,6 @@ OUTPUT_DIR = ""
 # Allow JSON output
 JSON_OUTPUT = False
 
-# This option is for displaying the headers received as response.
-# Turn this off if you don't want to see the headers on the
-# terminal, or if it feels irritating.
-DISPLAY_HEADERS = False
-
-# No colors option
-NO_COLORS = False
-
 # Option for controlling post-scan analysis. Turning it off
 # results in not analysing the tokens gathered.
 SCAN_ANALYSIS = True
@@ -159,76 +148,6 @@ SCAN_ANALYSIS = True
 # The form will not be generated.
 POC_GENERATION = True
 
-# Option whether or not to generate a malicious CSRF form with all
-# hidden fields.
-GEN_MALICIOUS = False
-
-# A list of file extensions that might be come across while scanning
-# and crawling
-IGNORE_FILE_EXTENSIONS = [
-    "png",
-    "jpg",
-    "jpeg",
-    "pdf",
-    "js",
-    "css",
-    "ico",
-    "bmp",
-    "svg",
-    "json",
-    "xml",
-    "xls",
-    "csv",
-    "docx",
-    "deb",
-    "bat",
-    "exe",
-    "msu",
-    "msi",
-    "apk",
-    "bin",
-    "csh",
-    "inf",
-    "ini",
-    "msc",
-    "osx",
-    "out",
-    "vbe",
-    "ws",
-    "msp",
-    "jse",
-    "ps1",
-    "ps1xml",
-    "ps2",
-    "ps2xml",
-    "psc1",
-    "psc2",
-    "msh",
-    "msh1",
-    "msh2",
-    "mshxml",
-    "msh1xml",
-    "msh2xml",
-    "scf",
-    "scr",
-    "url",
-    "vbs",
-    "wsf",
-    "jar",
-    "zip",
-    "rar",
-    "tar",
-    "gz",
-    "7z",
-    "bz2",
-    "xz",
-    "z",
-    "iso",
-    "img",
-    "dmg",
-    "pkg",
-    "rpm",
-]
 
 # Browser Integration
 BROWSER_ENABLED = False

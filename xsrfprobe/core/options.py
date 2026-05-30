@@ -95,7 +95,6 @@ def options() -> argparse.Namespace:
     )
 
     # Other Options
-    # optional.add_argument('-h', '--help', help='Show this help message and exit', dest='disp', default=argparse.SUPPRESS, action='store_true')
     optional.add_argument(
         "--user-agent",
         help="Custom user-agent to be used. Only one user-agent can be specified.",
@@ -118,12 +117,6 @@ def options() -> argparse.Namespace:
         "--no-analysis",
         help="Skip the Post-Scan Analysis of Tokens which were gathered during requests",
         dest="skipal",
-        action="store_true",
-    )
-    optional.add_argument(
-        "--malicious",
-        help="Generate a malicious CSRF Form which can be used in real-world exploits.",
-        dest="malicious",
         action="store_true",
     )
     optional.add_argument(
@@ -270,14 +263,9 @@ def options() -> argparse.Namespace:
     if args.skippoc:
         config.POC_GENERATION = False
 
-    # Option to generate malicious form
-    if args.malicious:
-        config.GEN_MALICIOUS = True
-
     # Crawl the site if --crawl supplied.
     if args.crawl:
         config.CRAWL_SITE = True
-        # Turning off the display header feature due to too much log generation.
 
     if args.cookie:
         # Assigning Cookie
@@ -297,15 +285,15 @@ def options() -> argparse.Namespace:
     if args.timeout:
         config.TIMEOUT_VALUE = args.timeout
 
+    # Delay between requests
+    if args.delay:
+        config.DELAY_VALUE = args.delay
+
     # Custom header values if specified
     if args.headers:
         # NOTE: As a default idea, when the user supplies custom headers, we
         # simply add the custom headers to a list of existing headers in
         # files/config.py.
-        # Uncomment the following lines to just reinitialise the headers every time
-        # they make a request.
-        #
-        # config.HEADER_VALUES = {}
         for head in args.headers.split(","):
             key, val = head.split("=")
             config.HEADER_VALUES[key.strip()] = val.strip()

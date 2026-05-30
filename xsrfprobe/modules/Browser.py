@@ -33,7 +33,7 @@ class BrowserCSRFTests:
         self.diff = DiffEngine()
 
     # SameSite=Strict bypass via client-side redirect gadget
-    def testSameSiteStrictClientRedirect(self, url: str, benchmark: BenchmarkResult,
+    def testSameSiteStrictClientRedirect(self, url: str, _benchmark: BenchmarkResult,
                                           method: str, params: dict) -> bool:
         """
         Discover open-redirect / client-redirect gadgets on target, then use them
@@ -109,7 +109,7 @@ class BrowserCSRFTests:
         return False
 
     # SameSite=Strict bypass via sibling subdomain XSS
-    def testSameSiteStrictSiblingDomain(self, url: str, benchmark: BenchmarkResult,
+    def testSameSiteStrictSiblingDomain(self, url: str, _benchmark: BenchmarkResult,
                                         method: str, params: dict) -> bool:
         """
         Enumerate sibling subdomains via crt.sh, probe for reflected XSS,
@@ -178,8 +178,8 @@ class BrowserCSRFTests:
         return list(subdomains)
 
     # SameSite=Lax cookie refresh bypass
-    def testSameSiteLaxCookieRefresh(self, url: str, benchmark: BenchmarkResult,
-                                      method: str, params: dict) -> bool:
+    def testSameSiteLaxCookieRefresh(self, url: str, _benchmark: BenchmarkResult,
+                                      _method: str, _params: dict) -> bool:
         """
         Detect cookies set without explicit SameSite attribute (browser defaults to Lax).
         If the app has an OAuth/SSO flow that refreshes cookies, a cross-site POST
@@ -245,10 +245,18 @@ class BrowserCSRFTests:
             logger.error("PoC validation failed: %s", result["error"])
             return False
 
-        page_source = result.get("page_source", "")
-        logger.debug("PoC landed on: %s", result.get("final_url", ""))
+        final_url = result.get("final_url", "")
+        logger.debug("PoC landed on: %s", final_url)
 
-        if self.diff.benchmarkPassed(benchmark, page_source, 200):
+        # If the browser is still on the PoC file:// URL or an iframe-wrapped page,
+        # the form likely submitted into an iframe — try switching to it
+        page_source = result.get("page_source", "")
+        if final_url.startswith("file://"):
+            iframe_source = self.browser.get_iframe_source()
+            if iframe_source:
+                page_source = iframe_source
+
+        if self.diff.benchmarkPassed(benchmark, page_source, benchmark.status_code):
             logger.warning("PoC VALIDATED: Action was accepted by the server.")
             VulnLogger(url, f"Auto-validated PoC: {poc_path}")
             return True

@@ -145,7 +145,7 @@ def Engine():
                 url = crawler.__next__()
                 logging.info(f"Testing: {url}")
 
-                soup = crawler.process(url)
+                soup = crawler.process()
                 if not soup:
                     continue
 

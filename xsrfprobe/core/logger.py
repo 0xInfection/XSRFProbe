@@ -9,31 +9,17 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-import json
 import logging
 from xsrfprobe.files.discovered import (
-    INTERNAL_URLS,
-    FILES_EXEC,
     SCAN_ERRORS,
     VULN_LIST,
-    FORMS_TESTED,
-    ANTI_CSRF_TOKENS,
     STRENGTH_LIST,
 )
-from xsrfprobe.files.config import OUTPUT_DIR, JSON_OUTPUT
 
-GOOD_LEVEL = 25
-BAD_LEVEL = 15
-
-logging.addLevelName(GOOD_LEVEL, "GOOD")
-logging.addLevelName(BAD_LEVEL, "BAD")
 
 class CustomLogger(logging.getLoggerClass()):
-    def good(self, msg, *args, **kwargs):
-        self._log(GOOD_LEVEL, msg, args, **kwargs)
+    pass
 
-    def bad(self, msg, *args, **kwargs):
-        self._log(BAD_LEVEL, msg, args, **kwargs)
 
 class CustomFormatter(logging.Formatter):
     '''
@@ -75,59 +61,6 @@ class CustomFormatter(logging.Formatter):
         self._style._fmt = format_orig
 
         return result
-
-def logger(filename, content):
-    """
-    This module is for logging all the stuff we found
-            while crawling and scanning.
-    """
-    output_file = f"{OUTPUT_DIR}{filename}.log"
-    with open(output_file, "w+", encoding="utf8") as f:
-        if isinstance(content, tuple) or isinstance(content, list):
-            for m in content:  # if it is list or tuple, it is iterable
-                f.write(m + "\n")
-        else:
-            f.write(content)  # else we write out as it is... ;)
-        f.write("\n")
-
-def GetLogger():
-    """Write out the results"""
-    if INTERNAL_URLS:
-        logger("internal-links", INTERNAL_URLS)
-
-    if SCAN_ERRORS:
-        logger("errored", SCAN_ERRORS)
-
-    if FILES_EXEC:
-        logger("files-found", FILES_EXEC)
-
-    if ANTI_CSRF_TOKENS:
-        logger("anti-csrf-tokens", ANTI_CSRF_TOKENS)
-
-    if FORMS_TESTED:
-        logger("forms-tested", FORMS_TESTED)
-
-    if VULN_LIST:
-        logger("vulnerabilities", VULN_LIST)
-
-    if STRENGTH_LIST:
-        logger("strengths", STRENGTH_LIST)
-
-    if JSON_OUTPUT:
-        results = {
-            "internal-links": INTERNAL_URLS,
-            "errors": SCAN_ERRORS,
-            "files-found": FILES_EXEC,
-            "anti-csrf-tokens": ANTI_CSRF_TOKENS,
-            "forms-tested": FORMS_TESTED,
-            "vulnerabilities": VULN_LIST,
-            "strengths": STRENGTH_LIST,
-        }
-
-        with open(
-            f"{OUTPUT_DIR}results.json", mode="w", encoding="latin1"
-        ) as file_handle:
-            json.dump(results, fp=file_handle)
 
 
 def ErrorLogger(url, error):

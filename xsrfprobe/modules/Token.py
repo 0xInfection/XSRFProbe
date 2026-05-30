@@ -14,7 +14,7 @@ import string
 import random
 import requests
 import logging
-from urllib.parse import urlparse, urlencode
+from urllib.parse import urlparse
 
 from xsrfprobe.files import config
 from xsrfprobe.files import discovered
@@ -23,6 +23,13 @@ from xsrfprobe.core.diff import DiffEngine
 from xsrfprobe.core.schema import DiscoveredToken, TokenDiscoveryPartEnum, TokenDiscoveryModeEnum, BenchmarkResult
 from xsrfprobe.files.paramlist import COMMON_CSRF_NAMES, COMMON_CSRF_HEADERS
 from xsrfprobe.core.logger import VulnLogger, NovulLogger
+
+
+def _is_csrf_name_match(csrf_name: str, param_name: str) -> bool:
+    """Check if csrf_name appears as a word-boundary segment in param_name.
+    e.g. 'auth' matches 'auth_token' or 'csrf-auth' but NOT 'webauthn'."""
+    pattern = r'(?:^|[\-_\[\].])' + re.escape(csrf_name) + r'(?:$|[\-_\[\].])'
+    return bool(re.search(pattern, param_name, re.I))
 
 
 class TokenAnalyser:
@@ -69,7 +76,7 @@ class TokenAnalyser:
                         continue
                     param_name, param_value = c.split("=", 1)
                     for name in COMMON_CSRF_NAMES:
-                        if name.lower() in param_name.lower():
+                        if _is_csrf_name_match(name, param_name):
                             logger.info(f"Anti-CSRF Query Parameter: {param_name}={param_value}")
                             discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
                                 name=param_name,
@@ -91,7 +98,7 @@ class TokenAnalyser:
                             continue
                         param_name, param_value = param.split("=", 1)
                         for name in COMMON_CSRF_NAMES:
-                            if name.lower() in param_name.lower():
+                            if _is_csrf_name_match(name, param_name):
                                 logger.info(f"Anti-CSRF Request Body Parameter: {param_name}={param_value}")
                                 discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
                                     name=param_name,
@@ -125,9 +132,11 @@ class TokenAnalyser:
                     if "set-cookie" in key.lower():
                         cookie_values = value.split(",")
                         for cookie_val in cookie_values:
+                            if "=" not in cookie_val:
+                                continue
+                            cookie_name, cookie_value = cookie_val.split("=", 1)
                             for name in COMMON_CSRF_NAMES:
-                                if name.lower() in cookie_val.lower() and "=" in cookie_val:
-                                    cookie_name, cookie_value = cookie_val.split("=", 1)
+                                if _is_csrf_name_match(name, cookie_name.strip()):
                                     logger.info(f"Anti-CSRF Token Cookie: {cookie_name.strip()}={cookie_value.strip()}")
                                     found = True
                                     discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
@@ -210,18 +219,42 @@ class TokenAnalyser:
         logger.info("[T3] Trying token removal bypass...")
         differ = DiffEngine()
 
+        cookie_token_names = {t.name.lower() for t in discovered.ANTI_CSRF_TOKENS
+                              if t.discovery_part == TokenDiscoveryPartEnum.COOKIE}
+
         for token in discovered.ANTI_CSRF_TOKENS:
             test_params = params.copy()
 
             if token.discovery_part in (TokenDiscoveryPartEnum.REQUEST_QUERY, TokenDiscoveryPartEnum.REQUEST_BODY):
                 test_params.pop(token.name, None)
 
-                r = requestMaker(
-                    url,
-                    method=method.upper(),
-                    data=test_params if method.lower() == "post" else None,
-                    params=test_params if method.lower() == "get" else None
-                )
+                # Also remove matching cookie for double-submit patterns
+                matching_cookie = token.name.lower() in cookie_token_names
+                if matching_cookie:
+                    cookies_without = SESSION.cookies.get_dict()
+                    cookies_without.pop(token.name, None)
+                    for k in list(cookies_without.keys()):
+                        if k.lower() == token.name.lower():
+                            cookies_without.pop(k)
+                    try:
+                        r = requests.request(
+                            method=method.upper(), url=url,
+                            headers=_build_default_headers(),
+                            cookies=cookies_without,
+                            data=test_params if method.lower() == "post" else None,
+                            params=test_params if method.lower() == "get" else None,
+                            timeout=config.TIMEOUT_VALUE, verify=config.VERIFY_CERT,
+                        )
+                    except Exception as e:
+                        logger.error(f"Request failed: {e}")
+                        r = None
+                else:
+                    r = requestMaker(
+                        url,
+                        method=method.upper(),
+                        data=test_params if method.lower() == "post" else None,
+                        params=test_params if method.lower() == "get" else None
+                    )
 
                 if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
                     logger.warning(f"[T3] VULNERABLE: Server accepted request without token '{token.name}'.")
@@ -263,6 +296,9 @@ class TokenAnalyser:
         logger.info("[T7] Trying empty token value bypass...")
         differ = DiffEngine()
 
+        cookie_token_names = {t.name.lower() for t in discovered.ANTI_CSRF_TOKENS
+                              if t.discovery_part == TokenDiscoveryPartEnum.COOKIE}
+
         for token in discovered.ANTI_CSRF_TOKENS:
             if token.discovery_part not in (TokenDiscoveryPartEnum.REQUEST_QUERY, TokenDiscoveryPartEnum.REQUEST_BODY):
                 continue
@@ -270,12 +306,32 @@ class TokenAnalyser:
             test_params = params.copy()
             test_params[token.name] = ""
 
-            r = requestMaker(
-                url,
-                method=method.upper(),
-                data=test_params if method.lower() == "post" else None,
-                params=test_params if method.lower() == "get" else None
-            )
+            # For double-submit patterns, also empty the matching cookie
+            matching_cookie = token.name.lower() in cookie_token_names
+            if matching_cookie:
+                cookies_emptied = SESSION.cookies.get_dict()
+                for k in list(cookies_emptied.keys()):
+                    if k.lower() == token.name.lower():
+                        cookies_emptied[k] = ""
+                try:
+                    r = requests.request(
+                        method=method.upper(), url=url,
+                        headers=_build_default_headers(),
+                        cookies=cookies_emptied,
+                        data=test_params if method.lower() == "post" else None,
+                        params=test_params if method.lower() == "get" else None,
+                        timeout=config.TIMEOUT_VALUE, verify=config.VERIFY_CERT,
+                    )
+                except Exception as e:
+                    logger.error(f"Request failed: {e}")
+                    r = None
+            else:
+                r = requestMaker(
+                    url,
+                    method=method.upper(),
+                    data=test_params if method.lower() == "post" else None,
+                    params=test_params if method.lower() == "get" else None
+                )
 
             if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
                 logger.warning(f"[T7] VULNERABLE: Server accepted empty token value for '{token.name}'.")
@@ -289,15 +345,16 @@ class TokenAnalyser:
     # M1/M2/S1: Method override bypass (_method param + override headers)
     # (PortSwigger SameSite Lax Lab 7 + HackTricks)
     # ----------------------------------------------------------------
-    def bypassMethodOverride(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
-        """Test HTTP method override via _method param and X-HTTP-Method-Override headers."""
+    def bypassMethodOverride(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> set[str]:
+        """Test HTTP method override via _method param and X-HTTP-Method-Override headers.
+        Returns set of bypass IDs that passed: 'M1' for _method param, 'M2' for override headers."""
         logger = logging.getLogger("MethodOverrideBypass")
         logger.info("[M1/M2] Trying method override bypass...")
         differ = DiffEngine()
-        bypassed = False
+        passed = set()
 
         if method.upper() != "POST":
-            return False
+            return passed
 
         override_params = params.copy()
         for token in discovered.ANTI_CSRF_TOKENS:
@@ -309,24 +366,30 @@ class TokenAnalyser:
         if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
             logger.warning("[M1] VULNERABLE: Server accepted GET with _method=POST override.")
             VulnLogger(url, "CSRF bypass via _method=POST on GET request.")
-            bypassed = True
+            passed.add("M1")
         override_params.pop("_method")
 
         # Test 2: POST with X-HTTP-Method-Override header set to GET
-        override_headers = _build_default_headers().copy()
-        for header_name in ("X-HTTP-Method-Override", "X-HTTP-Method", "X-Method-Override"):
-            override_headers[header_name] = "GET"
-            r = requestMaker(url, method="POST", data=override_params, headers=override_headers)
-            if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
-                logger.warning(f"[M2] VULNERABLE: Server accepted {header_name}: GET override.")
-                VulnLogger(url, f"CSRF bypass via {header_name}: GET header.")
-                bypassed = True
-            override_headers.pop(header_name)
+        # Only meaningful if POST-without-token alone fails (otherwise it's T3)
+        baseline_no_token = requestMaker(url, method="POST", data=override_params)
+        baseline_passes = (baseline_no_token and
+                           differ.benchmarkPassed(base_benchmark, baseline_no_token.text, baseline_no_token.status_code))
 
-        if not bypassed:
+        if not baseline_passes:
+            override_headers = _build_default_headers().copy()
+            for header_name in ("X-HTTP-Method-Override", "X-HTTP-Method", "X-Method-Override"):
+                override_headers[header_name] = "GET"
+                r = requestMaker(url, method="POST", data=override_params, headers=override_headers)
+                if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
+                    logger.warning(f"[M2] VULNERABLE: Server accepted {header_name}: GET override.")
+                    VulnLogger(url, f"CSRF bypass via {header_name}: GET header.")
+                    passed.add("M2")
+                override_headers.pop(header_name)
+
+        if not passed:
             logger.info("[M1/M2] Method override bypass failed.")
 
-        return bypassed
+        return passed
 
     # ----------------------------------------------------------------
     # T8: Custom header token bypass (HackTricks)
@@ -346,9 +409,19 @@ class TokenAnalyser:
             return False
 
         for token in header_tokens:
+            # First verify: does including the header in requests actually work?
+            verify_headers = _build_default_headers().copy()
+            verify_headers[token.name] = token.token
+            r_with = requestMaker(url, method=method.upper(),
+                                  data=params if method.lower() == "post" else None,
+                                  params=params if method.lower() == "get" else None,
+                                  headers=verify_headers)
+            if not r_with or not differ.benchmarkPassed(base_benchmark, r_with.text, r_with.status_code):
+                logger.debug(f"[T8] Request with '{token.name}' header doesn't match benchmark. Skipping.")
+                continue
+
             # Test 1: Remove the header entirely
             test_headers = _build_default_headers().copy()
-            test_headers.pop(token.name, None)
 
             r = requestMaker(url, method=method.upper(), data=params if method.lower() == "post" else None,
                              params=params if method.lower() == "get" else None, headers=test_headers)
@@ -401,9 +474,6 @@ class TokenAnalyser:
                 continue
 
             fresh_token_value = fresh_match.group(1)
-            if fresh_token_value == token.token:
-                logger.debug("[T4] Fresh session returned same token. Not useful for this test.")
-                continue
 
             test_params = params.copy()
             test_params[token.name] = fresh_token_value
@@ -547,34 +617,42 @@ class TokenAnalyser:
     # ----------------------------------------------------------------
     # Orchestrator: run all token tamper tests
     # ----------------------------------------------------------------
-    def performTokenTamperTests(self, url: str, method: str, params: dict, base_benchmark: BenchmarkResult) -> None:
-        """Run all token bypass tests in sequence."""
+    def performTokenTamperTests(self, url: str, method: str, params: dict, base_benchmark: BenchmarkResult) -> set[str]:
+        """Run all token bypass tests in sequence. Returns set of passed test IDs."""
         logger = logging.getLogger("TokenTamperTests")
-        results = []
+        passed = set()
 
         tests = [
-            ("T2: Method switch", self.bypassTokenValidationRequestMethod),
-            ("T3: Token removal", self.bypassTokenValidationPresence),
-            ("T7: Empty token", self.bypassEmptyTokenValue),
-            ("T4: Cross-session replay", self.bypassTokenNotTiedToSession),
-            ("T5: Non-session cookie", self.bypassTokenTiedToNonSessionCookie),
-            ("T6: Double-submit cookie", self.bypassDoubleSubmitCookie),
-            ("T8: Custom header token", self.bypassCustomHeaderToken),
-            ("M1/M2: Method override", self.bypassMethodOverride),
+            ("T2", self.bypassTokenValidationRequestMethod),
+            ("T3", self.bypassTokenValidationPresence),
+            ("T7", self.bypassEmptyTokenValue),
+            ("T4", self.bypassTokenNotTiedToSession),
+            ("T5", self.bypassTokenTiedToNonSessionCookie),
+            ("T6", self.bypassDoubleSubmitCookie),
+            ("T8", self.bypassCustomHeaderToken),
         ]
 
         for name, test_fn in tests:
             try:
                 result = test_fn(url, base_benchmark, method, params.copy())
-                results.append((name, result))
                 if result:
+                    passed.add(name)
                     logger.warning(f"Token bypass succeeded: {name}")
             except Exception as e:
                 logger.error(f"Error in {name}: {e}")
-                results.append((name, False))
 
-        passed_count = sum(1 for _, r in results if r)
-        if passed_count == 0:
+        # M1/M2 returns a set of specific sub-test IDs
+        try:
+            m_results = self.bypassMethodOverride(url, base_benchmark, method, params.copy())
+            passed.update(m_results)
+            for m in m_results:
+                logger.warning(f"Token bypass succeeded: {m}")
+        except Exception as e:
+            logger.error(f"Error in M1/M2: {e}")
+
+        if not passed:
             logger.info("All token tamper tests failed. Endpoint token validation is robust.")
         else:
-            logger.warning(f"{passed_count}/{len(results)} token tamper tests passed. Endpoint is VULNERABLE.")
+            logger.warning(f"{len(passed)} token tamper test(s) passed. Endpoint is VULNERABLE.")
+
+        return passed

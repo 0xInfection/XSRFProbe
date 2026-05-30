@@ -10,6 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import logging
+import requests
 from xsrfprobe.core.request import requestMaker
 from xsrfprobe.core.diff import DiffEngine
 from urllib.parse import urlparse
@@ -29,11 +30,12 @@ class RefererAnalyser:
         logger.info("Performing basic Referer header heuristics using GET requests...")
         headers = HEADER_VALUES.copy()
 
-        r1 = requestMaker(url)
-        r2 = requestMaker(url)
+        heuristic_session = requests.Session()
+        r1 = requestMaker(url, session=heuristic_session)
+        r2 = requestMaker(url, session=heuristic_session)
         modified_headers = headers.copy()
         modified_headers["Referer"] = self.referer_value
-        r3 = requestMaker(url, headers=modified_headers)
+        r3 = requestMaker(url, headers=modified_headers, session=heuristic_session)
 
         if r1 is None or r2 is None or r3 is None:
             logger.error("No response received for the Referer heuristic checks.")

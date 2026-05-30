@@ -9,10 +9,7 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-# This file contains various regex expressions for detecting the
-# encoding type of strings.
-
-# Token hash encoding detection db, thanks to a book, Python for Penetation Testers, LOL!
+# Token hash encoding detection db
 HASH_DB = {
     "Blowfish (Eggdrop)": r"^\+[a-zA-Z0-9\/\.]{12}$",
     "Blowfish Crypt": r"^\$2[axy]{0,1}\$[a-zA-Z0-9./]{8}\$[a-zA-Z0-9./]{1,}$",
@@ -43,31 +40,6 @@ HASH_DB = {
     "CRC32 (Generic)": r"^[a-fA-F0-9]{8}$",
     "Base64 Encoded (Generic)": r"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
 }
-
-
-# IP Regex
-IP = r"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-
-# Get rid of Double ../../
-RID_DOUBLE = r"/\.\./"
-
-# Get rid of ./'s
-RID_SINGLE = r"\./"
-
-# Complier based regex
-RID_COMPILE = r"/[^/]*/../"
-
-# Number based.
-NUM_SUB = r"=[0-9]+"
-
-# Number based compile.
-NUM_COM = r"(title=)[^&]*"
-
-# Binary strings.
-BINARY = r"^[01]+$"
-
-# Decimal Strings.
-DEC = r"&#.*;+"
 
 # Protocol Types
 PROTOCOLS = r"(.*\/)[^\/]*"

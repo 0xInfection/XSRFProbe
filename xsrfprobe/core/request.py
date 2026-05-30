@@ -22,11 +22,38 @@ from xsrfprobe.core.logger import ErrorLogger
 SESSION = requests.Session()
 
 _default_headers: dict | None = None
+_session_cookies_initialized: bool = False
+
+def _init_session_cookies() -> None:
+    """Inject user-supplied cookies into the SESSION jar (once)."""
+    global _session_cookies_initialized
+    if _session_cookies_initialized:
+        return
+    _session_cookies_initialized = True
+
+    if not config.COOKIE_VALUE:
+        return
+
+    parsed_uri = urlparse(config.SITE_URL)
+    domain = parsed_uri.hostname or ""
+
+    for raw in config.COOKIE_VALUE:
+        raw = raw.strip()
+        if "=" not in raw:
+            continue
+        name, value = raw.split("=", 1)
+        SESSION.cookies.set(name.strip(), value.strip(), domain=domain, path="/")
+
 
 def _build_default_headers() -> dict:
     """Build default headers lazily, after CLI has populated config values."""
     global _default_headers
+
+    _init_session_cookies()
+
     if _default_headers is not None:
+        if config.USER_AGENT_RANDOM:
+            _default_headers["User-Agent"] = RandomAgent()
         return _default_headers
 
     headers = config.HEADER_VALUES.copy()
@@ -35,13 +62,9 @@ def _build_default_headers() -> dict:
     headers["Origin"] = f"{parsed_uri.scheme}://{parsed_uri.netloc}"
     headers["Referer"] = config.SITE_URL
 
-    if config.COOKIE_VALUE:
-        headers["Cookie"] = ", ".join(cookie for cookie in config.COOKIE_VALUE)
-
     if config.USER_AGENT_RANDOM:
         headers["User-Agent"] = RandomAgent()
-
-    if config.USER_AGENT:
+    elif config.USER_AGENT:
         headers["User-Agent"] = config.USER_AGENT
 
     _default_headers = headers

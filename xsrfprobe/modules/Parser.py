@@ -16,7 +16,6 @@ class FormParser:
         self.soup = soup
         self.logger = logging.getLogger("FormParser")
         self.crafted_inputs = {}
-        self.structured_inputs = []
 
     def getAllForms(self) -> list[Tag]:
         """
@@ -91,6 +90,17 @@ class FormParser:
         self.logger.debug("No method attribute found in form. Defaulting to 'GET'.")
         return "GET"
 
+    def extractFormEnctype(self, form: Tag) -> str:
+        """
+        Extracts the enctype attribute from the form tag.
+        Defaults to 'application/x-www-form-urlencoded' if not specified.
+        """
+        enctype = form.get("enctype", "").strip().lower()  # type: ignore
+        if enctype in ("multipart/form-data", "text/plain", "application/x-www-form-urlencoded"):
+            self.logger.debug(f"Extracted form enctype: {enctype}")
+            return enctype
+        return "application/x-www-form-urlencoded"
+
     def processInput(self, input_tag: Tag, input_type: str) -> None:
         """
         Helper function to process input tags and generate corresponding strings based on their input types.
@@ -99,17 +109,12 @@ class FormParser:
         value = input_tag.get("value", INPUT_TYPES_DEAULTS.get(input_type, TEXT_VALUE))
         self.logger.debug(f"Using default value for input type '{input_type}': {value}")
         self.crafted_inputs[input_tag["name"]] = value
-        self.structured_inputs.append({
-            "type": input_type,
-            "name": input_tag.get("name"),
-            "label": input_tag.get("name", "").title(),  # type: ignore
-            "value": value if input_type not in ["password", "hidden", "file"] else ""
-        })
 
-    def prepareFormInputs(self, form: Tag) -> tuple[dict, list[dict]]:
+    def prepareFormInputs(self, form: Tag) -> dict:
         """
-        Parses form inputs and generates corresponding strings based on their input types.
+        Parses form inputs and returns a dict of {name: value} for submission.
         """
+        self.crafted_inputs = {}
         self.logger.debug("Crafting inputs based on form types...")
 
         # Process all input tags
@@ -123,12 +128,6 @@ class FormParser:
         for textarea in form.findAll("textarea", {"name": True}):  # type: ignore
             value = textarea.string or textarea.get("value", TEXT_VALUE)
             self.crafted_inputs[textarea["name"]] = value
-            self.structured_inputs.append({
-                "type": "textarea",
-                "name": textarea["name"],
-                "label": textarea["name"].title(),
-                "value": value
-            })
 
         # Process <select>
         self.logger.info("Processing <select name='...'>")
@@ -136,16 +135,9 @@ class FormParser:
             options = select.findAll("option", value=True)
             value = options[0]["value"] if options else ""
             self.crafted_inputs[select["name"]] = value
-            self.structured_inputs.append({
-                "type": "select",
-                "name": select["name"],
-                "label": select["name"].title(),
-                "options": [option["value"] for option in options],
-                "value": value
-            })
 
         self.logger.info("Finished parsing form inputs.")
-        return self.crafted_inputs, self.structured_inputs
+        return self.crafted_inputs
 
     def buildUrl(self, base_url: str, action_uri: str) -> str | None:
         """

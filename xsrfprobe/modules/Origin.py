@@ -10,6 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 import logging
+import requests
 from urllib.parse import urlparse
 from xsrfprobe.core.request import requestMaker
 from xsrfprobe.core.diff import DiffEngine
@@ -27,11 +28,12 @@ class OriginAnalyser:
         logger = logging.getLogger("OriginHeuristics")
         logger.info("Performing basic Origin header heuristics using GET requests...")
 
-        r1 = requestMaker(url)
-        r2 = requestMaker(url)
+        heuristic_session = requests.Session()
+        r1 = requestMaker(url, session=heuristic_session)
+        r2 = requestMaker(url, session=heuristic_session)
         modified_headers = HEADER_VALUES.copy()
         modified_headers["Origin"] = self.origin_value
-        r3 = requestMaker(url, headers=modified_headers)
+        r3 = requestMaker(url, headers=modified_headers, session=heuristic_session)
 
         if r1 is None or r2 is None or r3 is None:
             logger.error("No response received for the Origin heuristic checks.")

@@ -76,28 +76,3 @@ EXCLUSIONS_LIST = (
     "action=logout",
     "action=signout"
 )
-
-# List of common errors shown when token is tampered.
-TOKEN_ERRORS = (
-    "the required form field",
-    "token could not",
-    "invalid token",
-    "wrong",
-    "error",
-    "not valid",
-    "please check your request",
-    "your browser did something unexpected",
-    "csrf",
-    "clearing your cookies",
-    "tampered token",
-    "null",
-    "unacceptable",
-    "false",
-    "void",
-    "incorrect",
-    "inoperative",
-    "faulty",
-    "absurd",
-    "inconsistent",
-    "not acceptable",
-)
