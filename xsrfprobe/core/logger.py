@@ -13,6 +13,7 @@ import logging
 from xsrfprobe.files.discovered import (
     SCAN_ERRORS,
     VULN_LIST,
+    VULN_RECORDS,
     STRENGTH_LIST,
 )
 
@@ -68,11 +69,20 @@ def ErrorLogger(url, error):
     SCAN_ERRORS.append(con)
 
 
-def VulnLogger(url, vuln, content=""):
-    tent = f"[!] {url} -> {vuln}\n\n{content}\n\n"
+def VulnLogger(url, vuln, content="", test_id=""):
+    prefix = f"[{test_id}] " if test_id else ""
+    tent = f"[!] {url} -> {prefix}{vuln}\n\n{content}\n\n"
     VULN_LIST.append(tent)
+    VULN_RECORDS.append({
+        "url": url,
+        "vuln": vuln,
+        "content": content,
+        "test_id": test_id,
+        "details": {},
+    })
 
 
-def NovulLogger(url, strength):
-    tent = f"[+] {url} -> {strength}"
+def NovulLogger(url, strength, test_id=""):
+    prefix = f"[{test_id}] " if test_id else ""
+    tent = f"[+] {url} -> {prefix}{strength}"
     STRENGTH_LIST.append(tent)

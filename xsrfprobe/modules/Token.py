@@ -14,11 +14,11 @@ import string
 import random
 import requests
 import logging
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 from xsrfprobe.files import config
 from xsrfprobe.files import discovered
-from xsrfprobe.core.request import requestMaker, SESSION, _build_default_headers
+from xsrfprobe.core.request import requestMaker, SESSION, _build_default_headers, cors_allows_credentialed_header
 from xsrfprobe.core.diff import DiffEngine
 from xsrfprobe.core.schema import DiscoveredToken, TokenDiscoveryPartEnum, TokenDiscoveryModeEnum, BenchmarkResult
 from xsrfprobe.files.paramlist import COMMON_CSRF_NAMES, COMMON_CSRF_HEADERS
@@ -32,13 +32,29 @@ def _is_csrf_name_match(csrf_name: str, param_name: str) -> bool:
     return bool(re.search(pattern, param_name, re.I))
 
 
+def _norm_token(value: str) -> str:
+    """Normalise a token value for comparison across cookie/body encodings.
+
+    Real-world frameworks frequently URL-encode the cookie copy of a token
+    while sending it raw in the body (or vice versa), so a naive ``==`` would
+    miss a genuine double-submit pair. Unquoting + stripping makes the two
+    halves comparable."""
+    return unquote(value or "").strip()
+
+
 class TokenAnalyser:
     def __init__(self) -> None:
         self.postfix_regex = r'<input.*?name=[\'"]%s[\'"].*?value=[\'"](.+?)[\'"]'
 
-    def detectTokens(self, response: requests.Response, passive: bool = False) -> bool:
+    def detectTokens(self, response: requests.Response, passive: bool = False,
+                     sent_params: dict | None = None, sent_method: str = "POST") -> bool:
         """
         Checks whether Anti-CSRF Tokens are present in the request/response.
+
+        When ``sent_params`` is provided, request-side detection inspects the
+        parameters WE actually submitted (authoritative and redirect-proof),
+        instead of reverse-parsing ``response.request`` — which a 3xx replaces
+        with the final, body-less request.
         """
         logger = logging.getLogger("TokenDetector")
         found = False
@@ -67,52 +83,97 @@ class TokenAnalyser:
             return found
 
         try:
-            logger.debug("Searching for Anti-CSRF Token in Request URL...")
-            parsed_uri = urlparse(response.url)
-            if parsed_uri.query:
-                con = parsed_uri.query.split("&")
-                for c in con:
-                    if "=" not in c:
-                        continue
-                    param_name, param_value = c.split("=", 1)
+            if sent_params is not None:
+                # Authoritative path: inspect the request WE actually built and
+                # sent. Redirect-proof — no need to reverse-parse the response's
+                # (post-redirect) request.
+                part = (TokenDiscoveryPartEnum.REQUEST_QUERY
+                        if sent_method.upper() == "GET"
+                        else TokenDiscoveryPartEnum.REQUEST_BODY)
+                logger.debug("Searching for Anti-CSRF Token in the submitted parameters...")
+                for param_name, param_value in sent_params.items():
                     for name in COMMON_CSRF_NAMES:
                         if _is_csrf_name_match(name, param_name):
-                            logger.info(f"Anti-CSRF Query Parameter: {param_name}={param_value}")
+                            logger.info(f"Anti-CSRF Parameter ({part.value}): {param_name}={param_value}")
                             discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
                                 name=param_name,
-                                token=param_value,
+                                token=str(param_value),
                                 url=response.url,
                                 mode=TokenDiscoveryModeEnum.ACTIVE,
-                                discovery_part=TokenDiscoveryPartEnum.REQUEST_QUERY
+                                discovery_part=part,
                             ))
                             found = True
                             break
+                    if found:
+                        break
+            else:
+                # Fallback: reverse-parse the (redirect-aware, same-origin)
+                # request chain when the caller didn't tell us what it sent.
+                request_chain = [r.request for r in response.history] + [response.request]
+                origin_netloc = urlparse(request_chain[0].url).netloc
+                request_chain = [req for req in request_chain
+                                 if urlparse(req.url).netloc == origin_netloc]
 
-            if not found and response.request.body:
-                logger.debug("Searching for Anti-CSRF Token in Request Body...")
-                req_body = str(response.request.body)
-                if req_body:
-                    params = req_body.split("&")
-                    for param in params:
-                        if "=" not in param:
+                logger.debug("Searching for Anti-CSRF Token in Request URL...")
+                for req in request_chain:
+                    req_url = str(req.url)
+                    parsed_uri = urlparse(req_url)
+                    if not parsed_uri.query:
+                        continue
+                    for c in parsed_uri.query.split("&"):
+                        if "=" not in c:
                             continue
-                        param_name, param_value = param.split("=", 1)
+                        param_name, param_value = c.split("=", 1)
                         for name in COMMON_CSRF_NAMES:
                             if _is_csrf_name_match(name, param_name):
-                                logger.info(f"Anti-CSRF Request Body Parameter: {param_name}={param_value}")
+                                logger.info(f"Anti-CSRF Query Parameter: {param_name}={param_value}")
                                 discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
                                     name=param_name,
                                     token=param_value,
-                                    url=response.url,
+                                    url=req_url,
                                     mode=TokenDiscoveryModeEnum.ACTIVE,
-                                    discovery_part=TokenDiscoveryPartEnum.REQUEST_BODY
+                                    discovery_part=TokenDiscoveryPartEnum.REQUEST_QUERY
                                 ))
                                 found = True
                                 break
+                        if found:
+                            break
+                    if found:
+                        break
+
+                if not found:
+                    logger.debug("Searching for Anti-CSRF Token in Request Body...")
+                    for req in request_chain:
+                        if not req.body:
+                            continue
+                        req_url = str(req.url)
+                        req_body = str(req.body)
+                        for param in req_body.split("&"):
+                            if "=" not in param:
+                                continue
+                            param_name, param_value = param.split("=", 1)
+                            for name in COMMON_CSRF_NAMES:
+                                if _is_csrf_name_match(name, param_name):
+                                    logger.info(f"Anti-CSRF Request Body Parameter: {param_name}={param_value}")
+                                    discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
+                                        name=param_name,
+                                        token=param_value,
+                                        url=req_url,
+                                        mode=TokenDiscoveryModeEnum.ACTIVE,
+                                        discovery_part=TokenDiscoveryPartEnum.REQUEST_BODY
+                                    ))
+                                    found = True
+                                    break
+                            if found:
+                                break
+                        if found:
+                            break
 
             if not found:
                 logger.debug("Searching for Anti-CSRF Token in Response Headers...")
                 for key, value in response.headers.items():
+                    if key.lower() == "set-cookie":
+                        continue
                     for name in COMMON_CSRF_HEADERS:
                         if name.lower() in key.lower():
                             logger.info(f"Anti-CSRF Token Header: {key}={value}")
@@ -129,46 +190,13 @@ class TokenAnalyser:
                     if found:
                         break
 
-                    if "set-cookie" in key.lower():
-                        cookie_values = value.split(",")
-                        for cookie_val in cookie_values:
-                            if "=" not in cookie_val:
-                                continue
-                            cookie_name, cookie_value = cookie_val.split("=", 1)
-                            for name in COMMON_CSRF_NAMES:
-                                if _is_csrf_name_match(name, cookie_name.strip()):
-                                    logger.info(f"Anti-CSRF Token Cookie: {cookie_name.strip()}={cookie_value.strip()}")
-                                    found = True
-                                    discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
-                                        name=cookie_name.strip(),
-                                        token=cookie_value.strip(),
-                                        url=response.url,
-                                        mode=TokenDiscoveryModeEnum.ACTIVE,
-                                        discovery_part=TokenDiscoveryPartEnum.COOKIE
-                                    ))
-                                    break
-
-            if not found:
-                logger.debug("Searching for Anti-CSRF Token in Request Cookies...")
-                for key, value in response.request.headers.items():
-                    if key.lower() == "cookie":
-                        for name in COMMON_CSRF_HEADERS:
-                            if name.lower() in value.lower():
-                                cookie_values = value.split(",")
-                                for cookie_val in cookie_values:
-                                    if "=" not in cookie_val:
-                                        continue
-                                    cookie_name, cookie_value = cookie_val.split("=", 1)
-                                    logger.info(f"Anti-CSRF Token Cookie: {cookie_name.strip()}")
-                                    found = True
-                                    discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
-                                        name=cookie_name.strip(),
-                                        token=cookie_value.strip(),
-                                        url=response.url,
-                                        mode=TokenDiscoveryModeEnum.ACTIVE,
-                                        discovery_part=TokenDiscoveryPartEnum.COOKIE
-                                    ))
-                                    break
+            # Cookie-borne tokens are recorded unconditionally (in addition to
+            # any body/query token), because the double-submit pattern requires
+            # observing the SAME token in both the body and a cookie. Gating
+            # this behind "if not found" used to make body and cookie tokens
+            # mutually exclusive, so T6 could never see the cookie half.
+            if self._detect_cookie_tokens(response):
+                found = True
 
         except Exception as e:
             logger.error("Request Parsing Exception!")
@@ -180,6 +208,78 @@ class TokenAnalyser:
         logger.warning(f"No Anti-CSRF Token found in request: {response.url}")
         logger.info("Endpoint seems VULNERABLE to POST-Based Request Forgery")
         return False
+
+    def _detect_cookie_tokens(self, response: requests.Response) -> bool:
+        """Record anti-CSRF tokens carried in cookies.
+
+        Reads from proper cookie jars (the response's own jar plus the
+        persistent session jar) rather than string-splitting the Set-Cookie
+        header, which is unreliable in the wild: real Set-Cookie values contain
+        commas (in Expires) and libraries fold multiple cookies into one
+        header. The session jar is consulted too because the CSRF cookie is
+        commonly issued on an earlier page-load GET, not on the request being
+        analysed.
+
+        A cookie is treated as a token if either its name matches a known
+        anti-CSRF name, or its (normalised) value mirrors a token already
+        discovered in the body/query — the latter catches double-submit cookies
+        with unconventional names. Returns True if any cookie token was found.
+        """
+        logger = logging.getLogger("TokenDetector")
+        found = False
+
+        candidates: dict[str, str] = {}
+        try:
+            for cookie in response.cookies:
+                if cookie.value is not None:
+                    candidates[cookie.name] = cookie.value
+        except Exception:
+            pass
+        try:
+            for cookie in SESSION.cookies:
+                if cookie.value is not None:
+                    candidates.setdefault(cookie.name, cookie.value)
+        except Exception:
+            pass
+
+        if not candidates:
+            return False
+
+        body_values = {
+            _norm_token(t.token)
+            for t in discovered.ANTI_CSRF_TOKENS
+            if t.token and t.discovery_part in (
+                TokenDiscoveryPartEnum.REQUEST_BODY,
+                TokenDiscoveryPartEnum.REQUEST_QUERY,
+            )
+        }
+
+        for cookie_name, cookie_value in candidates.items():
+            name_match = any(_is_csrf_name_match(name, cookie_name) for name in COMMON_CSRF_NAMES)
+            value_match = bool(body_values) and _norm_token(cookie_value) in body_values
+            if not (name_match or value_match):
+                continue
+
+            already = any(
+                t.discovery_part == TokenDiscoveryPartEnum.COOKIE
+                and t.name == cookie_name
+                and t.token == cookie_value
+                for t in discovered.ANTI_CSRF_TOKENS
+            )
+            if already:
+                continue
+
+            logger.info(f"Anti-CSRF Token Cookie: {cookie_name}={cookie_value}")
+            discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
+                name=cookie_name,
+                token=cookie_value,
+                url=response.url,
+                mode=TokenDiscoveryModeEnum.ACTIVE,
+                discovery_part=TokenDiscoveryPartEnum.COOKIE
+            ))
+            found = True
+
+        return found
 
     # ----------------------------------------------------------------
     # T2: Validation depends on request method (PortSwigger Lab 2)
@@ -203,11 +303,11 @@ class TokenAnalyser:
         if differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
             alt = "POST" if method.upper() == "GET" else "GET"
             logger.warning(f"[T2] VULNERABLE: Server accepted {alt} method bypass.")
-            VulnLogger(url, f"CSRF token validation bypassed via {alt} method switch.")
+            VulnLogger(url, f"CSRF token validation bypassed via {alt} method switch.", test_id="T2")
             return True
 
         logger.info("[T2] Method switch bypass failed. Server validates across methods.")
-        NovulLogger(url, "CSRF token validated regardless of request method.")
+        NovulLogger(url, "CSRF token validated regardless of request method.", test_id="T2")
         return False
 
     # ----------------------------------------------------------------
@@ -258,7 +358,7 @@ class TokenAnalyser:
 
                 if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
                     logger.warning(f"[T3] VULNERABLE: Server accepted request without token '{token.name}'.")
-                    VulnLogger(url, f"CSRF token '{token.name}' can be omitted entirely.")
+                    VulnLogger(url, f"CSRF token '{token.name}' can be omitted entirely.", test_id="T3")
                     return True
 
             elif token.discovery_part == TokenDiscoveryPartEnum.COOKIE:
@@ -280,11 +380,11 @@ class TokenAnalyser:
 
                 if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
                     logger.warning(f"[T3] VULNERABLE: Server accepted request without cookie token '{token.name}'.")
-                    VulnLogger(url, f"CSRF cookie token '{token.name}' can be omitted entirely.")
+                    VulnLogger(url, f"CSRF cookie token '{token.name}' can be omitted entirely.", test_id="T3")
                     return True
 
         logger.info("[T3] Token removal bypass failed.")
-        NovulLogger(url, "CSRF token presence is required by the server.")
+        NovulLogger(url, "CSRF token presence is required by the server.", test_id="T3")
         return False
 
     # ----------------------------------------------------------------
@@ -335,7 +435,7 @@ class TokenAnalyser:
 
             if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
                 logger.warning(f"[T7] VULNERABLE: Server accepted empty token value for '{token.name}'.")
-                VulnLogger(url, f"CSRF token '{token.name}' accepts empty value.")
+                VulnLogger(url, f"CSRF token '{token.name}' accepts empty value.", test_id="T7")
                 return True
 
         logger.info("[T7] Empty token bypass failed.")
@@ -360,14 +460,21 @@ class TokenAnalyser:
         for token in discovered.ANTI_CSRF_TOKENS:
             override_params.pop(token.name, None)
 
-        # Test 1: GET request with _method=POST in query string
-        override_params["_method"] = "POST"
-        r = requestMaker(url, method="GET", params=override_params)
-        if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
-            logger.warning("[M1] VULNERABLE: Server accepted GET with _method=POST override.")
-            VulnLogger(url, "CSRF bypass via _method=POST on GET request.")
-            passed.add("M1")
-        override_params.pop("_method")
+        # Test 1: GET request with _method=POST in query string.
+        # Only meaningful if a plain GET (no _method) fails — otherwise the
+        # server simply accepts GET and _method override isn't what enables it.
+        plain_get = requestMaker(url, method="GET", params=override_params)
+        plain_get_passes = (plain_get and
+                            differ.benchmarkPassed(base_benchmark, plain_get.text, plain_get.status_code))
+
+        if not plain_get_passes:
+            override_params["_method"] = "POST"
+            r = requestMaker(url, method="GET", params=override_params)
+            if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
+                logger.warning("[M1] VULNERABLE: Server accepted GET with _method=POST override.")
+                VulnLogger(url, "CSRF bypass via _method=POST on GET request.", test_id="M1")
+                passed.add("M1")
+            override_params.pop("_method", None)
 
         # Test 2: POST with X-HTTP-Method-Override header set to GET
         # Only meaningful if POST-without-token alone fails (otherwise it's T3)
@@ -381,9 +488,16 @@ class TokenAnalyser:
                 override_headers[header_name] = "GET"
                 r = requestMaker(url, method="POST", data=override_params, headers=override_headers)
                 if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
-                    logger.warning(f"[M2] VULNERABLE: Server accepted {header_name}: GET override.")
-                    VulnLogger(url, f"CSRF bypass via {header_name}: GET header.")
-                    passed.add("M2")
+                    # The server accepts the override header, but a browser can
+                    # only send this non-safelisted header cross-site if CORS
+                    # permits a credentialed request carrying it. Otherwise it's
+                    # server-side only (not browser-exploitable as CSRF).
+                    if cors_allows_credentialed_header(url, "POST", header_name):
+                        logger.warning(f"[M2] VULNERABLE: Server accepted {header_name}: GET override (CORS permits a credentialed cross-site request).")
+                        VulnLogger(url, f"CSRF bypass via {header_name}: GET header (permissive CORS allows the cross-site preflight).", test_id="M2")
+                        passed.add("M2")
+                    else:
+                        logger.info(f"[M2] Server accepts {header_name} override, but CORS does not permit a credentialed cross-site request with it — server-side only, not browser-exploitable.")
                 override_headers.pop(header_name)
 
         if not passed:
@@ -427,7 +541,7 @@ class TokenAnalyser:
                              params=params if method.lower() == "get" else None, headers=test_headers)
             if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
                 logger.warning(f"[T8] VULNERABLE: Server accepted request without '{token.name}' header.")
-                VulnLogger(url, f"CSRF header token '{token.name}' can be omitted.")
+                VulnLogger(url, f"CSRF header token '{token.name}' can be omitted.", test_id="T8")
                 bypassed = True
 
             # Test 2: Replace with same-length random string
@@ -439,7 +553,7 @@ class TokenAnalyser:
                              params=params if method.lower() == "get" else None, headers=test_headers)
             if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
                 logger.warning(f"[T8] VULNERABLE: Server accepted forged '{token.name}' header value.")
-                VulnLogger(url, f"CSRF header token '{token.name}' accepts arbitrary values.")
+                VulnLogger(url, f"CSRF header token '{token.name}' accepts arbitrary values.", test_id="T8")
                 bypassed = True
 
         if not bypassed:
@@ -485,12 +599,12 @@ class TokenAnalyser:
             )
 
             if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
-                logger.warning(f"[T4] VULNERABLE: Server accepted token from a different session.")
-                VulnLogger(url, "CSRF token is not tied to user session (global token pool).")
+                logger.warning("[T4] VULNERABLE: Server accepted token from a different session.")
+                VulnLogger(url, "CSRF token is not tied to user session (global token pool).", test_id="T4")
                 return True
 
         logger.info("[T4] Cross-session token replay failed.")
-        NovulLogger(url, "CSRF token is tied to user session.")
+        NovulLogger(url, "CSRF token is tied to user session.", test_id="T4")
         return False
 
     # ----------------------------------------------------------------
@@ -512,7 +626,7 @@ class TokenAnalyser:
 
         for bt in body_tokens:
             for ct in cookie_tokens:
-                if bt.token == ct.token or bt.name.lower() == ct.name.lower():
+                if _norm_token(bt.token) == _norm_token(ct.token) or bt.name.lower() == ct.name.lower():
                     logger.info(f"[T6] Double-submit pattern detected: body='{bt.name}', cookie='{ct.name}'")
 
                     forged_value = "xsrfprobe_" + "".join(random.choices(string.ascii_lowercase, k=16))
@@ -537,8 +651,8 @@ class TokenAnalyser:
                         continue
 
                     if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
-                        logger.warning("[T6] VULNERABLE: Server only checks cookie==body equality (double submit).")
-                        VulnLogger(url, "CSRF double-submit cookie bypass: attacker can set both cookie and body to same arbitrary value.")
+                        logger.warning("[T6] VULNERABLE: Server only checks cookie==body equality (naive double submit, no session binding).")
+                        VulnLogger(url, "Naive double-submit cookie: server only verifies cookie==body with no session/crypto binding. Exploitable IF the attacker can write the CSRF cookie (subdomain cookie-tossing, a cookie-injection gadget, or HTTP MITM). Not exploitable from an unrelated cross-site origin alone.", test_id="T6")
                         return True
 
         logger.info("[T6] Double-submit cookie bypass not applicable or failed.")
@@ -607,8 +721,8 @@ class TokenAnalyser:
                 continue
 
             if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
-                logger.warning("[T5] VULNERABLE: CSRF token is tied to non-session cookie.")
-                VulnLogger(url, "CSRF token tied to non-session cookie. Attacker can supply own token+csrfKey pair.")
+                logger.warning("[T5] VULNERABLE: CSRF token is tied to a non-session cookie.")
+                VulnLogger(url, "CSRF token tied to a non-session cookie (e.g. csrfKey) rather than the session. Attacker can supply their own valid token+cookie pair. Exploitable IF the attacker can write that cookie (subdomain cookie-tossing, a cookie-injection gadget, or HTTP MITM).", test_id="T5")
                 return True
 
         logger.info("[T5] Non-session cookie bypass not applicable or failed.")

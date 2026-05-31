@@ -35,6 +35,9 @@ class BenchmarkResult(BaseModel):
     base_benchmark: list[str]
     status_code: int
     headers: dict
+    # False when a plain page load is indistinguishable from a successful
+    # submission (e.g. SPA shells) — body-diff-based bypass tests are unreliable.
+    discriminative: bool = True
 
 
 class VulnerabilityResult(BaseModel):
@@ -42,8 +45,14 @@ class VulnerabilityResult(BaseModel):
     vuln_type: str
     description: str
     severity: SeverityEnum = SeverityEnum.MEDIUM
-    poc_paths: list[str] = []
     details: dict = {}
+
+
+class PocArtifact(BaseModel):
+    action: str
+    method: str = "POST"
+    bypasses: list[str] = []
+    paths: list[str] = []
 
 
 class ScanReport(BaseModel):
@@ -52,5 +61,6 @@ class ScanReport(BaseModel):
     urls_scanned: int = 0
     forms_tested: int = 0
     vulnerabilities: list[VulnerabilityResult] = []
+    pocs: list[PocArtifact] = []
     tokens_discovered: list[DiscoveredToken] = []
     strengths: list[str] = []

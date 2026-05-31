@@ -57,15 +57,15 @@ class CookieAnalyzer:
         has_protection = False
         for cookie in samesite_cookies:
             if search(r"SameSite=None", cookie, I):
-                logger.warning("Cookie with SameSite=None detected (offers no CSRF protection)")
-                VulnLogger(url, "Cookie with SameSite=None detected (offers no CSRF protection)")
+                logger.warning("[C1] Cookie with SameSite=None detected (offers no CSRF protection)")
+                VulnLogger(url, "Cookie with SameSite=None detected (offers no CSRF protection)", test_id="C1")
             elif search(r"SameSite=Lax", cookie, I):
-                logger.info("Cookie with SameSite=Lax detected (blocks cross-site POST)")
-                NovulLogger(url, "Cookie with SameSite=Lax detected (blocks cross-site POST)")
+                logger.info("[C1] Cookie with SameSite=Lax detected (blocks cross-site POST)")
+                NovulLogger(url, "Cookie with SameSite=Lax detected (blocks cross-site POST)", test_id="C1")
                 has_protection = True
             elif search(r"SameSite=Strict", cookie, I):
-                logger.info("Cookie with SameSite=Strict detected (blocks all cross-site requests)")
-                NovulLogger(url, "Cookie with SameSite=Strict detected")
+                logger.info("[C1] Cookie with SameSite=Strict detected (blocks all cross-site requests)")
+                NovulLogger(url, "Cookie with SameSite=Strict detected", test_id="C1")
                 has_protection = True
 
         return has_protection

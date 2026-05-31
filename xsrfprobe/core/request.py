@@ -9,6 +9,7 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
+import re
 import time
 import logging
 import requests
@@ -21,12 +22,22 @@ from xsrfprobe.core.logger import ErrorLogger
 
 SESSION = requests.Session()
 
+_INPUT_TAG_RE = re.compile(r"<input\b[^>]*>", re.I)
+_ATTR_NAME_RE = re.compile(r"\bname=['\"]([^'\"]+)['\"]", re.I)
+_ATTR_VALUE_RE = re.compile(r"\bvalue=['\"]([^'\"]*)['\"]", re.I)
+
 _default_headers: dict | None = None
 _session_cookies_initialized: bool = False
 
+# User-supplied cookies are "pinned": re-asserted on every request so a server
+# Set-Cookie (or an isolated session) can never overwrite the value the user
+# provided for the lifetime of the scan.
+_PINNED_COOKIES: dict[str, str] = {}
+_PINNED_DOMAIN: str = ""
+
 def _init_session_cookies() -> None:
-    """Inject user-supplied cookies into the SESSION jar (once)."""
-    global _session_cookies_initialized
+    """Parse user-supplied cookies once and pin them onto the SESSION jar."""
+    global _session_cookies_initialized, _PINNED_DOMAIN
     if _session_cookies_initialized:
         return
     _session_cookies_initialized = True
@@ -35,14 +46,28 @@ def _init_session_cookies() -> None:
         return
 
     parsed_uri = urlparse(config.SITE_URL)
-    domain = parsed_uri.hostname or ""
+    _PINNED_DOMAIN = parsed_uri.hostname or ""
 
     for raw in config.COOKIE_VALUE:
         raw = raw.strip()
         if "=" not in raw:
             continue
         name, value = raw.split("=", 1)
-        SESSION.cookies.set(name.strip(), value.strip(), domain=domain, path="/")
+        _PINNED_COOKIES[name.strip()] = value.strip()
+
+    _pin_user_cookies(SESSION)
+
+
+def _pin_user_cookies(session: requests.Session) -> None:
+    """(Re-)assert the user-supplied cookies on the given session jar so they
+    always retain the user's value regardless of any server-side rotation."""
+    if not _PINNED_COOKIES:
+        return
+    for name, value in _PINNED_COOKIES.items():
+        try:
+            session.cookies.set(name, value, domain=_PINNED_DOMAIN, path="/")
+        except Exception:
+            pass
 
 
 def _build_default_headers() -> dict:
@@ -70,6 +95,42 @@ def _build_default_headers() -> dict:
     _default_headers = headers
     return _default_headers
 
+
+def cors_allows_credentialed_header(url: str, method: str, header_name: str) -> bool:
+    """Probe whether the server's CORS policy would allow a CREDENTIALED
+    cross-origin request (from an attacker origin) carrying ``header_name``.
+
+    This is the precondition for a custom-header CSRF bypass (e.g. M2's
+    X-HTTP-Method-Override, or T8's custom token header) to actually work in a
+    victim's browser: setting a non-safelisted header triggers a CORS preflight,
+    and the request only proceeds with cookies if the server returns
+    ``Access-Control-Allow-Origin: <attacker-origin>`` (NOT ``*`` — that's
+    invalid with credentials), ``Access-Control-Allow-Credentials: true`` and an
+    ``Access-Control-Allow-Headers`` that lists the header. Without all three the
+    browser blocks it, so the bypass is server-side only.
+    """
+    logger = logging.getLogger("CORSProbe")
+    attacker_origin = "https://xsrfprobe-cors-probe.example"
+    headers = _build_default_headers().copy()
+    headers["Origin"] = attacker_origin
+    headers["Access-Control-Request-Method"] = method.upper()
+    headers["Access-Control-Request-Headers"] = header_name.lower()
+
+    r = requestMaker(url, method="OPTIONS", headers=headers)
+    if r is None:
+        return False
+
+    h = {k.lower(): v for k, v in r.headers.items()}
+    acao = h.get("access-control-allow-origin", "").strip()
+    acac = h.get("access-control-allow-credentials", "").strip().lower()
+    acah = h.get("access-control-allow-headers", "").lower()
+
+    allowed = (acao == attacker_origin and acac == "true"
+               and (header_name.lower() in acah or acah.strip() == "*"))
+    logger.debug("[CORS] %s | ACAO=%r ACAC=%r ACAH=%r | credentialed '%s' allowed=%s",
+                 url, acao, acac, acah, header_name, allowed)
+    return allowed
+
 def getRequestRaw(response: requests.Response):
     """
     This function is intended to return the raw response of the request.
@@ -91,6 +152,59 @@ def getResponseRaw(response: requests.Response):
     raw_response += f"\n{response.text}"
     return raw_response
 
+def _harvest_tokens_passively(resp: requests.Response) -> None:
+    """Record distinct anti-CSRF token samples from any response flowing through
+    requestMaker, so post-scan predictability analysis has enough independently
+    generated samples. Samples go into the analysis-only ``TOKEN_SAMPLES`` pool
+    (never ``ANTI_CSRF_TOKENS``) so the active bypass tests are unaffected. This
+    function never issues requests and swallows its own errors."""
+    if not getattr(config, "TOKEN_CHECKS", True):
+        return
+    try:
+        from xsrfprobe.files import discovered
+        from xsrfprobe.core.schema import (
+            DiscoveredToken, TokenDiscoveryModeEnum, TokenDiscoveryPartEnum,
+        )
+        from xsrfprobe.files.paramlist import COMMON_CSRF_NAMES
+        from xsrfprobe.modules.Token import _is_csrf_name_match
+    except Exception:
+        return
+
+    def _is_token_name(field_name: str) -> bool:
+        return any(_is_csrf_name_match(n, field_name) for n in COMMON_CSRF_NAMES)
+
+    def _record(name: str, value: str, part) -> None:
+        if not value:
+            return
+        for s in discovered.TOKEN_SAMPLES:
+            if s.name == name and s.token == value and s.discovery_part == part:
+                return
+        discovered.TOKEN_SAMPLES.append(DiscoveredToken(
+            name=name, token=value, url=getattr(resp, "url", "") or "",
+            mode=TokenDiscoveryModeEnum.PASSIVE, discovery_part=part,
+        ))
+
+    # 1) Hidden form tokens in the response body.
+    try:
+        body = resp.text or ""
+    except Exception:
+        body = ""
+    if body:
+        for tag in _INPUT_TAG_RE.findall(body):
+            nm = _ATTR_NAME_RE.search(tag)
+            vm = _ATTR_VALUE_RE.search(tag)
+            if nm and vm and _is_token_name(nm.group(1)):
+                _record(nm.group(1), vm.group(1), TokenDiscoveryPartEnum.REQUEST_BODY)
+
+    # 2) Token-bearing cookies set on this response.
+    try:
+        for cookie in resp.cookies:
+            if cookie.value and _is_token_name(cookie.name):
+                _record(cookie.name, cookie.value, TokenDiscoveryPartEnum.COOKIE)
+    except Exception:
+        pass
+
+
 def requestMaker(url: str, method: str="GET", session: requests.Session=SESSION, params: Any | None=None, data: Any | None=None, headers: dict | None=None) -> requests.Response | None:
     """
     This function is intended to make requests to the target URL.
@@ -98,6 +212,11 @@ def requestMaker(url: str, method: str="GET", session: requests.Session=SESSION,
     logger = logging.getLogger("requestMaker")
     if config.DELAY_VALUE > 0:
         time.sleep(config.DELAY_VALUE)
+
+    # Ensure user-supplied cookies are loaded and re-pinned on this session
+    # (any session, including isolated ones) so they persist for the whole scan.
+    _init_session_cookies()
+    _pin_user_cookies(session)
 
     if headers is None:
         headers = _build_default_headers()
@@ -120,6 +239,8 @@ def requestMaker(url: str, method: str="GET", session: requests.Session=SESSION,
         logger.debug(f"Request made to {url} with method: {method}")
         logger.debug(f"\nRequest Raw: \n{getRequestRaw(resp)}\n")
         logger.debug(f"\nResponse Raw: \n{getResponseRaw(resp)}\n")
+
+        _harvest_tokens_passively(resp)
 
         return resp
 

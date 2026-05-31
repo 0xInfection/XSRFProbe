@@ -32,41 +32,54 @@ class DiffEngine:
         cleaned_text = self.cleaner_regex.sub("", text)
         return cleaned_text.split()
 
-    def diffHeaders(self, headers: tuple[dict, dict]) -> tuple[set, set, dict, set]:
-        """
-        Compare two sets of headers and return the common headers.
-        """
-        headersx, headersy = headers
-        keys1 = set(headersx.keys())
-        keys2 = set(headersy.keys())
-        added_headers = keys2 - keys1
-        removed_headers = keys1 - keys2
-        common_headers = keys1 & keys2
+    def _commonTokens(self, a: list[str], b: list[str]) -> list[str]:
+        """Return the tokens of ``a`` that also appear (in order) in ``b``."""
+        matcher = SequenceMatcher(None, a, b)
+        common: list[str] = []
+        for block in matcher.get_matching_blocks():
+            if block.size:
+                common.extend(a[block.a:block.a + block.size])
+        return common
 
-        changed_headers = {key: (headersx[key], headersy[key]) for key in common_headers if headersx[key] != headersy[key]}
-        return added_headers, removed_headers, changed_headers, common_headers
-
-    def prepareBenchmarkResponse(self, response_bodies: tuple[str, str], statuses: tuple[int, int], headers: tuple) -> BenchmarkResult:
+    def prepareBenchmarkResponse(self, response_bodies: list[str], statuses: list[int], headers: list[dict]) -> BenchmarkResult:
         """
-        Compare two HTML responses and return common static parts.
-        """
-        responsex, responsey = response_bodies
-        content1 = self.getCleanedResponse(responsex)
-        content2 = self.getCleanedResponse(responsey)
-        matcher = SequenceMatcher(None, content1, content2)
-        common_parts = [content1[block.a:block.a + block.size] for block in matcher.get_matching_blocks() if block.size > 0]
-        # we expect both the status codes of the base benchmark to be the same
-        statusx, statusy = statuses
-        if statusx != statusy:
-            self.logger.warning("Status codes of the base benchmark responses are different. This may lead to inaccurate results.")
+        Build a benchmark from N baseline samples of the same request.
 
-        headersx, headersy = headers
-        _, _, _, common_headers = self.diffHeaders((headersx, headersy))
+        The static template is the set of tokens that are stable across *all*
+        samples (a volatility mask): anything that varies between otherwise
+        identical requests — tokens, timestamps, nonces, counters — is dropped.
+        Using >=3 samples makes the mask far less likely to retain a value that
+        only coincidentally matched between two responses.
+        """
+        contents = [self.getCleanedResponse(b) for b in response_bodies]
+
+        # Intersect the stable tokens across every sample.
+        stable = contents[0]
+        for c in contents[1:]:
+            stable = self._commonTokens(stable, c)
+            if not stable:
+                break
+
+        # Conservative status: only trust it when ALL samples agree, otherwise
+        # mark ambiguous (0) so benchmarkPassed falls back to stricter matching.
+        if len(set(statuses)) == 1:
+            status_code = statuses[0]
+        else:
+            status_code = 0
+            self.logger.warning(
+                "Baseline status codes are not all equal (%s); benchmark status marked ambiguous.",
+                statuses,
+            )
+
+        # Headers common to every sample.
+        common_headers = set(headers[0].keys())
+        for h in headers[1:]:
+            common_headers &= set(h.keys())
 
         return BenchmarkResult(
-            base_benchmark=[item for sublist in common_parts for item in sublist],
-            status_code=statusx if statusx == statusy else 0,
-            headers={key: headersx[key] for key in common_headers},
+            base_benchmark=stable,
+            status_code=status_code,
+            headers={key: headers[0][key] for key in common_headers},
         )
 
     def performBenchmark(self, base_benchmark: BenchmarkResult, new_html: str) -> float:

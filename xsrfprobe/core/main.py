@@ -9,7 +9,7 @@ from xsrfprobe.core.inputin import inputProcessor
 from xsrfprobe.core.utils import calcLogLevel
 from xsrfprobe.core.handler import noCrawlProcessor
 from xsrfprobe.core.logger import CustomFormatter, CustomLogger
-from xsrfprobe.core.schema import ScanReport, VulnerabilityResult
+from xsrfprobe.core.schema import ScanReport, VulnerabilityResult, PocArtifact
 from xsrfprobe.files import config
 from xsrfprobe.files import discovered
 
@@ -79,12 +79,51 @@ def _generate_json_report(target_url: str, duration: float):
     logger = logging.getLogger("Engine")
 
     vulns = []
-    for vuln_msg in discovered.VULN_LIST:
+    _seen_vulns = set()
+    for rec in discovered.VULN_RECORDS:
+        rec_url = rec.get("url") or target_url
+        description = rec.get("vuln", "")
+        key = (rec_url, description)
+        if key in _seen_vulns:
+            continue
+        _seen_vulns.add(key)
+
+        details = dict(rec.get("details") or {})
+        if rec.get("test_id"):
+            details.setdefault("test_id", rec["test_id"])
+        content = (rec.get("content") or "").strip()
+        if content:
+            details.setdefault("evidence", content)
+
         vulns.append(VulnerabilityResult(
-            url=target_url,
+            url=rec_url,
             vuln_type="csrf",
-            description=str(vuln_msg),
+            description=description,
+            details=details,
         ))
+
+    pocs = [
+        PocArtifact(
+            action=rec.get("action", ""),
+            method=rec.get("method", "POST"),
+            bypasses=list(rec.get("bypasses") or []),
+            paths=list(rec.get("paths") or []),
+        )
+        for rec in discovered.POC_RECORDS
+    ]
+
+    strengths = list(dict.fromkeys(discovered.STRENGTH_LIST))
+
+    # Surface every token observed during the run: the active findings plus the
+    # passively harvested samples, deduped by (name, value, discovery_part).
+    tokens_discovered = []
+    _seen_tokens = set()
+    for tok in list(discovered.ANTI_CSRF_TOKENS) + list(discovered.TOKEN_SAMPLES):
+        key = (tok.name, tok.token, tok.discovery_part)
+        if key in _seen_tokens:
+            continue
+        _seen_tokens.add(key)
+        tokens_discovered.append(tok)
 
     report = ScanReport(
         target_url=target_url,
@@ -92,8 +131,9 @@ def _generate_json_report(target_url: str, duration: float):
         urls_scanned=len(discovered.INTERNAL_URLS),
         forms_tested=sum(len(v) for v in discovered.FORMS_TESTED.values()),
         vulnerabilities=vulns,
-        tokens_discovered=discovered.ANTI_CSRF_TOKENS,
-        strengths=discovered.STRENGTH_LIST,
+        pocs=pocs,
+        tokens_discovered=tokens_discovered,
+        strengths=strengths,
     )
 
     report_path = os.path.join(config.OUTPUT_DIR, "report.json")

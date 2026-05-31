@@ -102,7 +102,7 @@ class BrowserCSRFTests:
             final_url = result.get("final_url", "")
             if final_url and url in final_url:
                 logger.warning("[S2] VULNERABLE: Client-side redirect bypassed SameSite=Strict.")
-                VulnLogger(url, f"SameSite=Strict bypassed via redirect gadget: {gadget_url}")
+                VulnLogger(url, f"SameSite=Strict bypassed via redirect gadget: {gadget_url}", test_id="S2")
                 return True
 
         logger.info("[S2] Client-side redirect bypass failed.")
@@ -145,7 +145,7 @@ class BrowserCSRFTests:
                 r = requestMaker(test_url)
                 if r and xss_probe in r.text:
                     logger.warning("[S3] VULNERABLE: Reflected XSS found on sibling: %s", subdomain)
-                    VulnLogger(url, f"SameSite=Strict bypassable via XSS on sibling subdomain: {subdomain}")
+                    VulnLogger(url, f"SameSite=Strict bypassable via XSS on sibling subdomain: {subdomain}", test_id="S3")
                     return True
             except Exception:
                 continue
@@ -223,7 +223,7 @@ class BrowserCSRFTests:
         if has_oauth:
             logger.warning("[S4] VULNERABLE: Cookies default to Lax + OAuth flow detected.")
             logger.warning("[S4] Cross-site POST within 120s of OAuth cookie refresh bypasses SameSite=Lax.")
-            VulnLogger(url, "SameSite=Lax bypass via cookie refresh: cookies lack explicit SameSite + OAuth flow present.")
+            VulnLogger(url, "SameSite=Lax bypass via cookie refresh: cookies lack explicit SameSite + OAuth flow present.", test_id="S4")
             return True
 
         logger.info("[S4] No OAuth/SSO cookie refresh flow detected.")
