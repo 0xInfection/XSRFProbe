@@ -21,7 +21,7 @@ class FormParser:
         """
         Extracts all forms with method='POST' from the given BeautifulSoup object.
         """
-        self.logger.info("Extracting all forms with method='POST'...")
+        self.logger.debug("Extracting all forms...")
         return self.soup.findAll("form")  # type: ignore
 
     def checkBadInputs(self, form: Tag) -> bool:
@@ -130,13 +130,13 @@ class FormParser:
             self.crafted_inputs[textarea["name"]] = value
 
         # Process <select>
-        self.logger.info("Processing <select name='...'>")
+        self.logger.debug("Processing <select name='...'>")
         for select in form.findAll("select", {"name": True}):  # type: ignore
             options = select.findAll("option", value=True)
             value = options[0]["value"] if options else ""
             self.crafted_inputs[select["name"]] = value
 
-        self.logger.info("Finished parsing form inputs.")
+        self.logger.debug("Finished parsing form inputs.")
         return self.crafted_inputs
 
     def buildUrl(self, base_url: str, action_uri: str) -> str | None:
@@ -202,7 +202,7 @@ class FormParser:
         Returns:
             str: The fully resolved action URL or the base URL if no valid action is found.
         """
-        self.logger.info("Parsing URL parameters...")
+        self.logger.debug("Parsing URL parameters...")
         if action and not action.startswith("#"):
             return self.buildUrl(base_url, action)
 

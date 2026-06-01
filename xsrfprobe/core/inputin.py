@@ -14,6 +14,7 @@ import logging
 import requests
 
 from xsrfprobe.files import config
+from xsrfprobe.core.logger import PROGRESS
 from urllib.parse import urlparse
 from xsrfprobe.core import request as request_module
 from xsrfprobe.core.request import requestMaker
@@ -41,13 +42,13 @@ def inputProcessor() -> tuple[str, str]:
     endpoint = '/' if not parsed_uri.path else parsed_uri.path
     resp = None
     try:
-        logger.info(f"Testing '{endpoint}' endpoint status...")
+        logger.log(PROGRESS, "Testing '%s' endpoint status...", endpoint)
         resp = requestMaker(web)
         if resp is None:
             logger.critical("Endpoint seems to be not reachable.")
             sys.exit(1)
 
-        logger.info(f"[+] Endpoint seems to be up! Status code: {resp.status_code}")
+        logger.log(PROGRESS, "Endpoint is up! (HTTP %d)", resp.status_code)
 
         # Canonicalize to the post-redirect URL. If the target redirects (most
         # commonly http -> https), subsequent POSTs would otherwise be sent to

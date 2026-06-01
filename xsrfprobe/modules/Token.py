@@ -22,7 +22,7 @@ from xsrfprobe.core.request import requestMaker, SESSION, _build_default_headers
 from xsrfprobe.core.diff import DiffEngine
 from xsrfprobe.core.schema import DiscoveredToken, TokenDiscoveryPartEnum, TokenDiscoveryModeEnum, BenchmarkResult
 from xsrfprobe.files.paramlist import COMMON_CSRF_NAMES, COMMON_CSRF_HEADERS
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, PROGRESS, test_progress, phase_header
 
 
 def _is_csrf_name_match(csrf_name: str, param_name: str) -> bool:
@@ -287,7 +287,7 @@ class TokenAnalyser:
     def bypassTokenValidationRequestMethod(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
         """Switch GET<->POST to bypass method-conditioned CSRF validation."""
         logger = logging.getLogger("RequestMethodBypass")
-        logger.info("[T2] Trying request method switch bypass...")
+        logger.debug("[T2] Trying request method switch bypass...")
         differ = DiffEngine()
 
         if method.lower() == "get":
@@ -306,7 +306,7 @@ class TokenAnalyser:
             VulnLogger(url, f"CSRF token validation bypassed via {alt} method switch.", test_id="T2")
             return True
 
-        logger.info("[T2] Method switch bypass failed. Server validates across methods.")
+        logger.debug("[T2] Method switch bypass failed. Server validates across methods.")
         NovulLogger(url, "CSRF token validated regardless of request method.", test_id="T2")
         return False
 
@@ -316,7 +316,7 @@ class TokenAnalyser:
     def bypassTokenValidationPresence(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
         """Remove the CSRF token parameter entirely to test presence-based validation."""
         logger = logging.getLogger("TokenPresenceBypass")
-        logger.info("[T3] Trying token removal bypass...")
+        logger.debug("[T3] Trying token removal bypass...")
         differ = DiffEngine()
 
         cookie_token_names = {t.name.lower() for t in discovered.ANTI_CSRF_TOKENS
@@ -383,7 +383,7 @@ class TokenAnalyser:
                     VulnLogger(url, f"CSRF cookie token '{token.name}' can be omitted entirely.", test_id="T3")
                     return True
 
-        logger.info("[T3] Token removal bypass failed.")
+        logger.debug("[T3] Token removal bypass failed.")
         NovulLogger(url, "CSRF token presence is required by the server.", test_id="T3")
         return False
 
@@ -393,7 +393,7 @@ class TokenAnalyser:
     def bypassEmptyTokenValue(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
         """Submit the request with the token parameter present but set to an empty string."""
         logger = logging.getLogger("EmptyTokenBypass")
-        logger.info("[T7] Trying empty token value bypass...")
+        logger.debug("[T7] Trying empty token value bypass...")
         differ = DiffEngine()
 
         cookie_token_names = {t.name.lower() for t in discovered.ANTI_CSRF_TOKENS
@@ -438,7 +438,7 @@ class TokenAnalyser:
                 VulnLogger(url, f"CSRF token '{token.name}' accepts empty value.", test_id="T7")
                 return True
 
-        logger.info("[T7] Empty token bypass failed.")
+        logger.debug("[T7] Empty token bypass failed.")
         return False
 
     # ----------------------------------------------------------------
@@ -449,7 +449,7 @@ class TokenAnalyser:
         """Test HTTP method override via _method param and X-HTTP-Method-Override headers.
         Returns set of bypass IDs that passed: 'M1' for _method param, 'M2' for override headers."""
         logger = logging.getLogger("MethodOverrideBypass")
-        logger.info("[M1/M2] Trying method override bypass...")
+        logger.debug("[M1/M2] Trying method override bypass...")
         differ = DiffEngine()
         passed = set()
 
@@ -501,7 +501,7 @@ class TokenAnalyser:
                 override_headers.pop(header_name)
 
         if not passed:
-            logger.info("[M1/M2] Method override bypass failed.")
+            logger.debug("[M1/M2] Method override bypass failed.")
 
         return passed
 
@@ -511,7 +511,7 @@ class TokenAnalyser:
     def bypassCustomHeaderToken(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
         """Strip or replace anti-CSRF tokens sent via custom HTTP headers."""
         logger = logging.getLogger("CustomHeaderBypass")
-        logger.info("[T8] Trying custom header token bypass...")
+        logger.debug("[T8] Trying custom header token bypass...")
         differ = DiffEngine()
         bypassed = False
 
@@ -557,7 +557,7 @@ class TokenAnalyser:
                 bypassed = True
 
         if not bypassed:
-            logger.info("[T8] Custom header token bypass failed.")
+            logger.debug("[T8] Custom header token bypass failed.")
 
         return bypassed
 
@@ -567,7 +567,7 @@ class TokenAnalyser:
     def bypassTokenNotTiedToSession(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
         """Obtain a token from a fresh (unauthenticated) session and replay it."""
         logger = logging.getLogger("SessionBindingBypass")
-        logger.info("[T4] Trying cross-session token replay bypass...")
+        logger.debug("[T4] Trying cross-session token replay bypass...")
         differ = DiffEngine()
 
         body_tokens = [t for t in discovered.ANTI_CSRF_TOKENS
@@ -603,7 +603,7 @@ class TokenAnalyser:
                 VulnLogger(url, "CSRF token is not tied to user session (global token pool).", test_id="T4")
                 return True
 
-        logger.info("[T4] Cross-session token replay failed.")
+        logger.debug("[T4] Cross-session token replay failed.")
         NovulLogger(url, "CSRF token is tied to user session.", test_id="T4")
         return False
 
@@ -616,7 +616,7 @@ class TokenAnalyser:
         Set both to an attacker-controlled arbitrary value.
         """
         logger = logging.getLogger("DoubleSubmitBypass")
-        logger.info("[T6] Trying double-submit cookie bypass...")
+        logger.debug("[T6] Trying double-submit cookie bypass...")
         differ = DiffEngine()
 
         body_tokens = [t for t in discovered.ANTI_CSRF_TOKENS
@@ -655,7 +655,7 @@ class TokenAnalyser:
                         VulnLogger(url, "Naive double-submit cookie: server only verifies cookie==body with no session/crypto binding. Exploitable IF the attacker can write the CSRF cookie (subdomain cookie-tossing, a cookie-injection gadget, or HTTP MITM). Not exploitable from an unrelated cross-site origin alone.", test_id="T6")
                         return True
 
-        logger.info("[T6] Double-submit cookie bypass not applicable or failed.")
+        logger.debug("[T6] Double-submit cookie bypass not applicable or failed.")
         return False
 
     # ----------------------------------------------------------------
@@ -668,7 +668,7 @@ class TokenAnalyser:
         and replay them with the victim's session cookie.
         """
         logger = logging.getLogger("NonSessionCookieBypass")
-        logger.info("[T5] Trying non-session cookie token bypass...")
+        logger.debug("[T5] Trying non-session cookie token bypass...")
         differ = DiffEngine()
 
         csrf_cookie_names = {"csrfkey", "csrf_key", "csrftoken", "csrf_token", "_csrf_cookie"}
@@ -725,48 +725,67 @@ class TokenAnalyser:
                 VulnLogger(url, "CSRF token tied to a non-session cookie (e.g. csrfKey) rather than the session. Attacker can supply their own valid token+cookie pair. Exploitable IF the attacker can write that cookie (subdomain cookie-tossing, a cookie-injection gadget, or HTTP MITM).", test_id="T5")
                 return True
 
-        logger.info("[T5] Non-session cookie bypass not applicable or failed.")
+        logger.debug("[T5] Non-session cookie bypass not applicable or failed.")
         return False
 
     # ----------------------------------------------------------------
     # Orchestrator: run all token tamper tests
     # ----------------------------------------------------------------
-    def performTokenTamperTests(self, url: str, method: str, params: dict, base_benchmark: BenchmarkResult) -> set[str]:
-        """Run all token bypass tests in sequence. Returns set of passed test IDs."""
+    def performTokenTamperTests(self, url: str, method: str, params: dict, base_benchmark: BenchmarkResult,
+                                run_method_switch: bool = True) -> set[str]:
+        """Run all token bypass tests in sequence. Returns set of passed test IDs.
+
+        ``run_method_switch`` gates only T2 (the GET<->POST method switch): it
+        keeps the token and merely changes the method, so its GET trivially
+        matches the baseline when a plain page load already looks like success
+        (e.g. a login we can't complete). The other tests tamper with the token
+        and produce a distinct rejection, so they remain reliable regardless.
+        """
         logger = logging.getLogger("TokenTamperTests")
         passed = set()
 
-        tests = [
-            ("T2", self.bypassTokenValidationRequestMethod),
-            ("T3", self.bypassTokenValidationPresence),
-            ("T7", self.bypassEmptyTokenValue),
-            ("T4", self.bypassTokenNotTiedToSession),
-            ("T5", self.bypassTokenTiedToNonSessionCookie),
-            ("T6", self.bypassDoubleSubmitCookie),
-            ("T8", self.bypassCustomHeaderToken),
+        tests = []
+        if run_method_switch:
+            tests.append(("T2", "Request method switch bypass", self.bypassTokenValidationRequestMethod))
+        else:
+            logger.log(PROGRESS, "Skipping T2 (method-switch): plain GET matches baseline.")
+        tests += [
+            ("T3", "Token removal bypass", self.bypassTokenValidationPresence),
+            ("T7", "Empty token value bypass", self.bypassEmptyTokenValue),
+            ("T4", "Cross-session token replay", self.bypassTokenNotTiedToSession),
+            ("T5", "Non-session cookie token bypass", self.bypassTokenTiedToNonSessionCookie),
+            ("T6", "Double-submit cookie bypass", self.bypassDoubleSubmitCookie),
+            ("T8", "Custom header token bypass", self.bypassCustomHeaderToken),
         ]
 
-        for name, test_fn in tests:
+        for test_id, description, test_fn in tests:
             try:
-                result = test_fn(url, base_benchmark, method, params.copy())
-                if result:
-                    passed.add(name)
-                    logger.warning(f"Token bypass succeeded: {name}")
+                with test_progress(logger, test_id, description) as tp_result:
+                    result = test_fn(url, base_benchmark, method, params.copy())
+                    if result:
+                        passed.add(test_id)
+                        tp_result["status"] = "VULNERABLE"
+                    else:
+                        tp_result["status"] = "failed"
             except Exception as e:
-                logger.error(f"Error in {name}: {e}")
+                logger.error("Error in %s: %s", test_id, e)
 
-        # M1/M2 returns a set of specific sub-test IDs
+        # --- Method Override Tests ---
+        phase_header(logger, "Method Override Tests")
         try:
-            m_results = self.bypassMethodOverride(url, base_benchmark, method, params.copy())
-            passed.update(m_results)
-            for m in m_results:
-                logger.warning(f"Token bypass succeeded: {m}")
+            with test_progress(logger, "M1/M2", "Method override bypass") as tp_result:
+                m_results = self.bypassMethodOverride(url, base_benchmark, method, params.copy())
+                passed.update(m_results)
+                if m_results:
+                    tp_result["status"] = "VULNERABLE (%s)" % ", ".join(sorted(m_results))
+                else:
+                    tp_result["status"] = "failed"
         except Exception as e:
-            logger.error(f"Error in M1/M2: {e}")
+            logger.error("Error in M1/M2: %s", e)
 
         if not passed:
-            logger.info("All token tamper tests failed. Endpoint token validation is robust.")
+            logger.log(PROGRESS, "All token tamper tests passed. Endpoint token validation is robust.")
         else:
-            logger.warning(f"{len(passed)} token tamper test(s) passed. Endpoint is VULNERABLE.")
+            logger.warning("%d token tamper test(s) succeeded. Endpoint is VULNERABLE.", len(passed))
 
         return passed

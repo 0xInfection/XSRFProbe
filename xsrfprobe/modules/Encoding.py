@@ -38,7 +38,7 @@ class Encoding:
         hash formats (with salts/prefixes) that indicate predictable generation,
         not bare hex strings which could be strong random tokens.
         """
-        self.logger.info("Detecting the encoding type of the Anti-CSRF token...")
+        self.logger.debug("Detecting the encoding type of the Anti-CSRF token...")
         for hash_type, regex in HASH_DB.items():
             if hash_type in self.EXCLUDED_PATTERNS:
                 continue
@@ -56,14 +56,14 @@ class Encoding:
         """
         This function performs the token encoding checks.
         """
-        self.logger.info("Performing Anti-CSRF token encoding checks...")
+        self.logger.debug("Performing Anti-CSRF token encoding checks...")
         for token in ANTI_CSRF_TOKENS:
             encoding = self.detectEncoding(token.token)
             if encoding:
                 self.logger.warning("Detected structured hash format: %s on token: %s" % (encoding, token.token))
                 return True
             else:
-                self.logger.info("No weak encoding pattern detected for the token.")
+                self.logger.debug("No weak encoding pattern detected for the token.")
 
-        self.logger.info("Token encoding checks completed.")
+        self.logger.debug("Token encoding checks completed.")
         return False

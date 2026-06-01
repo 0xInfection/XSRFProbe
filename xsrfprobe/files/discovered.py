@@ -35,11 +35,6 @@ ANTI_CSRF_TOKENS: list[DiscoveredToken] = []
 # analysis (entropy / forgeability), never by the bypass tests.
 TOKEN_SAMPLES: list[DiscoveredToken] = []
 
-# Generated PoC artifacts, grouped per form/action. Surfaced as a single
-# root-level "pocs" section in the JSON report (not duplicated per finding).
-# Each entry: {"action", "method", "bypasses": [...], "paths": [...]}.
-POC_RECORDS: list[dict] = []
-
 # List of all Urls that we found
 INTERNAL_URLS = []
 

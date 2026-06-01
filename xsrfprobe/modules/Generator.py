@@ -390,15 +390,25 @@ class PoCGenerator:
 
     def generate_all_variants(self, action: str, method: str, params: dict,
                               bypasses: set[str] | None = None,
-                              enctype: str = "application/x-www-form-urlencoded") -> list[str]:
-        """Generate PoC variants scoped to the form's method, enctype, and proven bypasses."""
-        paths = []
+                              enctype: str = "application/x-www-form-urlencoded") -> dict[str, list[str]]:
+        """Generate PoC variants scoped to the form's method, enctype, and proven bypasses.
+
+        Returns a mapping of ``test_id -> [poc_paths]`` so callers can attach
+        each PoC to the specific finding(s) it demonstrates.
+        """
+        poc_map: dict[str, list[str]] = {}
+
+        def _record(test_ids: set[str], path: str):
+            for tid in test_ids:
+                poc_map.setdefault(tid, []).append(path)
 
         if method.upper() == "GET":
-            paths.append(gen_get_img(action, params))
-            paths.append(gen_get_link(action, params))
-            logger.info("Generated %d PoC variant(s) for %s", len(paths), action)
-            return paths
+            all_ids = bypasses or {"D1"}
+            _record(all_ids, gen_get_img(action, params))
+            _record(all_ids, gen_get_link(action, params))
+            total = sum(len(v) for v in poc_map.values())
+            logger.info("Generated %d PoC variant(s) for %s", total, action)
+            return poc_map
 
         standard_form_bypasses = {"D1", "D2", "T3", "T7", "T4"}
         xhr_bypasses = {"T8"}
@@ -410,11 +420,8 @@ class PoCGenerator:
 
         is_multipart = (enctype == "multipart/form-data")
 
-        if bypasses & standard_form_bypasses:
-            # Use params consistent with the proven bypass: omission (D1/D2/T3)
-            # strips the token, empty-value (T7) blanks it, session-replay (T4)
-            # keeps the captured token. Never embed a stale token an attacker
-            # wouldn't possess when omission/empty is what actually works.
+        matched_standard = bypasses & standard_form_bypasses
+        if matched_standard:
             from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
             token_names = {t.name for t in ANTI_CSRF_TOKENS}
             if bypasses & {"D1", "D2", "T3"}:
@@ -425,51 +432,53 @@ class PoCGenerator:
                 form_params = params
 
             if is_multipart:
-                paths.append(gen_multipart_fetch(action, form_params))
+                _record(matched_standard, gen_multipart_fetch(action, form_params))
             else:
-                paths.append(gen_post_autosubmit(action, form_params))
-                paths.append(gen_referer_suppressed(action, form_params))
+                _record(matched_standard, gen_post_autosubmit(action, form_params))
+                _record(matched_standard, gen_referer_suppressed(action, form_params))
 
-        if bypasses & {"T2"}:
-            paths.append(gen_get_img(action, params))
+        if "T2" in bypasses:
+            _record({"T2"}, gen_get_img(action, params))
 
-        if bypasses & {"M1"}:
+        if "M1" in bypasses:
             from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
             stripped_params = {k: v for k, v in params.items()
                               if not any(t.name == k for t in ANTI_CSRF_TOKENS)}
-            paths.append(gen_method_override(action, stripped_params))
+            _record({"M1"}, gen_method_override(action, stripped_params))
 
-        if bypasses & {"M2"}:
+        if "M2" in bypasses:
             from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
             stripped_params = {k: v for k, v in params.items()
                               if not any(t.name == k for t in ANTI_CSRF_TOKENS)}
-            paths.append(gen_post_xhr_method_override(action, stripped_params))
+            _record({"M2"}, gen_post_xhr_method_override(action, stripped_params))
 
-        if bypasses & xhr_bypasses:
-            paths.append(gen_post_xhr(action, params))
+        matched_xhr = bypasses & xhr_bypasses
+        if matched_xhr:
+            _record(matched_xhr, gen_post_xhr(action, params))
 
-        if bypasses & cookie_injection_bypasses:
+        matched_cookie = bypasses & cookie_injection_bypasses
+        if matched_cookie:
             from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
             from xsrfprobe.core.schema import TokenDiscoveryPartEnum
             cookie_names = [t.name for t in ANTI_CSRF_TOKENS
                             if t.discovery_part == TokenDiscoveryPartEnum.COOKIE]
             if cookie_names:
-                # T5/T6 both require planting the CSRF cookie cross-site; a plain
-                # form cannot reproduce the bypass (cookie wouldn't match body).
-                paths.append(gen_double_submit(action, params, cookie_names))
+                _record(matched_cookie, gen_double_submit(action, params, cookie_names))
             elif is_multipart:
-                paths.append(gen_multipart_fetch(action, params))
+                _record(matched_cookie, gen_multipart_fetch(action, params))
             else:
-                paths.append(gen_post_autosubmit(action, params))
+                _record(matched_cookie, gen_post_autosubmit(action, params))
 
-        if bypasses & content_type_bypasses:
+        matched_ct = bypasses & content_type_bypasses
+        if matched_ct:
             from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
             stripped_params = {k: v for k, v in params.items()
                               if not any(t.name == k for t in ANTI_CSRF_TOKENS)}
-            paths.append(gen_content_type_bypass(action, stripped_params))
+            _record(matched_ct, gen_content_type_bypass(action, stripped_params))
 
-        if not paths:
-            paths.append(gen_post_autosubmit(action, params))
+        if not poc_map:
+            _record(bypasses or {"D1"}, gen_post_autosubmit(action, params))
 
-        logger.info("Generated %d PoC variant(s) for %s", len(paths), action)
-        return paths
+        unique_paths = len({p for paths in poc_map.values() for p in paths})
+        logger.info("Generated %d PoC variant(s) for %s", unique_paths, action)
+        return poc_map

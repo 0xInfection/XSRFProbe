@@ -17,7 +17,7 @@ from xsrfprobe.core.refresh import refresh_token_pair
 from xsrfprobe.core.diff import DiffEngine
 from xsrfprobe.core.schema import BenchmarkResult
 from xsrfprobe.files.config import HEADER_VALUES, ORIGIN_URL
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, test_progress
 
 
 class OriginAnalyser:
@@ -33,7 +33,7 @@ class OriginAnalyser:
         and cross-origin redirects).
         """
         logger = logging.getLogger("OriginNullBypass")
-        logger.info("[O1] Trying Origin: null bypass...")
+        logger.debug("[O1] Trying Origin: null bypass...")
 
         method = method.upper()
         headers = HEADER_VALUES.copy()
@@ -54,7 +54,7 @@ class OriginAnalyser:
             VulnLogger(url, "Origin validation bypassed with Origin: null.", test_id="O1")
             return True
 
-        logger.info("[O1] Origin null bypass failed.")
+        logger.debug("[O1] Origin null bypass failed.")
         NovulLogger(url, "Server rejects Origin: null.", test_id="O1")
         return False
 
@@ -64,7 +64,7 @@ class OriginAnalyser:
     def bypassOriginSubdomain(self, url: str, benchmark: BenchmarkResult, method: str, params: dict, session: requests.Session | None = None) -> bool:
         """Send Origin: http://target.com.evil.com to bypass regex-based checks."""
         logger = logging.getLogger("OriginSubdomainBypass")
-        logger.info("[O2] Trying Origin subdomain bypass...")
+        logger.debug("[O2] Trying Origin subdomain bypass...")
 
         method = method.upper()
         parsed = urlparse(url)
@@ -90,7 +90,7 @@ class OriginAnalyser:
             VulnLogger(url, f"Origin validation bypassed with subdomain trick: {attacker_origin}", test_id="O2")
             return True
 
-        logger.info("[O2] Origin subdomain bypass failed.")
+        logger.debug("[O2] Origin subdomain bypass failed.")
         return False
 
     # ----------------------------------------------------------------
@@ -99,7 +99,7 @@ class OriginAnalyser:
     def bypassOriginAbsent(self, url: str, benchmark: BenchmarkResult, method: str, params: dict, session: requests.Session | None = None) -> bool:
         """Remove Origin header entirely."""
         logger = logging.getLogger("OriginAbsentBypass")
-        logger.info("[O3] Trying Origin absent bypass...")
+        logger.debug("[O3] Trying Origin absent bypass...")
 
         method = method.upper()
         headers = HEADER_VALUES.copy()
@@ -120,16 +120,29 @@ class OriginAnalyser:
             VulnLogger(url, "Origin validation bypassed by omitting the header.", test_id="O3")
             return True
 
-        logger.info("[O3] Origin absent bypass failed.")
+        logger.debug("[O3] Origin absent bypass failed.")
         NovulLogger(url, "Server requires Origin header.", test_id="O3")
         return False
 
     def performOriginBypassChecks(self, url: str, benchmark: BenchmarkResult, method: str, params: dict) -> None:
         """Run all Origin bypass checks."""
-        # Refresh the token+cookie pair once on an isolated session so every
-        # bypass attempt submits a body token that matches its cookie. This
-        # isolates the Origin header as the only variable under test.
+        logger = logging.getLogger("OriginBypass")
         params, session = refresh_token_pair(url, params)
-        self.bypassOriginNull(url, benchmark, method, params, session)
-        self.bypassOriginSubdomain(url, benchmark, method, params, session)
-        self.bypassOriginAbsent(url, benchmark, method, params, session)
+
+        with test_progress(logger, "O1", "Origin: null bypass") as tp:
+            if self.bypassOriginNull(url, benchmark, method, params, session):
+                tp["status"] = "VULNERABLE"
+            else:
+                tp["status"] = "failed"
+
+        with test_progress(logger, "O2", "Origin subdomain bypass") as tp:
+            if self.bypassOriginSubdomain(url, benchmark, method, params, session):
+                tp["status"] = "VULNERABLE"
+            else:
+                tp["status"] = "failed"
+
+        with test_progress(logger, "O3", "Origin absent bypass") as tp:
+            if self.bypassOriginAbsent(url, benchmark, method, params, session):
+                tp["status"] = "VULNERABLE"
+            else:
+                tp["status"] = "failed"

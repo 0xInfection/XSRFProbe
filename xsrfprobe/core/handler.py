@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 from xsrfprobe.core.request import requestMaker, _build_default_headers, SESSION
 from xsrfprobe.core.refresh import refresh_token_pair, _looks_like_token
 from xsrfprobe.core.diff import DiffEngine
-from xsrfprobe.core.logger import NovulLogger, VulnLogger
+from xsrfprobe.core.logger import NovulLogger, VulnLogger, PROGRESS, phase_header, test_progress
 from xsrfprobe.modules.Origin import OriginAnalyser
 from xsrfprobe.modules.Cookie import CookieAnalyzer
 from xsrfprobe.modules.Referer import RefererAnalyser
@@ -28,7 +28,7 @@ from xsrfprobe.modules.Token import TokenAnalyser
 
 from xsrfprobe.files import config
 from xsrfprobe.files.config import REFERER_ORIGIN_CHECKS, FORM_SUBMISSION, COOKIE_BASED, TOKEN_CHECKS
-from xsrfprobe.files.discovered import FORMS_TESTED, VULN_RECORDS, POC_RECORDS
+from xsrfprobe.files.discovered import FORMS_TESTED, VULN_RECORDS
 
 LOGIN_FIELD_PATTERNS = {"username", "user", "login", "email", "password", "passwd", "pass"}
 
@@ -168,7 +168,13 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
 
     token_analyzer = TokenAnalyser()
     parser = FormParser(soup)
-    for form in parser.getAllForms():
+
+    # --- Form Discovery Phase ---
+    phase_header(logger, "Form Discovery")
+    all_forms = parser.getAllForms()
+    logger.log(PROGRESS, "Found %d form(s) to analyse.", len(all_forms))
+
+    for form in all_forms:
         logger.debug("Testing the following form:")
         logger.debug("\n%s", form.prettify())
         FORMS_TESTED[url].append(form.prettify())
@@ -204,11 +210,10 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                     logger.debug("Preparing form inputs for submission...")
                     result = parser.prepareFormInputs(form)
 
-                    # Establish the benchmark from 3 successful samples. The
-                    # token+cookie pair is refreshed before each so every sample
-                    # is a valid submission — single-use tokens would otherwise
-                    # make later samples fail and poison the baseline. Per-sample
-                    # token differences are removed by the volatility mask.
+                    # --- Benchmark Phase ---
+                    phase_header(logger, "Benchmark")
+                    logger.log(PROGRESS, "Establishing success baseline for %s", action)
+
                     samples = []
                     for _ in range(3):
                         sample_params, sample_session = refresh_token_pair(url, result)
@@ -225,7 +230,10 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         logger.critical("Benchmark requests failed. Aborting form: %s", url)
                         continue
 
-                    logger.debug("Benchmarking %d form submission responses...", len(samples))
+                    logger.log(PROGRESS, "  %d baseline samples | status_code=%s | body_len=%s",
+                               len(samples),
+                               "/".join(str(r.status_code) for r in samples),
+                               "/".join(str(len(r.text or "")) for r in samples))
                     logger.debug("[Benchmark] Baseline sample statuses=%s lengths=%s for %s",
                                  [r.status_code for r in samples],
                                  [len(r.text or "") for r in samples], action)
@@ -235,84 +243,87 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         statuses=[r.status_code for r in samples],
                         headers=[dict(r.headers) for r in samples],
                     )
+                    logger.log(PROGRESS, "  Stable template: %d token(s) | similarity_threshold=%.1f%%",
+                               len(base_benchmark.base_benchmark), base_benchmark.similarity_threshold)
                     logger.debug("[Benchmark] Consolidated status=%s, template tokens=%d for %s",
                                  base_benchmark.status_code, len(base_benchmark.base_benchmark), action)
 
-                    # Discriminative-power guard via a forged-token rejection
-                    # control: submit once with a corrupted token and see whether
-                    # the server rejects it (response differs from the success
-                    # baseline). If it does, the endpoint clearly distinguishes
-                    # accepted vs rejected requests and body-diff tests are
-                    # reliable. This is sturdier than a plain-GET comparison,
-                    # which mislabels endpoints whose "success" baseline is itself
-                    # a re-rendered form (e.g. a login that failed on empty creds).
                     token_validated = _probe_token_validated(
                         url, action, action_method, result, diff, base_benchmark
                     )
+                    if token_validated is True:
+                        logger.log(PROGRESS, "  Forged-token probe: REJECTED (response diverged from baseline)")
+                    elif token_validated is False:
+                        logger.log(PROGRESS, "  Forged-token probe: ACCEPTED (response matched baseline — token not enforced)")
+                    else:
+                        logger.log(PROGRESS, "  Forged-token probe: N/A (no token field to corrupt)")
                     logger.debug("[Benchmark] Forged-token probe verdict for %s: token_validated=%s "
                                  "(True=rejected/validated, False=accepted, None=could-not-probe).",
                                  action, token_validated)
-                    base_benchmark.discriminative = True
-                    if token_validated is not True:
-                        # Either no token to forge, or the forged token was
-                        # accepted. Fall back to a plain GET to decide whether the
-                        # endpoint is genuinely non-discriminative (a page load
-                        # looks like success). Use a pristine session — requestMaker
-                        # re-pins user-supplied cookies — so the same clean cookie
-                        # context as the baseline submissions is used (no stale
-                        # SESSION cookies that could desync the comparison).
-                        neutral_session = requests.Session()
-                        neutral = requestMaker(action, method="GET", session=neutral_session)
-                        if neutral is not None:
-                            get_matches = diff.benchmarkPassed(base_benchmark, neutral.text, neutral.status_code)
-                            logger.debug("[Benchmark] GET-fallback for %s: GET status=%s len=%d | matches baseline=%s",
-                                         action, neutral.status_code, len(neutral.text or ""), get_matches)
-                            if get_matches:
-                                logger.warning("[Benchmark] Non-discriminative response for %s: cannot distinguish a successful submission from a normal page load. Skipping body-diff-based bypass tests.", action)
-                                base_benchmark.discriminative = False
-                        else:
-                            logger.debug("[Benchmark] GET-fallback request failed for %s; keeping discriminative=True.", action)
+
+                    get_matches = False
+                    neutral_session = requests.Session()
+                    neutral = requestMaker(action, method="GET", session=neutral_session)
+                    if neutral is not None:
+                        get_matches = diff.benchmarkPassed(base_benchmark, neutral.text, neutral.status_code)
+                        get_ratio = diff.performBenchmark(base_benchmark, neutral.text)
+                        logger.log(PROGRESS, "  Plain-GET probe: status=%d body_similarity=%.1f%% → %s baseline",
+                                   neutral.status_code, get_ratio,
+                                   "matches" if get_matches else "differs from")
+                        logger.debug("[Benchmark] Plain-GET probe for %s: GET status=%s len=%d | matches baseline=%s",
+                                     action, neutral.status_code, len(neutral.text or ""), get_matches)
+                    else:
+                        logger.log(PROGRESS, "  Plain-GET probe: request failed (assuming differs from baseline)")
+                        logger.debug("[Benchmark] Plain-GET probe failed for %s; assuming GET differs from baseline.", action)
+
+                    base_benchmark.discriminative = (token_validated is True) or (not get_matches)
+                    t2_reliable = not get_matches
+
+                    if base_benchmark.discriminative:
+                        logger.log(PROGRESS, "  Verdict: DISCRIMINATIVE (forged_rejected=%s, get_differs=%s)",
+                                   token_validated is True, not get_matches)
+                    else:
+                        logger.log(PROGRESS, "  Verdict: NON-DISCRIMINATIVE (forged_rejected=%s, get_differs=%s) — skipping diff-based tests",
+                                   token_validated is True, not get_matches)
+                        logger.warning("[Benchmark] Non-discriminative response for %s: a forged token and a plain GET both match the success baseline, so a successful submission cannot be told apart from a page load. Skipping body-diff-based bypass tests.", action)
+
+                    if not t2_reliable and base_benchmark.discriminative:
+                        logger.log(PROGRESS, "  Note: T2 skipped (plain GET ≥ threshold, method-switch indistinguishable)")
 
                     bypasses_found = set()
                     token_present = False
-                    # Indices of the findings the generated PoCs actually
-                    # demonstrate (token-tamper / D1 / D2 / M4). SameSite,
-                    # Referer and Origin findings are deliberately NOT included:
-                    # we don't generate dedicated PoCs for them, so stamping the
-                    # token PoCs and bypass set onto them would be misleading.
                     csrf_finding_indices: list[int] = []
 
                     if TOKEN_CHECKS:
                         token_vuln_start = len(VULN_RECORDS)
-                        # Detect tokens by inspecting the parameters WE submitted
-                        # (authoritative, redirect-proof) plus the response side
-                        # (cookies / headers) of each sample.
                         token_present = any(
                             token_analyzer.detectTokens(s, sent_params=result, sent_method=action_method)
                             for s in samples
                         )
 
                         if token_present:
-                            logger.info("Anti-CSRF tokens detected in response.")
+                            logger.log(PROGRESS, "Anti-CSRF token detected in form submission.")
 
-                            # Tamper tests rely on response diffing, so only run
-                            # them when the benchmark can actually distinguish
-                            # success from failure.
                             if base_benchmark.discriminative:
+                                # --- Token Tamper Tests Phase ---
+                                phase_header(logger, "Token Tamper Tests")
                                 passed_tests = token_analyzer.performTokenTamperTests(
                                     url=action,
                                     method=action_method,
                                     params=result,
-                                    base_benchmark=base_benchmark
+                                    base_benchmark=base_benchmark,
+                                    run_method_switch=t2_reliable,
                                 )
                                 bypasses_found.update(passed_tests)
 
-                                # M4 (Content-Type) is also a token-bypass — it
-                                # tests whether an alternate Content-Type makes
-                                # the server skip token validation — so it runs
-                                # here, dependent on a token being present.
-                                if _bypass_content_type(action, base_benchmark, action_method, result):
-                                    bypasses_found.add("M4")
+                                # --- Method Override Tests Phase ---
+                                phase_header(logger, "Content-Type Bypass")
+                                with test_progress(logger, "M4", "Content-Type bypass") as tp_result:
+                                    if _bypass_content_type(action, base_benchmark, action_method, result):
+                                        bypasses_found.add("M4")
+                                        tp_result["status"] = "VULNERABLE"
+                                    else:
+                                        tp_result["status"] = "failed"
                             else:
                                 logger.warning("Skipping token tamper tests: benchmark is non-discriminative.")
 
@@ -327,6 +338,8 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         csrf_finding_indices.extend(range(token_vuln_start, len(VULN_RECORDS)))
 
                     if COOKIE_BASED:
+                        # --- Cookie Tests Phase ---
+                        phase_header(logger, "Cookie Tests")
                         cookie_analyzer = CookieAnalyzer()
                         is_vulnerable = cookie_analyzer.performSameSiteTests(url)
 
@@ -334,40 +347,50 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                             logger.warning("[C2] No cookies with SameSite attribute detected.")
                             VulnLogger(url, "No cookies with SameSite attribute detected.", test_id="C2")
 
-                    # Referer/Origin tests validate a *different* protection and
-                    # keep a valid token, so they are only meaningful when there
-                    # is no EFFECTIVE token protection. When a valid token is
-                    # required and not bypassable, an unvalidated Referer/Origin
-                    # is moot and would only yield false positives.
                     _token_bypass_ids = {"T2", "T3", "T4", "T5", "T6", "T7", "T8", "M1", "M2", "M4"}
                     token_protection_effective = (
                         token_present
-                        and token_validated is True
+                        and base_benchmark.discriminative
                         and not (bypasses_found & _token_bypass_ids)
                     )
                     run_header_tests = base_benchmark.discriminative and not token_protection_effective
-                    if token_protection_effective:
-                        logger.info("Skipping Referer/Origin tests: endpoint is protected by a validated token.")
 
                     if REFERER_ORIGIN_CHECKS and run_header_tests:
-                        logger.info("Checking Referer header validation in form submissions...")
-                        referer_not_validated = referee.checkRefererValidation(action, base_benchmark, action_method, result)
+                        # --- Referer Tests Phase ---
+                        phase_header(logger, "Referer Tests")
+                        with test_progress(logger, "R0", "Referer validation check") as tp_r0:
+                            referer_not_validated = referee.checkRefererValidation(action, base_benchmark, action_method, result)
+                            if referer_not_validated:
+                                tp_r0["status"] = "VULNERABLE (not validated)"
+                            else:
+                                tp_r0["status"] = "validated"
                         if not referer_not_validated:
                             referee.performRefererBypassChecks(action, base_benchmark, action_method, result)
 
+                        # --- Origin Tests Phase ---
+                        phase_header(logger, "Origin Tests")
                         origame.performOriginBypassChecks(action, base_benchmark, action_method, result)
+                    elif token_protection_effective:
+                        phase_header(logger, "Referer/Origin Tests")
+                        reason = "forged-token probe" if token_validated is True else "T-series tamper tests (no bypass found)"
+                        logger.log(PROGRESS, "Skipping: token protection confirmed by %s.", reason)
 
+                    # --- Encoding Tests Phase ---
+                    phase_header(logger, "Encoding Tests")
                     encoding_detector = Encoding()
-                    detected = encoding_detector.performTokenEncodingChecks()
-                    if detected:
-                        logger.warning("[E1] Token detected as string-encoded / weak hashes and potentially decryptable.")
-                        VulnLogger(url, "Anti-CSRF token uses a weak/structured hash encoding and may be predictable or decryptable.", test_id="E1")
-                    else:
-                        logger.info("Token is not string-encoded.")
-                        NovulLogger(url, "Anti-CSRF token is not string-encoded.", test_id="E1")
+                    with test_progress(logger, "E1", "Token encoding analysis") as tp_result:
+                        detected = encoding_detector.performTokenEncodingChecks()
+                        if detected:
+                            tp_result["status"] = "WEAK ENCODING"
+                            logger.warning("[E1] Token detected as string-encoded / weak hashes and potentially decryptable.")
+                            VulnLogger(url, "Anti-CSRF token uses a weak/structured hash encoding and may be predictable or decryptable.", test_id="E1")
+                        else:
+                            tp_result["status"] = "not encoded"
+                            NovulLogger(url, "Anti-CSRF token is not string-encoded.", test_id="E1")
 
                     # Browser-dependent tests
                     if config.BROWSER_ENABLED:
+                        phase_header(logger, "Browser Tests")
                         from xsrfprobe.core.main import get_browser_session
                         from xsrfprobe.modules.Browser import BrowserCSRFTests
 
@@ -380,35 +403,25 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                     if config.POC_GENERATION and bypasses_found:
                         from xsrfprobe.modules.Generator import PoCGenerator
                         poc_gen = PoCGenerator()
-                        poc_paths = poc_gen.generate_all_variants(action, action_method, result, bypasses_found, action_enctype)
+                        poc_map = poc_gen.generate_all_variants(action, action_method, result, bypasses_found, action_enctype)
 
-                        # PoCs live in a single root-level report section, grouped
-                        # per form/action rather than duplicated on every finding.
-                        if poc_paths:
-                            POC_RECORDS.append({
-                                "action": action,
-                                "method": action_method.upper(),
-                                "bypasses": sorted(bypasses_found),
-                                "paths": list(poc_paths),
-                            })
-
-                        # Tag the token/D1/D2/M4 findings with their action context.
-                        # The form-level bypass set lives once in the root "pocs"
-                        # section, so it isn't duplicated on every finding here.
                         for idx in csrf_finding_indices:
-                            VULN_RECORDS[idx]["details"] = {
+                            rec = VULN_RECORDS[idx]
+                            rec["details"] = {
                                 "action": action,
                                 "method": action_method.upper(),
                             }
+                            rec["poc_paths"] = poc_map.get(rec.get("test_id", ""), [])
 
                         if config.AUTO_VALIDATE_POC and config.BROWSER_ENABLED:
                             from xsrfprobe.core.main import get_browser_session
                             from xsrfprobe.modules.Browser import BrowserCSRFTests
 
+                            all_poc_paths = {p for paths in poc_map.values() for p in paths}
                             browser = get_browser_session()
                             if browser:
                                 bt = BrowserCSRFTests(browser)
-                                for poc_path in poc_paths:
+                                for poc_path in all_poc_paths:
                                     bt.autoValidatePoC(poc_path, action, base_benchmark)
 
         except Exception as e:

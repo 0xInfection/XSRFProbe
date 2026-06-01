@@ -38,21 +38,23 @@ class BenchmarkResult(BaseModel):
     # False when a plain page load is indistinguishable from a successful
     # submission (e.g. SPA shells) — body-diff-based bypass tests are unreliable.
     discriminative: bool = True
+    # Per-endpoint pass threshold, auto-calibrated from how similar the baseline
+    # samples are to each other (their own match against the consolidated
+    # template). Stable pages get a stricter bar, dynamic pages a looser one.
+    similarity_threshold: float = 90.0
 
 
-class VulnerabilityResult(BaseModel):
-    url: str
-    vuln_type: str
+class Finding(BaseModel):
+    test_id: str = ""
     description: str
     severity: SeverityEnum = SeverityEnum.MEDIUM
     details: dict = {}
+    poc_paths: list[str] = []
 
 
-class PocArtifact(BaseModel):
-    action: str
-    method: str = "POST"
-    bypasses: list[str] = []
-    paths: list[str] = []
+class UrlFindings(BaseModel):
+    url: str
+    findings: list[Finding] = []
 
 
 class ScanReport(BaseModel):
@@ -60,7 +62,6 @@ class ScanReport(BaseModel):
     scan_duration_seconds: float = 0.0
     urls_scanned: int = 0
     forms_tested: int = 0
-    vulnerabilities: list[VulnerabilityResult] = []
-    pocs: list[PocArtifact] = []
+    vulnerabilities: list[UrlFindings] = []
     tokens_discovered: list[DiscoveredToken] = []
     strengths: list[str] = []

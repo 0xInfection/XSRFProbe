@@ -17,7 +17,7 @@ from urllib.parse import urlparse, urlencode
 from xsrfprobe.core.browser import BrowserSession
 from xsrfprobe.core.request import requestMaker, SESSION
 from xsrfprobe.core.diff import DiffEngine
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, test_progress
 from xsrfprobe.core.schema import BenchmarkResult
 from xsrfprobe.modules.Generator import gen_post_autosubmit, gen_get_img
 from xsrfprobe.files import config
@@ -39,7 +39,7 @@ class BrowserCSRFTests:
         Discover open-redirect / client-redirect gadgets on target, then use them
         to navigate the browser from within the target origin, bypassing SameSite=Strict.
         """
-        logger.info("[S2] Testing SameSite=Strict bypass via client-side redirect gadget...")
+        logger.debug("[S2] Testing SameSite=Strict bypass via client-side redirect gadget...")
 
         resp = requestMaker(url)
         if not resp:
@@ -83,11 +83,11 @@ class BrowserCSRFTests:
                 redirect_gadgets.append(test_url)
 
         if not redirect_gadgets:
-            logger.info("[S2] No client-side redirect gadgets found.")
+            logger.debug("[S2] No client-side redirect gadgets found.")
             return False
 
         for gadget_url in redirect_gadgets[:5]:
-            logger.info("[S2] Testing redirect gadget: %s", gadget_url)
+            logger.debug("[S2] Testing redirect gadget: %s", gadget_url)
 
             csrf_url = f"{url}?{urlencode(params)}" if method.upper() == "GET" else url
             gadget_test_url = f"{parsed_target.scheme}://{parsed_target.netloc}/redirect?url={csrf_url}"
@@ -105,7 +105,7 @@ class BrowserCSRFTests:
                 VulnLogger(url, f"SameSite=Strict bypassed via redirect gadget: {gadget_url}", test_id="S2")
                 return True
 
-        logger.info("[S2] Client-side redirect bypass failed.")
+        logger.debug("[S2] Client-side redirect bypass failed.")
         return False
 
     # SameSite=Strict bypass via sibling subdomain XSS
@@ -119,7 +119,7 @@ class BrowserCSRFTests:
             logger.debug("[S3] Subdomain enumeration disabled (--enum-subdomains not set).")
             return False
 
-        logger.info("[S3] Testing SameSite=Strict bypass via sibling subdomain...")
+        logger.debug("[S3] Testing SameSite=Strict bypass via sibling subdomain...")
 
         parsed = urlparse(url)
         domain = parsed.netloc
@@ -133,10 +133,10 @@ class BrowserCSRFTests:
         subdomains = [s for s in subdomains if s != domain]
 
         if not subdomains:
-            logger.info("[S3] No sibling subdomains found.")
+            logger.debug("[S3] No sibling subdomains found.")
             return False
 
-        logger.info("[S3] Found %d sibling subdomains. Probing for XSS...", len(subdomains))
+        logger.debug("[S3] Found %d sibling subdomains. Probing for XSS...", len(subdomains))
 
         xss_probe = '<script>alert(1)</script>'
         for subdomain in subdomains[:10]:
@@ -150,12 +150,12 @@ class BrowserCSRFTests:
             except Exception:
                 continue
 
-        logger.info("[S3] No reflected XSS on sibling subdomains.")
+        logger.debug("[S3] No reflected XSS on sibling subdomains.")
         return False
 
     def _enumerate_subdomains(self, domain: str) -> list[str]:
         """Enumerate subdomains using crt.sh certificate transparency."""
-        logger.info("Enumerating subdomains for %s via crt.sh...", domain)
+        logger.debug("Enumerating subdomains for %s via crt.sh...", domain)
         subdomains = set()
 
         try:
@@ -174,7 +174,7 @@ class BrowserCSRFTests:
         except Exception as e:
             logger.error("crt.sh lookup failed: %s", e)
 
-        logger.info("Found %d unique subdomains.", len(subdomains))
+        logger.debug("Found %d unique subdomains.", len(subdomains))
         return list(subdomains)
 
     # SameSite=Lax cookie refresh bypass
@@ -185,7 +185,7 @@ class BrowserCSRFTests:
         If the app has an OAuth/SSO flow that refreshes cookies, a cross-site POST
         within 120s of cookie issuance bypasses Lax.
         """
-        logger.info("[S4] Testing SameSite=Lax cookie refresh bypass...")
+        logger.debug("[S4] Testing SameSite=Lax cookie refresh bypass...")
 
         resp = requestMaker(url)
         if not resp:
@@ -199,10 +199,10 @@ class BrowserCSRFTests:
                     no_samesite_cookies.append(cookie_name)
 
         if not no_samesite_cookies:
-            logger.info("[S4] All cookies have explicit SameSite attribute.")
+            logger.debug("[S4] All cookies have explicit SameSite attribute.")
             return False
 
-        logger.info("[S4] Cookies without explicit SameSite: %s", no_samesite_cookies)
+        logger.debug("[S4] Cookies without explicit SameSite: %s", no_samesite_cookies)
 
         oauth_patterns = [
             r'/oauth', r'/auth/callback', r'/login/oauth', r'/sso',
@@ -226,7 +226,7 @@ class BrowserCSRFTests:
             VulnLogger(url, "SameSite=Lax bypass via cookie refresh: cookies lack explicit SameSite + OAuth flow present.", test_id="S4")
             return True
 
-        logger.info("[S4] No OAuth/SSO cookie refresh flow detected.")
+        logger.debug("[S4] No OAuth/SSO cookie refresh flow detected.")
         NovulLogger(url, "No SameSite=Lax cookie refresh bypass vector found.")
         return False
 
@@ -272,16 +272,22 @@ class BrowserCSRFTests:
         results = {}
 
         tests = [
-            ("S2_strict_redirect", self.testSameSiteStrictClientRedirect),
-            ("S3_strict_sibling", self.testSameSiteStrictSiblingDomain),
-            ("S4_lax_refresh", self.testSameSiteLaxCookieRefresh),
+            ("S2", "SameSite=Strict redirect gadget", self.testSameSiteStrictClientRedirect),
+            ("S3", "SameSite=Strict sibling XSS", self.testSameSiteStrictSiblingDomain),
+            ("S4", "SameSite=Lax cookie refresh", self.testSameSiteLaxCookieRefresh),
         ]
 
-        for name, test_fn in tests:
+        for test_id, description, test_fn in tests:
             try:
-                results[name] = test_fn(url, benchmark, method, params)
+                with test_progress(logger, test_id, description) as tp:
+                    result = test_fn(url, benchmark, method, params)
+                    results[test_id] = result
+                    if result:
+                        tp["status"] = "VULNERABLE"
+                    else:
+                        tp["status"] = "not vulnerable"
             except Exception as e:
-                logger.error("Browser test %s failed: %s", name, e)
-                results[name] = False
+                logger.error("Browser test %s failed: %s", test_id, e)
+                results[test_id] = False
 
         return results

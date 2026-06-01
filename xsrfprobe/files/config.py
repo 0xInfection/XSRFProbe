@@ -22,8 +22,8 @@ CRAWL_SITE = False
 # Turning off is Highly Discouraged, since you will miss what the tool is doing.
 DEBUG = False
 
-# Switch between verbosity levels
-DEBUG_LEVEL = 30
+# Switch between verbosity levels (25 = PROGRESS, shows phase summaries)
+DEBUG_LEVEL = 25
 
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
 USER_AGENT_RANDOM = False

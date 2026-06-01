@@ -3,7 +3,7 @@ from re import search, I
 from http.cookies import SimpleCookie
 
 from xsrfprobe.core.request import requestMaker
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, PROGRESS, test_progress
 
 
 class CookieAnalyzer:
@@ -43,7 +43,7 @@ class CookieAnalyzer:
         SameSite Flags.
         """
         logger = logging.getLogger("CookieAnalyser")
-        logger.info("Analysing Cross-Origin Cookie Validation")
+        logger.debug("Analysing Cross-Origin Cookie Validation")
 
         resp = requestMaker(url, method="GET")
         if resp is None:
@@ -76,5 +76,10 @@ class CookieAnalyzer:
         Returns True if cookies lack SameSite protections (vulnerable).
         """
         logger = logging.getLogger("CookieAnalyser")
-        logger.info("Starting SameSite cookie tests...")
-        return not self.SameSite(url)
+        with test_progress(logger, "C1", "SameSite cookie analysis") as tp_result:
+            has_protection = self.SameSite(url)
+            if has_protection:
+                tp_result["status"] = "protected"
+            else:
+                tp_result["status"] = "no SameSite"
+        return not has_protection

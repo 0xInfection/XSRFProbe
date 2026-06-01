@@ -8,8 +8,8 @@ from xsrfprobe.core.options import options
 from xsrfprobe.core.inputin import inputProcessor
 from xsrfprobe.core.utils import calcLogLevel
 from xsrfprobe.core.handler import noCrawlProcessor
-from xsrfprobe.core.logger import CustomFormatter, CustomLogger
-from xsrfprobe.core.schema import ScanReport, VulnerabilityResult, PocArtifact
+from xsrfprobe.core.logger import CustomFormatter, CustomLogger, PROGRESS
+from xsrfprobe.core.schema import ScanReport, Finding, UrlFindings
 from xsrfprobe.files import config
 from xsrfprobe.files import discovered
 
@@ -78,7 +78,9 @@ def _generate_json_report(target_url: str, duration: float):
     """Generate a JSON report from discovered data."""
     logger = logging.getLogger("Engine")
 
-    vulns = []
+    # Group findings under their URL: [{url, findings: [{test_id, description,
+    # severity, details, poc_paths}, ...]}], deduped by (url, description).
+    vuln_groups: "dict[str, list[Finding]]" = {}
     _seen_vulns = set()
     for rec in discovered.VULN_RECORDS:
         rec_url = rec.get("url") or target_url
@@ -89,28 +91,19 @@ def _generate_json_report(target_url: str, duration: float):
         _seen_vulns.add(key)
 
         details = dict(rec.get("details") or {})
-        if rec.get("test_id"):
-            details.setdefault("test_id", rec["test_id"])
+        details.pop("test_id", None)
         content = (rec.get("content") or "").strip()
         if content:
             details.setdefault("evidence", content)
 
-        vulns.append(VulnerabilityResult(
-            url=rec_url,
-            vuln_type="csrf",
+        vuln_groups.setdefault(rec_url, []).append(Finding(
+            test_id=rec.get("test_id", ""),
             description=description,
             details=details,
+            poc_paths=list(rec.get("poc_paths") or []),
         ))
 
-    pocs = [
-        PocArtifact(
-            action=rec.get("action", ""),
-            method=rec.get("method", "POST"),
-            bypasses=list(rec.get("bypasses") or []),
-            paths=list(rec.get("paths") or []),
-        )
-        for rec in discovered.POC_RECORDS
-    ]
+    vulns = [UrlFindings(url=u, findings=f) for u, f in vuln_groups.items()]
 
     strengths = list(dict.fromkeys(discovered.STRENGTH_LIST))
 
@@ -131,7 +124,6 @@ def _generate_json_report(target_url: str, duration: float):
         urls_scanned=len(discovered.INTERNAL_URLS),
         forms_tested=sum(len(v) for v in discovered.FORMS_TESTED.values()),
         vulnerabilities=vulns,
-        pocs=pocs,
         tokens_discovered=tokens_discovered,
         strengths=strengths,
     )
@@ -168,7 +160,7 @@ def Engine():
         _handle_update()
         return
 
-    logger.info("Booting up XSRFProbe engine...")
+    logger.log(PROGRESS, "Booting up XSRFProbe engine...")
 
     timestart = time.time()
     web, endpoint = inputProcessor()
@@ -178,12 +170,12 @@ def Engine():
 
     try:
         if config.CRAWL_SITE:
-            logging.info("Initializing crawling and scanning...")
+            logging.log(PROGRESS, "Initializing crawling and scanning...")
             crawler = Crawler(web)
 
             while crawler.has_urls_to_visit():
                 url = crawler.__next__()
-                logging.info(f"Testing: {url}")
+                logging.log(PROGRESS, "Testing: %s", url)
 
                 soup = crawler.process()
                 if not soup:
@@ -192,10 +184,10 @@ def Engine():
                 noCrawlProcessor(url, soup)
 
         else:
-            logging.info("Initializing endpoint testing...")
+            logging.log(PROGRESS, "Initializing endpoint testing...")
             noCrawlProcessor(web)
 
-        logging.info("Scan completed.")
+        logging.log(PROGRESS, "Scan completed.")
 
         if config.SCAN_ANALYSIS:
             Analysis()
@@ -213,5 +205,5 @@ def Engine():
         if config.JSON_OUTPUT and config.OUTPUT_DIR:
             _generate_json_report(config.SITE_URL, duration)
 
-        logging.info(f"Time taken: {duration:.2f} seconds.")
-        logging.info("Shutting down XSRFProbe.")
+        logging.log(PROGRESS, "Time taken: %.2f seconds.", duration)
+        logging.log(PROGRESS, "Shutting down XSRFProbe.")
