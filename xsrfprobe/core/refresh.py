@@ -86,13 +86,13 @@ def refresh_token_pair(url: str, params: dict) -> tuple[dict, requests.Session |
 
     response = requestMaker(url, method="GET", session=session)
     if response is None:
-        logger.debug("Token-pair refresh GET failed; falling back to stale params.")
+        logger.info("Token-pair refresh GET failed; falling back to stale params.")
         return new_params, None
 
     for key in token_keys:
         fresh_value = _extract_input_value(response.text, key)
         if fresh_value:
             new_params[key] = fresh_value
-            logger.debug("Refreshed token field '%s' with a freshly issued value.", key)
+            logger.info("Refreshed token field '%s' with a freshly issued value.", key)
 
     return new_params, session

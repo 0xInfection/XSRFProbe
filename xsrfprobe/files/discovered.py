@@ -24,6 +24,9 @@ VULN_RECORDS: list[dict] = []
 # Strengths or positive sides of the application
 STRENGTH_LIST = []
 
+# Structured strength records: {"url", "strength", "test_id"}.
+STRENGTH_RECORDS: list[dict] = []
+
 # Anti-CSRF tokens discovered during scanning. This list is consumed by the
 # active token-tamper / bypass tests, so it must contain only the tokens that
 # actually belong to the form/endpoint under test (injecting unrelated tokens

@@ -89,7 +89,7 @@ class Crawler():
             app = self._clean_path(app)
             uri_pattern = self._remove_junk_urls(app)
             if uri_pattern not in self.uri_patterns and app != url and app not in self.visited:
-                self.logger.debug(f"Added to crawl queue: {app}")
+                self.logger.info(f"Added to crawl queue: {app}")
                 self.to_visit.add(app)
                 self.uri_patterns.append(uri_pattern)
 

@@ -13,7 +13,7 @@ class CookieAnalyzer:
     def parseCookies(self, cookie_header: str) -> list[str]:
         """Parses cookies from a requests.Response object and checks for the SameSite attribute."""
         logger = logging.getLogger("CookieParser")
-        logger.debug("Parsing cookies from the response...")
+        logger.info("Parsing cookies from the response...")
         cookiess = SimpleCookie(cookie_header)
         samesite_cookies = []
         for cookie in cookiess:
@@ -43,7 +43,7 @@ class CookieAnalyzer:
         SameSite Flags.
         """
         logger = logging.getLogger("CookieAnalyser")
-        logger.debug("Analysing Cross-Origin Cookie Validation")
+        logger.info("Analysing Cross-Origin Cookie Validation")
 
         resp = requestMaker(url, method="GET")
         if resp is None:

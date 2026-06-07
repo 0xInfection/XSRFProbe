@@ -161,6 +161,12 @@ def options() -> argparse.Namespace:
         dest="json",
         action="store_true",
     )
+    optional.add_argument(
+        "--force-header-tests",
+        help="Run Referer/Origin header tests even when an anti-CSRF token is confirmed enforced. Research/opt-in only: bypass requests still carry a valid token, so results on token-protected endpoints are false positives.",
+        dest="force_header_tests",
+        action="store_true",
+    )
 
     # Browser integration
     browser_group = parser.add_argument_group("Browser Integration")
@@ -328,6 +334,9 @@ def options() -> argparse.Namespace:
 
     if args.json:
         config.JSON_OUTPUT = True
+
+    if args.force_header_tests:
+        config.FORCE_HEADER_TESTS = True
 
     # Browser integration config
     if args.browser:

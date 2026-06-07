@@ -8,8 +8,8 @@ from xsrfprobe.core.options import options
 from xsrfprobe.core.inputin import inputProcessor
 from xsrfprobe.core.utils import calcLogLevel
 from xsrfprobe.core.handler import noCrawlProcessor
-from xsrfprobe.core.logger import CustomFormatter, CustomLogger, PROGRESS
-from xsrfprobe.core.schema import ScanReport, Finding, UrlFindings
+from xsrfprobe.core.logger import CustomFormatter, CustomLogger, ProgressAwareHandler, PROGRESS, phase_header
+from xsrfprobe.core.schema import ScanReport, Finding, UrlFindings, Strength, UrlStrengths
 from xsrfprobe.files import config
 from xsrfprobe.files import discovered
 
@@ -105,7 +105,21 @@ def _generate_json_report(target_url: str, duration: float):
 
     vulns = [UrlFindings(url=u, findings=f) for u, f in vuln_groups.items()]
 
-    strengths = list(dict.fromkeys(discovered.STRENGTH_LIST))
+    # Group strengths under their URL, deduped by (url, description).
+    strength_groups: "dict[str, list[Strength]]" = {}
+    _seen_strengths = set()
+    for rec in discovered.STRENGTH_RECORDS:
+        rec_url = rec.get("url") or target_url
+        description = rec.get("strength", "")
+        key = (rec_url, description)
+        if key in _seen_strengths:
+            continue
+        _seen_strengths.add(key)
+        strength_groups.setdefault(rec_url, []).append(Strength(
+            test_id=rec.get("test_id", ""),
+            description=description,
+        ))
+    strengths = [UrlStrengths(url=u, strengths=s) for u, s in strength_groups.items()]
 
     # Surface every token observed during the run: the active findings plus the
     # passively harvested samples, deduped by (name, value, discovery_part).
@@ -132,9 +146,181 @@ def _generate_json_report(target_url: str, duration: float):
     try:
         with open(report_path, "w", encoding="utf-8") as f:
             f.write(report.model_dump_json(indent=2))
-        logger.info("JSON report saved: %s", report_path)
+        logger.log(PROGRESS, "JSON report saved: %s", report_path)
     except Exception as e:
         logger.error("Failed to save JSON report: %s", e)
+
+
+def _wrap(text: str, width: int) -> list[str]:
+    """Word-wrap *text* to *width* columns, preserving existing line breaks."""
+    if width <= 0:
+        return [text]
+    lines: list[str] = []
+    for paragraph in text.split("\n"):
+        while len(paragraph) > width:
+            brk = paragraph.rfind(" ", 0, width)
+            if brk <= 0:
+                brk = width
+            lines.append(paragraph[:brk])
+            paragraph = paragraph[brk:].lstrip()
+        lines.append(paragraph)
+    return lines
+
+
+def _print_strength_tables(logger, s_rows: list[dict], budget: int):
+    """Render strengths as per-endpoint ASCII tables."""
+    s_by_url: dict[str, list[dict]] = {}
+    for rec in s_rows:
+        s_by_url.setdefault(rec.get("url", "?"), []).append(rec)
+
+    s_headers = ("ID", "Strength")
+    s_id_w = max(len(s_headers[0]), max(
+        (len(r.get("test_id", "")) for r in s_rows), default=2))
+    s_str_w = budget - s_id_w
+    s_col_w = [s_id_w, s_str_w]
+
+    def _s_sep(left, mid, right, fill="─"):
+        return left + mid.join(fill * (cw + 2) for cw in s_col_w) + right
+
+    def _s_row(cells):
+        wrapped = [_wrap(c, s_col_w[i]) for i, c in enumerate(cells)]
+        height = max(len(wl) for wl in wrapped)
+        out = []
+        for li in range(height):
+            parts = []
+            for i, wl in enumerate(wrapped):
+                text = wl[li] if li < len(wl) else ""
+                parts.append(f" {text:<{s_col_w[i]}} ")
+            out.append("│" + "│".join(parts) + "│")
+        return "\n".join(out)
+
+    w = sys.stdout.write
+    w("\n")
+    w(f"  Strengths ({len(s_rows)}):\n")
+    for s_url, s_findings in s_by_url.items():
+        w("\n")
+        w(f"  {s_url}\n")
+        w(f"  {_s_sep('┌', '┬', '┐')}\n")
+        w(f"  {_s_row(s_headers)}\n")
+        w(f"  {_s_sep('├', '┼', '┤', '═')}\n")
+        for idx, sr in enumerate(s_findings):
+            tid = sr.get("test_id", "")
+            desc = sr.get("strength", "")
+            for line in _s_row((tid, desc)).split("\n"):
+                w(f"  {line}\n")
+            if idx < len(s_findings) - 1:
+                w(f"  {_s_sep('├', '┼', '┤')}\n")
+        w(f"  {_s_sep('└', '┴', '┘')}\n")
+        sys.stdout.flush()
+    sys.stdout.write("\n")
+
+
+def _print_summary(logger, duration: float):
+    """Print a final summary table of findings and PoCs."""
+    phase_header(logger, "Summary")
+
+    forms_tested = sum(len(v) for v in discovered.FORMS_TESTED.values())
+    urls_scanned = len(discovered.INTERNAL_URLS) or 1
+    w = sys.stdout.write
+    w(f"  Target: {config.SITE_URL}\n")
+    w(f"  URLs scanned: {urls_scanned} | Forms tested: {forms_tested} | Duration: {duration:.2f}s\n")
+
+    # Table budget: fixed 120-char max, minus 2-char indent and column chrome
+    table_max = 120
+    budget = table_max - 2 - 10  # 10 = 4 pipes + 3*2 padding for 3-col table
+
+    # Dedupe vulns by (url, description)
+    seen = set()
+    vulns: list[dict] = []
+    for rec in discovered.VULN_RECORDS:
+        key = (rec.get("url", ""), rec.get("vuln", ""))
+        if key in seen:
+            continue
+        seen.add(key)
+        vulns.append(rec)
+
+    # Dedupe strengths by (url, description)
+    seen_s = set()
+    s_rows: list[dict] = []
+    for rec in discovered.STRENGTH_RECORDS:
+        key = (rec.get("url", ""), rec.get("strength", ""))
+        if key in seen_s:
+            continue
+        seen_s.add(key)
+        s_rows.append(rec)
+
+    if not vulns:
+        w("\n")
+        w("  No vulnerabilities discovered.\n")
+        if s_rows:
+            _print_strength_tables(logger, s_rows, budget)
+        return
+
+    # Group findings by endpoint URL
+    by_url: dict[str, list[dict]] = {}
+    for rec in vulns:
+        by_url.setdefault(rec.get("url", "?"), []).append(rec)
+
+    w("\n")
+    w(f"  Vulnerabilities ({len(vulns)}):\n")
+
+    headers = ("ID", "Vulnerability", "PoC")
+    id_w = max(len(headers[0]), max(
+        (len(r.get("test_id", "")) for r in vulns), default=2))
+    # PoC and Vuln split the remainder 35/65
+    remaining = budget - id_w
+    poc_w = max(len(headers[2]), min(remaining * 35 // 100, 42))
+    vuln_w = max(len(headers[1]), remaining - poc_w)
+    col_w = [id_w, vuln_w, poc_w]
+
+    def _sep(left, mid, right, fill="─"):
+        return left + mid.join(fill * (w + 2) for w in col_w) + right
+
+    def _row(cells):
+        wrapped = [_wrap(c, col_w[i]) for i, c in enumerate(cells)]
+        height = max(len(w) for w in wrapped)
+        out = []
+        for line_idx in range(height):
+            parts = []
+            for i, w in enumerate(wrapped):
+                text = w[line_idx] if line_idx < len(w) else ""
+                parts.append(f" {text:<{col_w[i]}} ")
+            out.append("│" + "│".join(parts) + "│")
+        return "\n".join(out)
+
+    for url, findings in by_url.items():
+        w("\n")
+        w(f"  {url}\n")
+        w(f"  {_sep('┌', '┬', '┐')}\n")
+        w(f"  {_row(headers)}\n")
+        w(f"  {_sep('├', '┼', '┤', '═')}\n")
+        for idx, f in enumerate(findings):
+            tid = f.get("test_id", "")
+            desc = f.get("vuln", "")
+            pocs = f.get("poc_paths") or []
+            poc_str = "\n".join(pocs) if pocs else "-"
+            for line in _row((tid, desc, poc_str)).split("\n"):
+                w(f"  {line}\n")
+            if idx < len(findings) - 1:
+                w(f"  {_sep('├', '┼', '┤')}\n")
+        w(f"  {_sep('└', '┴', '┘')}\n")
+        sys.stdout.flush()
+
+    if s_rows:
+        _print_strength_tables(logger, s_rows, budget)
+
+    # Proof of Concepts section
+    all_pocs: list[str] = []
+    for rec in vulns:
+        for p in (rec.get("poc_paths") or []):
+            if p not in all_pocs:
+                all_pocs.append(p)
+    if all_pocs:
+        w("\n")
+        w(f"  Proof of Concepts ({len(all_pocs)}):\n")
+        for poc in all_pocs:
+            w(f"    - {poc}\n")
+        w("\n")
 
 
 def Engine():
@@ -144,7 +330,7 @@ def Engine():
     logging.root.setLevel(calcLogLevel(args))
     logging.setLoggerClass(CustomLogger)
 
-    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler = ProgressAwareHandler(sys.stdout)
     console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(formatter)
     logging.root.addHandler(console_handler)
@@ -202,8 +388,9 @@ def Engine():
         timend = time.time()
         duration = timend - timestart
 
+        _print_summary(logger, duration)
+
         if config.JSON_OUTPUT and config.OUTPUT_DIR:
             _generate_json_report(config.SITE_URL, duration)
 
-        logging.log(PROGRESS, "Time taken: %.2f seconds.", duration)
         logging.log(PROGRESS, "Shutting down XSRFProbe.")

@@ -17,20 +17,44 @@ from xsrfprobe.files.discovered import (
     VULN_LIST,
     VULN_RECORDS,
     STRENGTH_LIST,
+    STRENGTH_RECORDS,
 )
 
 PROGRESS = 25
 logging.addLevelName(PROGRESS, "PROGRESS")
+
+# Shared flag: True while a test_progress line is pending on stdout.
+_inline_active = False
 
 
 def _is_tty() -> bool:
     return hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
 
 
+def _break_inline():
+    """If an inline progress line is pending, erase it so the next log
+    record starts on a clean line (no orphaned dots)."""
+    global _inline_active
+    if _inline_active:
+        sys.stdout.write("\r\033[K")
+        sys.stdout.flush()
+        _inline_active = False
+
+
 class CustomLogger(logging.getLoggerClass()):
     def progress(self, message, *args, **kwargs):
         if self.isEnabledFor(PROGRESS):
             self._log(PROGRESS, message, args, **kwargs)
+
+
+class ProgressAwareHandler(logging.StreamHandler):
+    """StreamHandler that breaks any pending inline progress line before
+    emitting a new log record, so warnings/errors don't corrupt the line."""
+
+    def emit(self, record):
+        if _inline_active and self.stream is sys.stdout:
+            _break_inline()
+        super().emit(record)
 
 
 class CustomFormatter(logging.Formatter):
@@ -81,13 +105,12 @@ class CustomFormatter(logging.Formatter):
 
 def phase_header(logger, title: str):
     """Log a phase section header at PROGRESS level."""
-    import sys
-    tty = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
+    _break_inline()
+    tty = _is_tty()
     if tty:
         sys.stdout.write(f"\n  --- {title} ---\n\n")
         sys.stdout.flush()
     else:
-        # Non-TTY: use print to avoid the [*] prefix
         print(f"\n--- {title} ---")
 
 
@@ -98,6 +121,7 @@ def test_progress(logger, test_id: str, description: str):
     Writes an in-progress line, yields, then overwrites with result.
     Set the result via the returned dict: result['status'] = 'failed'|'passed'|etc.
     """
+    global _inline_active
     result = {"status": "failed"}
     prefix = f"[{test_id}]" if test_id else ""
     label = f"{prefix} {description}"
@@ -108,6 +132,7 @@ def test_progress(logger, test_id: str, description: str):
     if tty:
         sys.stdout.write(line_start)
         sys.stdout.flush()
+        _inline_active = True
 
     try:
         yield result
@@ -115,8 +140,12 @@ def test_progress(logger, test_id: str, description: str):
         status = result.get("status", "failed")
         final_line = f"{line_start}completed ({status})"
         if tty:
-            sys.stdout.write(f"\r{final_line}\n")
+            if _inline_active:
+                sys.stdout.write(f"\r{final_line}\n")
+            else:
+                sys.stdout.write(f"{final_line}\n")
             sys.stdout.flush()
+            _inline_active = False
             logger.debug("%s completed (%s)", label, status)
         else:
             logger.log(PROGRESS, "%s%s completed (%s)", label, dots, status)
@@ -144,3 +173,8 @@ def NovulLogger(url, strength, test_id=""):
     prefix = f"[{test_id}] " if test_id else ""
     tent = f"[+] {url} -> {prefix}{strength}"
     STRENGTH_LIST.append(tent)
+    STRENGTH_RECORDS.append({
+        "url": url,
+        "strength": strength,
+        "test_id": test_id,
+    })

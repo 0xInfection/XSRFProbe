@@ -58,7 +58,7 @@ def _save_poc(filename: str, content: str) -> str:
     try:
         with open(path, "w", encoding="utf-8") as f:
             f.write(content)
-        logger.info("PoC saved: %s", path)
+        logger.debug("PoC saved: %s", path)
     except Exception as e:
         logger.error("Failed to save PoC %s: %s", path, e)
     return path

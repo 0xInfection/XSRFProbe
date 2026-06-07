@@ -57,6 +57,16 @@ class UrlFindings(BaseModel):
     findings: list[Finding] = []
 
 
+class Strength(BaseModel):
+    test_id: str = ""
+    description: str
+
+
+class UrlStrengths(BaseModel):
+    url: str
+    strengths: list[Strength] = []
+
+
 class ScanReport(BaseModel):
     target_url: str
     scan_duration_seconds: float = 0.0
@@ -64,4 +74,4 @@ class ScanReport(BaseModel):
     forms_tested: int = 0
     vulnerabilities: list[UrlFindings] = []
     tokens_discovered: list[DiscoveredToken] = []
-    strengths: list[str] = []
+    strengths: list[UrlStrengths] = []

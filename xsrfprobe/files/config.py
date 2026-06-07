@@ -101,6 +101,12 @@ TOKEN_CHECKS = True
 # Referer/Origin Checks (Recommended keeping True)
 REFERER_ORIGIN_CHECKS = True
 
+# Force Referer/Origin header tests to run even when an anti-CSRF token is
+# confirmed to be enforced. WARNING: research/opt-in only. The bypass requests
+# still carry a valid token, so on token-protected endpoints these tests cannot
+# isolate the header as the variable and will produce false positives.
+FORCE_HEADER_TESTS = False
+
 # Whether to submit Crafted Forms (Recommended keeping True)
 # If you turn this to False, it will omit form submissions,
 # so there will be more chances of missing out most possible

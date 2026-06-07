@@ -72,7 +72,7 @@ def _probe_token_validated(url: str, action: str, method: str, result: dict,
     forged_params, forged_session = refresh_token_pair(url, result)
     token_field = next((k for k in forged_params if _looks_like_token(k)), None)
     if not token_field:
-        logger.debug("[ForgedProbe] No token field in submitted params; cannot calibrate via forging.")
+        logger.info("[ForgedProbe] No token field in submitted params; cannot calibrate via forging.")
         return None
 
     forged_params = dict(forged_params)
@@ -84,11 +84,11 @@ def _probe_token_validated(url: str, action: str, method: str, result: dict,
     else:
         r = requestMaker(action, method=method, data=forged_params, session=sess)
     if r is None:
-        logger.debug("[ForgedProbe] Forged-token request failed (no response, e.g. timeout/throttle); cannot calibrate.")
+        logger.info("[ForgedProbe] Forged-token request failed (no response, e.g. timeout/throttle); cannot calibrate.")
         return None
 
     rejected = not diff.benchmarkPassed(base_benchmark, r.text, r.status_code)
-    logger.debug(
+    logger.info(
         "[ForgedProbe] field=%s | benchmark status=%s | forged-token response status=%s len=%d "
         "| matches benchmark=%s | verdict=%s",
         token_field, base_benchmark.status_code, r.status_code, len(r.text or ""),
@@ -150,7 +150,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
 
     if soup is None:
         response = requestMaker(url)
-        logger.debug("Parsing the response from: %s" % url)
+        logger.info("Parsing the response from: %s" % url)
         if response is None:
             logger.error("No response received; the site is likely down: %s" % url)
             return
@@ -164,7 +164,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
     referee = RefererAnalyser()
     origame = OriginAnalyser()
 
-    logger.debug("Retrieving all forms on %s...", url)
+    logger.info("Retrieving all forms on %s...", url)
 
     token_analyzer = TokenAnalyser()
     parser = FormParser(soup)
@@ -175,7 +175,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
     logger.log(PROGRESS, "Found %d form(s) to analyse.", len(all_forms))
 
     for form in all_forms:
-        logger.debug("Testing the following form:")
+        logger.info("Testing the following form:")
         logger.debug("\n%s", form.prettify())
         FORMS_TESTED[url].append(form.prettify())
 
@@ -207,7 +207,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         token_analyzer.detectTokens(response, passive=True)
 
                 else:
-                    logger.debug("Preparing form inputs for submission...")
+                    logger.info("Preparing form inputs for submission...")
                     result = parser.prepareFormInputs(form)
 
                     # --- Benchmark Phase ---
@@ -234,9 +234,9 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                                len(samples),
                                "/".join(str(r.status_code) for r in samples),
                                "/".join(str(len(r.text or "")) for r in samples))
-                    logger.debug("[Benchmark] Baseline sample statuses=%s lengths=%s for %s",
-                                 [r.status_code for r in samples],
-                                 [len(r.text or "") for r in samples], action)
+                    logger.info("[Benchmark] Baseline sample statuses=%s lengths=%s for %s",
+                                [r.status_code for r in samples],
+                                [len(r.text or "") for r in samples], action)
                     diff = DiffEngine()
                     base_benchmark = diff.prepareBenchmarkResponse(
                         response_bodies=[r.text for r in samples],
@@ -245,8 +245,8 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                     )
                     logger.log(PROGRESS, "  Stable template: %d token(s) | similarity_threshold=%.1f%%",
                                len(base_benchmark.base_benchmark), base_benchmark.similarity_threshold)
-                    logger.debug("[Benchmark] Consolidated status=%s, template tokens=%d for %s",
-                                 base_benchmark.status_code, len(base_benchmark.base_benchmark), action)
+                    logger.info("[Benchmark] Consolidated status=%s, template tokens=%d for %s",
+                                base_benchmark.status_code, len(base_benchmark.base_benchmark), action)
 
                     token_validated = _probe_token_validated(
                         url, action, action_method, result, diff, base_benchmark
@@ -257,9 +257,9 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         logger.log(PROGRESS, "  Forged-token probe: ACCEPTED (response matched baseline — token not enforced)")
                     else:
                         logger.log(PROGRESS, "  Forged-token probe: N/A (no token field to corrupt)")
-                    logger.debug("[Benchmark] Forged-token probe verdict for %s: token_validated=%s "
-                                 "(True=rejected/validated, False=accepted, None=could-not-probe).",
-                                 action, token_validated)
+                    logger.info("[Benchmark] Forged-token probe verdict for %s: token_validated=%s "
+                                "(True=rejected/validated, False=accepted, None=could-not-probe).",
+                                action, token_validated)
 
                     get_matches = False
                     neutral_session = requests.Session()
@@ -270,11 +270,11 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         logger.log(PROGRESS, "  Plain-GET probe: status=%d body_similarity=%.1f%% → %s baseline",
                                    neutral.status_code, get_ratio,
                                    "matches" if get_matches else "differs from")
-                        logger.debug("[Benchmark] Plain-GET probe for %s: GET status=%s len=%d | matches baseline=%s",
-                                     action, neutral.status_code, len(neutral.text or ""), get_matches)
+                        logger.info("[Benchmark] Plain-GET probe for %s: GET status=%s len=%d | matches baseline=%s",
+                                    action, neutral.status_code, len(neutral.text or ""), get_matches)
                     else:
                         logger.log(PROGRESS, "  Plain-GET probe: request failed (assuming differs from baseline)")
-                        logger.debug("[Benchmark] Plain-GET probe failed for %s; assuming GET differs from baseline.", action)
+                        logger.info("[Benchmark] Plain-GET probe failed for %s; assuming GET differs from baseline.", action)
 
                     base_benchmark.discriminative = (token_validated is True) or (not get_matches)
                     t2_reliable = not get_matches
@@ -353,9 +353,14 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         and base_benchmark.discriminative
                         and not (bypasses_found & _token_bypass_ids)
                     )
-                    run_header_tests = base_benchmark.discriminative and not token_protection_effective
+                    run_header_tests = base_benchmark.discriminative and (
+                        not token_protection_effective or config.FORCE_HEADER_TESTS
+                    )
 
                     if REFERER_ORIGIN_CHECKS and run_header_tests:
+                        if token_protection_effective and config.FORCE_HEADER_TESTS:
+                            reason = "forged-token probe" if token_validated is True else "T-series tamper tests (no bypass found)"
+                            logger.warning("Token protection confirmed by %s; header tests forced on. Results carry a valid token, so any Referer/Origin 'VULNERABLE' findings here are likely FALSE POSITIVES.", reason)
                         # --- Referer Tests Phase ---
                         phase_header(logger, "Referer Tests")
                         with test_progress(logger, "R0", "Referer validation check") as tp_r0:
@@ -364,8 +369,10 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                                 tp_r0["status"] = "VULNERABLE (not validated)"
                             else:
                                 tp_r0["status"] = "validated"
-                        if not referer_not_validated:
-                            referee.performRefererBypassChecks(action, base_benchmark, action_method, result)
+                        # Run the bypass suite regardless of R0: even when the
+                        # Referer appears unvalidated, the targeted R1/R2 payloads
+                        # surface more granular, actionable findings.
+                        referee.performRefererBypassChecks(action, base_benchmark, action_method, result)
 
                         # --- Origin Tests Phase ---
                         phase_header(logger, "Origin Tests")
@@ -404,6 +411,15 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         from xsrfprobe.modules.Generator import PoCGenerator
                         poc_gen = PoCGenerator()
                         poc_map = poc_gen.generate_all_variants(action, action_method, result, bypasses_found, action_enctype)
+
+                        phase_header(logger, "Proof of Concepts")
+                        all_poc_paths = []
+                        for paths in poc_map.values():
+                            for p in paths:
+                                if p not in all_poc_paths:
+                                    all_poc_paths.append(p)
+                        for p in all_poc_paths:
+                            logger.log(PROGRESS, "Saved: %s", p)
 
                         for idx in csrf_finding_indices:
                             rec = VULN_RECORDS[idx]
