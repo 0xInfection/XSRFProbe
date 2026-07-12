@@ -22,7 +22,7 @@
 __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)) (CSRF/XSRF) Audit and Exploitation Toolkit. Equipped with a powerful crawling engine and numerous systematic checks, it is able to detect most cases of CSRF vulnerabilities, their related bypasses and futher generate exploitable proof of concepts with each found vulnerability. For more info on how XSRFProbe works, see [XSRFProbe Internals](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals) on [wiki](https://github.com/0xInfection/XSRFProbe/wiki/).
 
 <img src="https://github.com/user-attachments/assets/11a4d30a-bcf1-4d4e-9ec4-5a4e440f8842" alt="banner-image">
-<br>
+<br><br>
 <p align="center">
   <a href="https://github.com/0xinfection/xsrfprobe/wiki">XSRFProbe Wiki</a> •
   <a href="https://github.com/0xinfection/xsrfprobe/wiki/Getting-Started">Getting Started</a> •
