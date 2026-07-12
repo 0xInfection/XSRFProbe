@@ -9,103 +9,66 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-from time import sleep
-from re import search
+import re
+import logging
+from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
 
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.core.verbout import verbout
 from xsrfprobe.files.dcodelist import HASH_DB
 
+class Encoding:
+    # Patterns that are too broad and match any random hex token
+    EXCLUDED_PATTERNS = {
+        "Cisco Type 7",  # ^[a-f0-9]{4,}$ — matches almost any hex token
+        "Adler32",  # ^[a-f0-9]{8}$ — 8-char hex is common in CSRF tokens
+        "CRC-16-CCITT",  # ^[a-fA-F0-9]{4}$ — 4-char hex
+        "CRC32 (Generic)",  # ^[a-fA-F0-9]{8}$
+        "CRC-96 (ZIP)",  # ^[a-fA-F0-9]{24}$
+        "MD5 (Generic)",  # A random 32-hex-char token is NOT weak
+        "MD5 (ZipMonster)",  # Same as above
+        "SHA-1 (Generic)",  # A random 40-hex-char token is NOT weak
+        "Base64 Encoded (Generic)",  # Base64 encoding doesn't mean predictable
+    }
 
-def Encoding(val):
-    """
-    This function is for detecting the encoding type of
-            Anti-CSRF tokens based on pre-defined
-                    regular expressions.
-    """
-    found = 0x00
-    if not val:
-        return (found, None)
-    verbout(colors.RED, "\n +------------------------------+")
-    verbout(colors.RED, " |   Token Encoding Detection   |")
-    verbout(colors.RED, " +------------------------------+\n")
-    verbout(colors.GR, "Proceeding to detect encoding of Anti-CSRF Token...")
-    # So the idea right here is to detect whether the Anti-CSRF tokens
-    # are encoded in some form or the other.
-    #
-    # Often in my experience with web applications, I have found that
-    # most of the Anti-CSRF tokens are encoded (mostly MD5 or SHA*).
-    # In those cases, I have found that the Anti-CSRF tokens follow a
-    # specific pattern. For example, every request has a specific
-    # iteration number, if the previous request is 144, and MD5 encrypted
-    # it turns out to be 0a09c8844ba8f0936c20bd791130d6b6, then it is
-    # not at all strong, since the next request is probably 145 and can
-    # be easily forged! Ofc, if there is no salt in the encryption.
-    #
-    # This module aims to automate and simplify the task. ;)
-    for h in HASH_DB:
-        txt = hashcheck(h[0], h[1], val)
-        if txt is not None:
-            found = 0x01
-            verbout(
-                colors.RED, "\n [+] Anti-CSRF Token is detected to be String Encoded!"
-            )
-            print(
-                colors.GREEN
-                + " [+] Token Encoding Detected: "
-                + colors.BG
-                + " "
-                + txt
-                + " "
-                + colors.END
-            )
-            print(
-                colors.ORANGE
-                + " [-] Endpoint likely "
-                + colors.BR
-                + " VULNERABLE "
-                + colors.END
-                + colors.ORANGE
-                + " to CSRF Attacks inspite of CSRF Tokens."
-            )
-            print(
-                colors.ORANGE
-                + " [!] Vulnerability Type: "
-                + colors.BR
-                + " String Encoded Anti-CSRF Tokens "
-                + colors.END
-            )
-            print(
-                colors.RED
-                + " [-] The Tokens might be easily Decrypted and can be Forged!"
-            )
-            break  # Break the execution if token encoding detected
-    if found == 0x00:
-        print(
-            colors.RED
-            + "\n [-] "
-            + colors.BR
-            + " No Token Encoding Detected. "
-            + colors.END,
-            end="\n\n",
-        )
-    sleep(0.8)
-    return (found, txt)
+    def __init__(self):
+        self.logger = logging.getLogger("TokenEncodingDetector")
 
+    def detectEncoding(self, token: str) -> str | None:
+        """
+        Detect encoding type of Anti-CSRF tokens. Only flags structured
+        hash formats (with salts/prefixes) that indicate predictable generation,
+        not bare hex strings which could be strong random tokens.
+        """
+        self.logger.info("Detecting the encoding type of the Anti-CSRF token...")
+        for hash_type, regex in HASH_DB.items():
+            if hash_type in self.EXCLUDED_PATTERNS:
+                continue
+            if self.hashcheck(hash_type, re.compile(regex), token):
+                return hash_type
+        return None
 
-def hashcheck(hashtype, regexstr, data):
-    try:
-        print(colors.O, "Matching Encoding Type: %s" % (hashtype), end="\r", flush=True)
-        sleep(0.1)
-        if search(regexstr, data):
-            return hashtype
-    except KeyboardInterrupt:
-        pass
-    return None
+    def hashcheck(self, hashtype: str, regexstr: re.Pattern, token: str) -> bool:
+        self.logger.info("Matching encoding type: %s..." % (hashtype))
+        if regexstr.match(token):
+            return True
+        return False
 
+    def performTokenEncodingChecks(self, tokens=None) -> bool:
+        """
+        This function performs the token encoding checks.
 
-# if __name__ == '__main__':
-#   Encoding('38c4658d5308897a92cef9e113aefc3a')
+        tokens: is the per-form token list gathered by the current form's
+        TokenAnalyser: (so E1 only inspects tokens that belong to the
+        endpoint under test). It falls back to the global pool when omitted.
+        """
+        self.logger.info("Performing Anti-CSRF token encoding checks...")
+        token_list = tokens if tokens is not None else ANTI_CSRF_TOKENS
+        for token in token_list:
+            encoding = self.detectEncoding(token.token)
+            if encoding:
+                self.logger.warning("Detected structured hash format: %s on token: %s" % (encoding, token.token))
+                return True
+            else:
+                self.logger.info("No weak encoding pattern detected for the token.")
+
+        self.logger.info("Token encoding checks completed.")
+        return False

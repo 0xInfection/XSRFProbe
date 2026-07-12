@@ -1,5 +1,5 @@
-bs4
-requests
-stringdist
-tld
-yattag
+beautifulsoup4>=4.9
+requests>=2.25
+pydantic>=2.0
+selenium>=4.0
+rapidfuzz>=2.0

@@ -10,13 +10,7 @@
 # https://github.com/0xInfection/XSRFProbe
 
 # this module holds values for controlling the entire scan interface.
-
-# Lets assign some global variables...
-global SITE_URL, DEBUG, USER_AGENT, USER_AGENT_RANDOM, COOKIE_BASED, COOKIE_VALUE
-global HEADER_VALUES, TIMEOUT_VALUE, REFERER_ORIGIN_CHECKS, REFERER_URL, POST_BASED
-global DISPLAY_HEADERS, EXECUTABLES, FILE_EXTENSIONS, POC_GENERATION, OUTPUT_DIR, VERIFY_CERT
-global CRAWL_SITE, TOKEN_CHECKS, DELAY_VALUE, SCAN_ANALYSIS, EXCLUDE_DIRS, GEN_MALICIOUS
-global NO_COLORS
+# You can modify these values as per your need.
 
 # Site Url to be scanned (Required)
 SITE_URL = ""
@@ -24,24 +18,33 @@ SITE_URL = ""
 # Switch for whether to crawl the site or not
 CRAWL_SITE = False
 
+# Crawl bounds (only relevant when CRAWL_SITE is True). These keep the crawl
+# bounded and deterministic instead of running until the queue drains.
+#   CRAWL_MAX_URLS    : hard cap on the number of URLs fetched (0 = unlimited)
+#   CRAWL_MAX_DEPTH   : maximum link depth from the seed URL (0 = unlimited)
+#   CRAWL_TIMEOUT     : wall-clock budget for crawling, in seconds (0 = unlimited)
+CRAWL_MAX_URLS = 200
+CRAWL_MAX_DEPTH = 5
+CRAWL_TIMEOUT = 0
+
 # Print out verbose (turn it off for only brief outputs).
 # Turning off is Highly Discouraged, since you will miss what the tool is doing.
-DEBUG = True
+DEBUG = False
 
-# Debug level of the output (beta test feature)
-DEBUG_LEVEL = 3
+# Switch between verbosity levels (25 = PROGRESS, shows phase summaries)
+DEBUG_LEVEL = 25
 
 # User-Agent to be used (If COOKIE_VALUE is not supplied)
 USER_AGENT_RANDOM = False
 
 # User-Agent to be used (If COOKIE_VALUE supplied).
 #
-# This is standard User-Agent emulating Chrome 68 on Windows 10
+# This is a standard User-Agent emulating Chrome on Windows 10.
 #
 # NOTE: This is a precaution in case the cookie value is supplied,
 # if the user-agent gets changed from time to time, the remote
 # application might trigger up some protection agents
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
 # Cookie value to be sent alongwith the requests. This option is particularly
 # needed for a wholesome check on CSRFs. Since for a basic successful CSRF attack
@@ -65,13 +68,13 @@ HEADER_VALUES = {
     "Accept-Language": "en-US,en;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
     "Sec-Fetch-Mode": "navigate",
-    "DNT": "1",  # Do Not Track Request Header :D
+    "DNT": "1",  # Do Not Track Request Header
     "Connection": "close",
 }
 
 # Email value to be supplied when parsing/filling forms
 # You can modify it as per your need :)
-EMAIL_VALUE = "csrf.testing@xsrfprobe.tld"
+EMAIL_VALUE = "xsrf.probe@0xinfection.xyz"
 
 # Plaintext value to be supplied when parsing/filling forms
 TEXT_VALUE = "csrftesting"
@@ -84,6 +87,12 @@ TIMEOUT_VALUE = 7
 # or a Firewall (WAF).
 DELAY_VALUE = 0
 
+# The similarity threshold for the diff engine to determine whether
+# the responses are similar or not.
+# (Recommended keeping 90)
+# Values range between 0-100
+SIMILARITY_THRESHOLD = 90
+
 # Whether to include Cookie Based Checks everywhere
 #
 # Note: If you keep this to 'True', you must supply a
@@ -95,15 +104,17 @@ DELAY_VALUE = 0
 # (Recommended Keeping True)
 COOKIE_BASED = True
 
-# Include checks for Form Based CSRFs (POST method)
-# (Recommended keeping True)
-POST_BASED = True
-
 # Anti-CSRF Token Checks (Recommended keeping True)
 TOKEN_CHECKS = True
 
 # Referer/Origin Checks (Recommended keeping True)
 REFERER_ORIGIN_CHECKS = True
+
+# Force Referer/Origin header tests to run even when an anti-CSRF token is
+# confirmed to be enforced. WARNING: research/opt-in only. The bypass requests
+# still carry a valid token, so on token-protected endpoints these tests cannot
+# isolate the header as the variable and will produce false positives.
+FORCE_HEADER_TESTS = False
 
 # Whether to submit Crafted Forms (Recommended keeping True)
 # If you turn this to False, it will omit form submissions,
@@ -118,20 +129,19 @@ VERIFY_CERT = True
 
 # Referer Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-REFERER_URL = "http://not-a-valid-referer.xsrfprobe-csrftesting.0xinfection.xyz"
+REFERER_URL = "http://not-a-valid-referer.github.com/0xinfection/xsrfprobe"
 
 # Origin Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-ORIGIN_URL = "http://not-a-valid-origin.xsrfprobe-csrftesting.0xinfection.xyz"
+ORIGIN_URL = "http://not-a-valid-origin.xsrfprobe.0xinfection.xyz"
 
-# The length of the custom token to be generated for params
+# Length of the random alphanumeric value XSRFProbe generates for the
+# synthetic/forged token values used during the tamper tests: the corrupted
+# token in the forged-token probe, the arbitrary header-token value (T8), and
+# the fabricated double-submit token (T6). When the real token is longer, that
+# real length is used instead so the forged value stays plausible.
 #
-# The recommended value I prefer is 6. Greater value might
-# result in database problems. since every form on the server
-# will be submitted 5+ times for various methods of CSRF attacks.
-#
-# Lower value wll not harm but it will make it difficult
-# identifying request parameters and token values in a.
+# 6 is a sensible default; a larger value is harmless. Overridable via --max-chars.
 TOKEN_GENERATION_LENGTH = 6
 
 # List of Urls that are not to be scanned (excluded).
@@ -144,14 +154,6 @@ OUTPUT_DIR = ""
 # Allow JSON output
 JSON_OUTPUT = False
 
-# This option is for displaying the headers received as response.
-# Turn this off if you don't want to see the headers on the
-# terminal, or if it feels irritating.
-DISPLAY_HEADERS = False
-
-# No colors option
-NO_COLORS = False
-
 # Option for controlling post-scan analysis. Turning it off
 # results in not analysing the tokens gathered.
 SCAN_ANALYSIS = True
@@ -160,45 +162,31 @@ SCAN_ANALYSIS = True
 # The form will not be generated.
 POC_GENERATION = True
 
-# Option whether or not to generate a malicious CSRF form with all
-# hidden fields.
-GEN_MALICIOUS = False
 
-# A list of file extensions that might be come across while scanning
-# and crawling
-FILE_EXTENSIONS = [
-    "png",
-    "jpg",
-    "jpeg",
-    "pdf",
-    "js",
-    "css",
-    "ico",
-    "bmp",
-    "svg",
-    "json",
-    "xml",
-    "xls",
-    "csv",
-    "docx",
-]
-# These are a list of executable files that are found on the web
-EXECUTABLES = [
-    "deb",
-    "bat",
-    "exe",
-    "msu",
-    "msi",
-    "apk",
-    "bin",
-    "csh",
-    "inf",
-    "ini",
-    "msc",
-    "osx",
-    "out",
-    "vbe",
-    "ws",
-    "msp",
-    "jse",
-]
+# Browser Integration
+BROWSER_ENABLED = False
+AUTO_VALIDATE_POC = False
+GECKODRIVER_PATH = ""
+BROWSER_TIMEOUT = 30
+ENUM_SUBDOMAINS = False
+
+# Input types defaults
+INPUT_TYPES_DEFAULTS = {
+    "text": TEXT_VALUE,
+    "email": EMAIL_VALUE,
+    "password": TEXT_VALUE,
+    "hidden": TEXT_VALUE,
+    "number": "0",
+    "date": "2000-01-01",
+    "file": "",  # No default value for file inputs
+    "checkbox": "on",  # Default browser behavior
+    "radio": "on",     # Default browser behavior
+    "url": "https://example.com",
+    "tel": "+1234567890",
+    "range": "50",
+    "color": "#000000",
+    "submit": "Submit",
+    "reset": "Reset",
+    "button": "Button",
+    "search": "Search"
+}

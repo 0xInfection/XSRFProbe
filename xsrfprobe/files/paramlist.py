@@ -9,13 +9,14 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-# List of anti-CSRF paramter values which are sent for form
-# verification, I have seen. These values are collected based on
-# my interactions with different web-applications. :)
+# Lists of anti-CSRF parameter/header names sent for form verification, based on
+# interactions with different web-applications. :)
 #
 # Feel free to add more of your tokens if you have. ;)
-COMMON_CSRF_NAMES = (
-    # These are a list of known common tokens parameters
+# High-confidence anti-CSRF token field names: framework-specific or explicitly
+# CSRF-related. A name match alone is strong evidence of an anti-CSRF token, so
+# these are accepted regardless of the field's value.
+HIGH_CONFIDENCE_CSRF_NAMES = (
     "CSRFName",  # OWASP CSRF_Guard
     "CSRFToken",  # OWASP CSRF_Guard
     "csrf_token",  # PHP NoCSRF Class
@@ -37,10 +38,14 @@ COMMON_CSRF_NAMES = (
     "ccm_token",  # Concrete 5 CMS
     "XOOPS_TOKEN_REQUEST",  # Xoops CMS
     "_csrf",  # Express JS Default Anti-CSRF
-    # These are some other various token names I have seen in
-    # various websites.
-    #
-    # TODO: Add more similar csrf token parameters
+)
+
+# Low-confidence / generic names that also legitimately name many NON-CSRF
+# fields (search hashes, API keys, boolean flags). A name match here is only
+# treated as an anti-CSRF token when the field's VALUE also looks like a token
+# (see xsrfprobe.modules.Token.looksLikeToken_value), which sharply reduces
+# false positives that would otherwise suppress the header tests.
+LOW_CONFIDENCE_CSRF_NAMES = (
     "token",
     "auth",
     "hash",
@@ -59,10 +64,14 @@ COMMON_CSRF_HEADERS = (
     "X-CSRF-Header",
     "X-XSRF-Header",
     "X-CSRF-Protection",
+    "X-XSRF-Protection",
 )
 
 # TODO: Add and replace with more valid and arguable exclusion lists
 EXCLUSIONS_LIST = (
+    "sign-out",
+    "signout",
+    "logoff",
     "logout",
     "action=out",
     "action=logoff",
@@ -70,28 +79,5 @@ EXCLUSIONS_LIST = (
     "UserLogout",
     "osCsid",
     "action=logout",
-)
-
-# List of common errors shown when token is tampered.
-TOKEN_ERRORS = (
-    "the required form field",
-    "token could not",
-    "invalid token",
-    "wrong",
-    "error",
-    "not valid",
-    "please check your request",
-    "your browser did something unexpected",
-    "csrf" "clearing your cookies",
-    "tampered token",
-    "null",
-    "unacceptable",
-    "false",
-    "void",
-    "incorrect",
-    "inoperative",
-    "faulty",
-    "absurd",
-    "inconsistent",
-    "not acceptable",
+    "action=signout"
 )

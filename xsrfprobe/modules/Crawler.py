@@ -1,206 +1,186 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# -:-:-:-:-:-:-:-:-:#
-#    XSRFProbe     #
-# -:-:-:-:-:-:-:-:-:#
-
-# Author: 0xInfection
-# This module requires XSRFProbe
-# https://github.com/0xInfection/XSRFProbe
-
+import logging
 import re
-import urllib.error
+import time
 import urllib.parse
+from collections import deque
 from bs4 import BeautifulSoup
-
-from xsrfprobe.modules import Parser
-
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
+from xsrfprobe.files import config
 from xsrfprobe.files.config import EXCLUDE_DIRS
-from xsrfprobe.files.dcodelist import (
-    RID_DOUBLE,
-    RID_COMPILE,
-    RID_SINGLE,
-    NUM_COM,
-    NUM_SUB,
-)
-from xsrfprobe.core.request import Get
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.logger import ErrorLogger
+from xsrfprobe.core.request import requestMaker
 from xsrfprobe.files.discovered import INTERNAL_URLS
 
-
-class Handler:  # Main Crawler Handler
-    """
-    This is a crawler that is used to fetch all the Urls
-        associated to the HTML page, and susequently
-            crawl them and build checks for CSRFs.
-    """
-
-    def __init__(self, start, opener):
-        self.visited = []  # Visited stuff
-        self.toVisit = []  # To visit
-        self.uriPatterns = []  # Patterns to follow
-        self.currentURI = ""  # What is it now?
-        self.opener = opener  # Init build_opener
-        self.toVisit.append(start)  # Lets add up urls
+class Crawler():
+    def __init__(self, start):
+        self.logger = logging.getLogger('CrawlEngine')
+        self.visited: set[str] = set()
+        # Deterministic FIFO BFS queue of (url, depth). A set (`queued`) tracks
+        # membership so we never enqueue the same URL twice without paying the
+        # O(n) scan a plain list would need.
+        self.queue: "deque[tuple[str, int]]" = deque([(start, 0)])
+        self.queued: set[str] = {start}
+        self.uri_patterns = []
+        self.current_uri = ""
+        self.current_depth = 0
+        # Bounds (read once at construction). 0 means "unlimited".
+        self.max_urls = max(0, int(getattr(config, "CRAWL_MAX_URLS", 0) or 0))
+        self.max_depth = max(0, int(getattr(config, "CRAWL_MAX_DEPTH", 0) or 0))
+        self.crawl_timeout = max(0, int(getattr(config, "CRAWL_TIMEOUT", 0) or 0))
+        self.start_time = time.monotonic()
+        self._limit_logged = False
+        parsed_start = urllib.parse.urlparse(start)
+        self.target_netloc = parsed_start.netloc
+        self.block_patterns = [
+            r"\?date=\d{4}-\d{2}-\d{2}",
+            r"javascript:void\(0\)",
+            r"mailto:",
+            r"tel:",
+            r"#",
+            r"[?&]page=\d+$",
+            r"[?&]offset=\d+$",
+            r"[?&]sortby=[^&]+",
+            r"[?&]order=[^&]+",
+            r"[?&]utm_[^&]+",
+            r"[?&]ref=[^&]+",
+            r"[?&]fbclid=[^&]+",
+            r"[?&]gclid=[^&]+",
+            r"[?&]q=[^&]+",
+            r"[?&]s=[^&]+",
+            r"/search\?",
+            r"/logout",
+            r"[?&]month=\d{4}-\d{2}",
+            r"[?&]year=\d{4}",
+            r"(facebook|twitter|instagram|linkedin|pinterest)\.com",
+            r"/share\?",
+        ]
 
     def __next__(self):
-        self.currentURI = self.toVisit[0]  # To visit
-        self.toVisit.remove(self.currentURI)  # After its done
-        return self.currentURI
+        self.current_uri, self.current_depth = self.queue.popleft()
+        self.queued.discard(self.current_uri)
+        return self.current_uri
 
-    def getVisited(self):
-        return self.visited
+    def _budget_exhausted(self) -> bool:
+        """Whether a URL-count or time budget has been hit."""
+        if self.max_urls and len(self.visited) >= self.max_urls:
+            reason = f"max URLs ({self.max_urls}) reached"
+        elif self.crawl_timeout and (time.monotonic() - self.start_time) >= self.crawl_timeout:
+            reason = f"crawl timeout ({self.crawl_timeout}s) reached"
+        else:
+            return False
+        if not self._limit_logged:
+            self.logger.info("Crawl budget: %s; stopping crawl.", reason)
+            self._limit_logged = True
+        return True
 
-    def getToVisit(self):
-        return self.toVisit
+    def has_urls_to_visit(self):
+        if self._budget_exhausted():
+            return False
+        return bool(self.queue)
 
-    def noinit(self):
-        if self.toVisit:  # Incase there are urls left
-            return True  # +1
-        return False  # -1
+    def _enqueue(self, url: str, depth: int) -> None:
+        """Add a URL to the BFS queue if it's new, in-budget-depth and not excluded."""
+        if url in self.queued or url in self.visited:
+            return
+        if url in EXCLUDE_DIRS:
+            return
+        if self.max_depth and depth > self.max_depth:
+            return
+        self.queue.append((url, depth))
+        self.queued.add(url)
 
-    def addToVisit(self, Parser):
-        self.toVisit.append(Parser)  # Add what we have got
+    def process(self) -> BeautifulSoup | None:
+        url = self.current_uri
+        response = requestMaker(url=url)
+        if response and not response.status_code >= 400:
+            INTERNAL_URLS.append(url)
+        # Mark visited regardless of status so a failed fetch is not retried.
+        self.visited.add(url)
 
-    def process(self, root):
-        # Our first task is to remove urls that aren't to be scanned and have been
-        # passed via the --exclude parameter.
-        if EXCLUDE_DIRS:
-            for link in EXCLUDE_DIRS:
-                self.toVisit.remove(link)
-        url = self.currentURI  # Main Url (Current)
-        try:
-            query = Get(url)  # Open it (to check if it exists)
-            if query != None and not str(query.status_code).startswith(
-                "40"
-            ):  # Avoiding 40x errors
-                INTERNAL_URLS.append(url)  # We append it to the list of valid urls
-            else:
-                if url in self.toVisit:
-                    self.toVisit.remove(url)
-
-        except (
-            urllib.error.HTTPError,
-            urllib.error.URLError,
-        ) as msg:  # Incase there is an exception connecting to Url
-            verbout(colors.R, "HTTP Request Error: " + msg.__str__())
-            ErrorLogger(url, msg.__str__())
-            if url in self.toVisit:
-                self.toVisit.remove(url)  # Remove non-existent / errored urls
+        if not response or "html" not in response.headers.get("Content-Type", ""):
             return None
 
-        # Making sure the content type is in HTML format, so that BeautifulSoup
-        # can parse it...
-        if not query or not re.search("html", query.headers["Content-Type"]):
-            return None
+        if response.url != url:
+            url = response.url
+            self.visited.add(url)
 
-        # Just in case there is a redirection, we are supposed to follow it :D
-        verbout(colors.GR, "Making request to new location...")
-
-        if hasattr(query.headers, "Location"):
-            url = query.headers["Location"]
-
-        verbout(colors.O, "Reading response...")
-        response = query.content  # Read the response contents
-
+        content = response.text
         try:
-            verbout(colors.O, "Trying to parse crawler response...")
-            soup = BeautifulSoup(response)  # Parser init
-            verbout(colors.O, "Done parsing crawler response...")
-
+            soup = BeautifulSoup(content, "html.parser")
         except Exception:
-            verbout(colors.R, f"BeautifulSoup Error: {url}")
-            self.visited.append(url)
-            if url in self.toVisit:
-                self.toVisit.remove(url)
+            self.logger.error(f"Error during parsing: {url}")
             return None
 
-        verbout(colors.O, "Processing 'a' elements...")
-        for m in soup.findAll("a", href=True):  # find out all href^?://*
-            app = ""
-            # Making sure that href is not a function or doesn't begin with http://
-            if not re.match(r"javascript:", m["href"]) or re.match(
-                r"http(s?)://", m["href"]
-            ):
-                app = Parser.buildUrl(url, m["href"])
+        child_depth = self.current_depth + 1
+        for link in soup.find_all("a", href=True):
+            href = str(link["href"]).strip()
+            if re.match(r"javascript:|mailto:|tel:", href):
+                continue
 
-            # If we get a valid link
-            if app != "" and re.search(root, app):
-                # Getting rid of Urls starting with '../../../..'
-                res = urllib.parse.urlparse(app)
-                path = res.path
+            app = urllib.parse.urljoin(url, href)
 
-                if "../" in path:  # lets remove it
-                    # Remove starting ""/../"
-                    while path.startswith("/../"):
-                        path = path[len("/..") :]
+            if not self._is_in_scope(app):
+                continue
 
-                    endless_loop = 0
-                    while re.search(pattern=RID_DOUBLE, string=path):
-                        endless_loop += 1
+            app = self._clean_path(app)
+            if self._is_junk_url(app):
+                continue
+            uri_pattern = self._normalise_pattern(app)
+            if uri_pattern not in self.uri_patterns and app != url:
+                self.uri_patterns.append(uri_pattern)
+                if self._enqueue_allowed(child_depth):
+                    self.logger.info(f"Added to crawl queue: {app}")
+                    self._enqueue(app, child_depth)
 
-                        # Prevent an endless loop here
-                        if endless_loop > 100:
-                            verbout(
-                                colors.R,
-                                f"URL is causing an endless loop: {app}, "
-                                "resetting path to: /",
-                            )
-                            path = "/"
-                            break
+        return soup
 
-                        p = re.compile(RID_COMPILE)
-                        path = p.sub(repl="/", string=path)
+    def _enqueue_allowed(self, depth: int) -> bool:
+        """Cheap guard so we don't grow uri_patterns/log spam once bounds are hit."""
+        if self.max_depth and depth > self.max_depth:
+            return False
+        # Once enough URLs are already discovered/visited, stop queueing more.
+        if self.max_urls and (len(self.visited) + len(self.queued)) >= self.max_urls:
+            return False
+        return True
 
-                # Getting rid of URLs starting with './'
-                p = re.compile(RID_SINGLE)
-                path = p.sub("", path)
+    def _is_in_scope(self, url: str) -> bool:
+        """Check if a URL belongs to the same origin as the scan target."""
+        parsed = urllib.parse.urlparse(url)
+        return parsed.netloc == self.target_netloc
 
-                app = f"{res.scheme}://{res.hostname}"
-                if res.port:
-                    app += f":{res.port}"
-                app += path
+    def _clean_path(self, url: str) -> str:
+        res = urllib.parse.urlparse(url)
+        path = res.path
 
-                # Add new link to the queue only if its pattern has not been added yet
-                uriPattern = removeIDs(app)  # remove IDs
-                if self.notExist(uriPattern) and app != url:
-                    verbout(
-                        colors.G, f"Added :> {colors.BLUE}{app}"
-                    )  # display what we have got!
-                    self.toVisit.append(app)  # add up urls to visit
-                    self.uriPatterns.append(uriPattern)
+        if "../" in path:
+            while path.startswith("/../"):
+                path = path[len("/../") :]
 
-        self.visited.append(url)  # add urls visited
-        return soup  # go back!
+            endless_loop = 0
+            while re.search(r'/\.\./', path):
+                endless_loop += 1
+                if endless_loop > 100:
+                    self.logger.warning(f"Endless loop detected for URL: {url}. Resetting path to '/'.")
+                    path = "/"
+                    break
+                path = re.sub(r"/[^/]*/\.\./", "/", path)
 
-    def getUriPatterns(self):  # get uri patterns
-        return self.uriPatterns
+        path = re.sub(r"\./", "", path)
 
-    def notExist(self, test):  # 404 stuffs
-        if test not in self.uriPatterns:  # if non-existent
-            return 1
-        return 0  # else existent
+        app = f"{res.scheme}://{res.hostname}"
+        if res.port:
+            app += f":{res.port}"
+        app += path
+        if res.query:
+            app += f"?{res.query}"
+        return app
 
-    def addUriPatterns(self, Parser):  # append patterns to follow
-        self.uriPatterns.append(Parser)
+    def _is_junk_url(self, url: str) -> bool:
+        """Whether a URL matches a blocklisted pattern (share links, logout,
+        tracking params, infinite calendar pages, ...)."""
+        return any(re.search(pattern, url) for pattern in self.block_patterns)
 
-    def addVisited(self, Parser):  # visited stuffs added
-        self.visited.append(Parser)
-
-
-def removeIDs(Parser):
-    """
-    This function removes the Numbers from the Urls
-                    which are built.
-    """
-    p = re.compile(NUM_SUB)
-    Parser = p.sub("=", Parser)
-    p = re.compile(NUM_COM)
-    Parser = p.sub("\\1", Parser)
-    return Parser
+    def _normalise_pattern(self, url: str) -> str:
+        """Collapse numeric ids / titles so paginated or per-item URLs that
+        differ only by a value are treated as one crawl target (dedup key)."""
+        url = re.sub(r"=[0-9]+", "=", url)
+        url = re.sub(r"(title=)[^&]*", "\\1", url)
+        return url

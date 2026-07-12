@@ -1,278 +1,121 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+import logging
+from http.cookies import SimpleCookie
 
-# -:-:-:-:-:-:-:-:-:#
-#    XSRFProbe     #
-# -:-:-:-:-:-:-:-:-:#
-
-# Author: 0xInfection
-# This module requires XSRFProbe
-# https://github.com/0xInfection/XSRFProbe
-
-import sys
-from re import search, I
-
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.files.config import HEADER_VALUES, USER_AGENT, COOKIE_VALUE, REFERER_URL
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.core.request import Get
-from xsrfprobe.core.randua import RandomAgent
-from xsrfprobe.modules.Persistence import Persistence
-from xsrfprobe.core.logger import VulnLogger, NovulLogger
-from urllib.parse import urlsplit
-
-resps = []
+from xsrfprobe.core.request import requestMaker
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, testProgress
 
 
-def SameSite(url):
-    """
-    This function parses and verifies the cookies with
-                    SameSite Flags.
-    """
-    verbout(colors.RED, "\n +------------------------------------+")
-    verbout(colors.RED, " |   Cross Origin Cookie Validation   |")
-    verbout(colors.RED, " +------------------------------------+\n")
-    # Some Flags we'd need later...
-    foundx1 = 0x00
-    foundx2 = 0x00
-    foundx3 = 0x00
-    # Step 1: First we check that if the server returns any
-    # SameSite flag on Cookies with the same Referer as the netloc
-    verbout(colors.GREY, " [+] Lets examine how server reacts to same referer...")
-    gen_headers = HEADER_VALUES
-    gen_headers["User-Agent"] = USER_AGENT if USER_AGENT else RandomAgent()
-    verbout(colors.GR, "Setting Referer header same as host...")
+class CookieAnalyzer:
+    def __init__(self) -> None:
+        pass
 
-    # Setting the netloc as the referer for the first check.
-    gen_headers["Referer"] = urlsplit(url).netloc
-    if COOKIE_VALUE:
-        gen_headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
+    def setCookieHeaders(self, resp) -> list[str]:
+        """Return the individual ``Set-Cookie`` header lines from *resp*.
 
-    getreq = Get(url, headers=gen_headers)  # Making the request
-    map(HEADER_VALUES.pop, ["Referer", "Cookie"])
-    head = getreq.headers
-    for h in head:
-        # if search('cookie', h, I) or search('set-cookie', h, I):
-        if "Cookie".lower() in h.lower():
-            verbout(colors.G, "Found cookie header value...")
-            cookieval = head[h]
-            verbout(
-                colors.ORANGE, " [+] Cookie Received: " + colors.CYAN + str(cookieval)
-            )
-            m = cookieval.split(";")
-            verbout(colors.GR, "Examining Cookie...")
-            for q in m:
-                if search("SameSite", q, I):
-                    verbout(
-                        colors.G,
-                        "SameSite Flag " + colors.ORANGE + " detected on cookie!",
-                    )
-                    foundx1 = 0x01
-                    q = q.split("=")[1].strip()
-                    verbout(colors.C, "Cookie: " + colors.ORANGE + q)
-                    break
-        else:
-            foundx3 = 0x02
-    if foundx1 == 0x01:
-        verbout(
-            colors.R,
-            " [+] Endpoint "
-            + colors.ORANGE
-            + "SameSite Flag Cookie Validation"
-            + colors.END
-            + " Present!",
-        )
+        ``requests`` folds duplicate response headers into a single
+        comma-joined string in ``resp.headers``, which corrupts cookie parsing
+        because both Expires dates and separate cookies contain commas. urllib3
+        keeps every header line intact in the raw header store, so read from
+        there (``getlist``/``get_all``) when available and only fall back to the
+        folded value as a last resort.
+        """
+        raw = getattr(resp, "raw", None)
+        raw_headers = getattr(raw, "headers", None)
+        if raw_headers is not None:
+            for accessor in ("getlist", "get_all"):
+                fn = getattr(raw_headers, accessor, None)
+                if fn is None:
+                    continue
+                try:
+                    items = fn("Set-Cookie")
+                except Exception:
+                    items = None
+                if items:
+                    return list(items)
 
-    # Step 2: Now we check security mechanisms when the Referer is
-    # different, i.e. request originates from a different url other
-    # than the host. (This time without the Cookie assigned)
-    verbout(
-        colors.GREY, " [+] Lets examine how server reacts to a fake external referer..."
-    )
-    gen_headers = HEADER_VALUES
-    gen_headers["User-Agent"] = (
-        USER_AGENT if USER_AGENT else RandomAgent()
-    )  # Setting user-agents
-    # Assigning a fake referer for the second check, but no cookie.
-    gen_headers["Referer"] = REFERER_URL
-    gen_headers.pop("Cookie", None)
-    getreq = Get(url, headers=gen_headers)
-    HEADER_VALUES.pop("Referer", None)
-    head = getreq.headers  # Getting headers from requests
-    for h in head:
-        # If search('cookie', h, I) or search('set-cookie', h, I):
-        if "Cookie".lower() in h.lower():
-            verbout(colors.G, "Found cookie header value...")
-            cookieval = head[h]
-            verbout(
-                colors.ORANGE, " [+] Cookie Received: " + colors.CYAN + str(cookieval)
-            )
-            m = cookieval.split(";")
-            verbout(colors.GR, "Examining Cookie...")
-            for q in m:
-                if search("SameSite", q, I):
-                    verbout(
-                        colors.G,
-                        "SameSite Flag " + colors.ORANGE + " detected on cookie!",
-                    )
-                    foundx2 = 0x01
-                    q = q.split("=")[1].strip()
-                    verbout(colors.C, "Cookie: " + colors.ORANGE + q)
-                    break
-        else:
-            foundx3 = 0x02
+        single = resp.headers.get("Set-Cookie", "")
+        return [single] if single else []
 
-    if foundx1 == 0x01:
-        verbout(
-            colors.R,
-            " [+] Endpoint "
-            + colors.ORANGE
-            + "SameSite Flag Cookie Validation"
-            + colors.END
-            + " Present!",
-        )
+    def parseCookie(self, header_line: str) -> list[dict]:
+        """
+        Parse a single Set-Cookie header line into per-cookie attribute dicts using the stdlib cookie parser (robust to attribute ordering and quoting) rather than a hand-rolled split.
+        """
+        logger = logging.getLogger("CookieParser")
+        jar = SimpleCookie()
+        try:
+            jar.load(header_line)
+        except Exception:
+            logger.info("Could not parse Set-Cookie line: %s", header_line)
+            return []
 
-    # Step 3: And finally comes the most important step. Lets see how
-    # the site reacts to a valid cookie (ofc supplied by the user) coming
-    # from a a different site, i.e Referer set to other than host.
-    # This is the most crucial part of the detection.
-    #
-    # TODO: Improve the logic in detection.
-    verbout(
-        colors.GREY,
-        " [+] Lets examine how server reacts to valid cookie from a different referer...",
-    )
-    gen_headers = HEADER_VALUES
-    gen_headers["User-Agent"] = USER_AGENT or RandomAgent()
-    # Assigning a fake referer for third request, this time with cookie ;)
-    gen_headers["Referer"] = REFERER_URL
-    if COOKIE_VALUE:
-        gen_headers["Cookie"] = ",".join(cookie for cookie in COOKIE_VALUE)
+        cookies = []
+        for name, morsel in jar.items():
+            cookies.append({
+                "name": name,
+                # SameSite (added to http.cookies in 3.8) is "" when absent.
+                "samesite": (morsel["samesite"] or "").strip().lower(),
+                "secure": bool(morsel["secure"]),
+                "httponly": bool(morsel["httponly"]),
+            })
+        return cookies
 
-    getreq = Get(url, headers=gen_headers)
-    HEADER_VALUES.pop("Referer", None)
-    head = getreq.headers
-    for h in head:
-        # if search('cookie', h, I) or search('set-cookie', h, I):
-        if "Cookie".lower() in h.lower():
-            verbout(colors.G, "Found cookie header value...")
-            cookieval = head[h]
-            verbout(
-                colors.ORANGE, " [+] Cookie Received: " + colors.CYAN + str(cookieval)
-            )
-            m = cookieval.split(";")
-            verbout(colors.GR, "Examining Cookie...")
-            for q in m:
-                if search("samesite", q.lower(), I):
-                    verbout(
-                        colors.G,
-                        "SameSite Flag "
-                        + colors.ORANGE
-                        + " detected on cookie on Cross Origin Request!",
-                    )
-                    foundx3 = 0x01
-                    q = q.split("=")[1].strip()
-                    verbout(colors.C, "Cookie: " + colors.ORANGE + q)
-                    break
-        else:
-            foundx3 = 0x02
+    def analyseCookies(self, url) -> bool:
+        """
+        Fetch url and analyse the SameSite posture of the cookies it sets.
+        """
+        logger = logging.getLogger("CookieAnalyser")
+        logger.info("Analysing cross-origin cookie validation for %s", url)
 
-    if foundx1 == 0x01:
-        verbout(
-            colors.R,
-            "Endpoint "
-            + colors.ORANGE
-            + "SameSite Flag Cookie Validation"
-            + colors.END
-            + " is Present!",
-        )
+        resp = requestMaker(url, method="GET")
+        if resp is None:
+            logger.error("No response received; the site is likely down: %s", url)
+            return False
 
-    if (foundx1 == 0x01 and foundx3 == 0x00) and (foundx2 == 0x00 or foundx2 == 0x01):
-        print(
-            colors.GREEN
-            + " [+] Endpoint "
-            + colors.BG
-            + " NOT VULNERABLE to ANY type of CSRF attacks! "
-            + colors.END
-        )
-        print(
-            colors.GREEN
-            + " [+] Protection Method Detected : "
-            + colors.BG
-            + " SameSite Flag on Cookies "
-            + colors.END
-        )
-        NovulLogger(url, "SameSite Flag set on Cookies on Cross-Origin Requests.")
-        # If a SameSite flag is set on cookies, then the application is totally fool-proof
-        # against CSRF attacks unless there is some XSS stuff on it. So for now the job of
-        # this application is done. We need to confirm before we quit.
-        oq = input(colors.BLUE + " [+] Continue scanning? (y/N) :> ")
-        if oq.lower().startswith("n"):
-            sys.exit("\n" + colors.R + "Shutting down XSRFProbe...\n")
-    elif foundx1 == 0x02 and foundx2 == 0x02 and foundx3 == 0x02:
-        print(
-            colors.GREEN
-            + " [+] Endpoint "
-            + colors.BG
-            + " NOT VULNERABLE "
-            + colors.END
-            + colors.GREEN
-            + " to CSRF attacks!"
-        )
-        print(
-            colors.GREEN
-            + " [+] Type: "
-            + colors.BG
-            + " No Cookie Set while Cross Origin Requests "
-            + colors.END
-        )
-        NovulLogger(url, "No cookie set on Cross-Origin Requests.")
-    else:
-        verbout(
-            colors.R,
-            "Endpoint "
-            + colors.ORANGE
-            + "Cross Origin Cookie Validation"
-            + colors.END
-            + " Not Present!",
-        )
-        verbout(
-            colors.R,
-            "Heuristic(s) reveal endpoint might be "
-            + colors.BY
-            + " VULNERABLE "
-            + colors.END
-            + " to CSRFs...",
-        )
-        print(
-            colors.CYAN
-            + " [+] Possible CSRF Vulnerability Detected : "
-            + colors.GREY
-            + url
-        )
-        print(
-            colors.ORANGE
-            + " [!] Possible Vulnerability Type: "
-            + colors.BY
-            + " No Cross Origin Cookie Validation Presence "
-            + colors.END
-        )
-        VulnLogger(
-            url,
-            "No Cookie Validation on Cross-Origin Requests.",
-            "[i] Headers: " + str(head),
-        )
+        cookies = []
+        for line in self.setCookieHeaders(resp):
+            cookies.extend(self.parseCookie(line))
 
+        if not cookies:
+            logger.info("No cookies set on the response.")
+            return False
 
-def Cookie(url, request):
-    """
-    This module is for checking the varied HTTP Cookies
-            and the related security on them to
-                    prevent CSRF attacks.
-    """
-    verbout(colors.GR, "Proceeding for cookie based checks...")
-    SameSite(url)
-    Persistence(url, request)
+        has_protection = False
+        for c in cookies:
+            name = c["name"]
+            samesite = c["samesite"]
+
+            if samesite == "none":
+                logger.warning("[C1] Cookie '%s' set with SameSite=None (offers no CSRF protection).", name)
+                VulnLogger(url, f"Cookie '{name}' set with SameSite=None (offers no CSRF protection).", test_id="C1")
+                if not c["secure"]:
+                    # SameSite=None without Secure is rejected outright by modern
+                    # browsers, so the cookie is effectively unsent cross-site.
+                    logger.warning("[C1] Cookie '%s' uses SameSite=None without the Secure attribute; modern browsers reject it.", name)
+                    VulnLogger(url, f"Cookie '{name}' uses SameSite=None without the Secure attribute (rejected by modern browsers).", test_id="C1")
+            elif samesite == "lax":
+                logger.info("[C1] Cookie '%s' set with SameSite=Lax (blocks cross-site POST).", name)
+                NovulLogger(url, f"Cookie '{name}' set with SameSite=Lax (blocks cross-site POST).", test_id="C1")
+                has_protection = True
+            elif samesite == "strict":
+                logger.info("[C1] Cookie '%s' set with SameSite=Strict (blocks all cross-site requests).", name)
+                NovulLogger(url, f"Cookie '{name}' set with SameSite=Strict.", test_id="C1")
+                has_protection = True
+            else:
+                # No explicit SameSite. Modern browsers default to Lax, which
+                # already blocks cross-site POST CSRF (except top-level GET and a
+                # short post-set window). Legacy clients still send it cross-site,
+                # so this is weaker than an explicit attribute but not fully open.
+                logger.warning("[C1] Cookie '%s' has no explicit SameSite attribute (relies on the browser's Lax-by-default; not enforced on legacy clients).", name)
+                NovulLogger(url, f"Cookie '{name}' has no explicit SameSite attribute (relies on the browser's Lax-by-default; not enforced on legacy clients).", test_id="C1")
+
+        return has_protection
+
+    def performSameSiteTests(self, url) -> bool:
+        """
+        Run the SameSite cookie tests.
+        """
+        logger = logging.getLogger("CookieAnalyser")
+        with testProgress(logger, "C1", "SameSite cookie analysis") as tp_result:
+            has_protection = self.analyseCookies(url)
+            tp_result["status"] = "protected" if has_protection else "no SameSite"
+        return not has_protection

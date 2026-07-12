@@ -14,328 +14,370 @@ import argparse
 import sys
 import urllib.parse
 import os
-import re
-
-import tld
-import tld.exceptions
 
 from xsrfprobe.files import config
-from xsrfprobe.core.updater import updater
-from xsrfprobe.files.dcodelist import IP
-from xsrfprobe import __version__, __license__
+from xsrfprobe.core.banner import banner
+from xsrfprobe.core import __version__, __license__
 
-# Processing command line arguments
-parser = argparse.ArgumentParser(usage="xsrfprobe -u <url> <args>")
-parser._action_groups.pop()
 
-# A simple hack to have required arguments and optional arguments separately
-required = parser.add_argument_group("Required Arguments")
-optional = parser.add_argument_group("Optional Arguments")
+def options() -> argparse.Namespace:
+    """
+    This function is intended to parse the command line arguments
+    and set the global variables accordingly.
+    """
+    banner()
 
-# Required Options
-required.add_argument("-u", "--url", help="Main URL to test", dest="url")
+    # Processing command line arguments
+    parser = argparse.ArgumentParser(usage="xsrfprobe -u <url> <args>")
+    parser._action_groups.pop()
 
-# Optional Arguments (main stuff and necessary)
-optional.add_argument(
-    "-c",
-    "--cookie",
-    help="Cookie value to be requested with each successive request. If there are multiple cookies, separate them with commas. For example: `-c PHPSESSID=i837c5n83u4, _gid=jdhfbuysf`.",
-    dest="cookie",
-)
-optional.add_argument(
-    "-o",
-    "--output",
-    help="Output directory where files to be stored. Default is the output/ folder where all files generated will be stored.",
-    dest="output",
-)
-optional.add_argument(
-    "-d",
-    "--delay",
-    help="Time delay between requests in seconds. Default is zero.",
-    dest="delay",
-    type=float,
-)
-optional.add_argument(
-    "-q",
-    "--quiet",
-    help="Set the DEBUG mode to quiet. Report only when vulnerabilities are found. Minimal output will be printed on screen. ",
-    dest="quiet",
-    action="store_true",
-)
-optional.add_argument(
-    "-H",
-    "--headers",
-    help='Comma separated list of custom headers you\'d want to use. For example: ``--headers "Accept=text/php, X-Requested-With=Dumb"``.',
-    dest="headers",
-    type=str,
-)
-optional.add_argument(
-    "-v",
-    "--verbose",
-    help="Increase the verbosity of the output (e.g., -vv is more than -v). ",
-    dest="verbose",
-    action="store_true",
-)
-optional.add_argument(
-    "-t",
-    "--timeout",
-    help="HTTP request timeout value in seconds. The entered value may be either in floating point decimal or an integer. Example: ``--timeout 10.0``",
-    dest="timeout",
-    type=(float or int),
-)
-optional.add_argument(
-    "-E",
-    "--exclude",
-    help="Comma separated list of paths or directories to be excluded which are not in scope. These paths/dirs won't be scanned. For example: `--exclude somepage/, sensitive-dir/, pleasedontscan/`",
-    dest="exclude",
-    type=str,
-)
+    # A simple hack to have required arguments and optional arguments separately
+    required = parser.add_argument_group("Required Arguments")
+    optional = parser.add_argument_group("Optional Arguments")
 
-# Other Options
-# optional.add_argument('-h', '--help', help='Show this help message and exit', dest='disp', default=argparse.SUPPRESS, action='store_true')
-optional.add_argument(
-    "--user-agent",
-    help="Custom user-agent to be used. Only one user-agent can be specified.",
-    dest="user_agent",
-    type=str,
-)
-optional.add_argument(
-    "--max-chars",
-    help="Maximum allowed character length for the custom token value to be generated. For example: `--max-chars 5`. Default value is 6.",
-    dest="maxchars",
-    type=int,
-)
-optional.add_argument(
-    "--crawl",
-    help="Crawl the whole site and simultaneously test all discovered endpoints for CSRF.",
-    dest="crawl",
-    action="store_true",
-)
-optional.add_argument(
-    "--no-analysis",
-    help="Skip the Post-Scan Analysis of Tokens which were gathered during requests",
-    dest="skipal",
-    action="store_true",
-)
-optional.add_argument(
-    "--malicious",
-    help="Generate a malicious CSRF Form which can be used in real-world exploits.",
-    dest="malicious",
-    action="store_true",
-)
-optional.add_argument(
-    "--skip-poc",
-    help="Skip the PoC Form Generation of POST-Based Cross Site Request Forgeries.",
-    dest="skippoc",
-    action="store_true",
-)
-optional.add_argument(
-    "--no-verify",
-    help="Do not verify SSL certificates with requests.",
-    dest="no_verify",
-    action="store_true",
-)
-optional.add_argument(
-    "--display",
-    help="Print out response headers of requests while making requests.",
-    dest="disphead",
-    action="store_true",
-)
-optional.add_argument(
-    "--no-colors",
-    help="Disable colors.",
-    dest="nocolors",
-    action="store_true",
-)
-optional.add_argument(
-    "--update",
-    help="Update XSRFProbe to latest version on GitHub via git.",
-    dest="update",
-    action="store_true",
-)
-optional.add_argument(
-    "--random-agent",
-    help="Use random user-agents for making requests.",
-    dest="randagent",
-    action="store_true",
-)
-optional.add_argument(
-    "--version",
-    help="Display the version of XSRFProbe and exit.",
-    dest="version",
-    action="store_true",
-)
-optional.add_argument(
-    "--json",
-    help="Output the results into a JSON file.",
-    dest="json",
-    action="store_true",
-)
-args = parser.parse_args()
+    # Required Options
+    required.add_argument("-u", "--url", help="Main URL to test", dest="url")
 
-# Hide colors if user doesn't want it
-if args.nocolors:
-    config.NO_COLORS = True
-
-# Support hiding the colors "early"
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-print(
-    f"""
-   {colors.RED}XSRFProbe{colors.END}, {colors.GREY}A {colors.ORANGE}Cross Site Request Forgery """
-    f"""{colors.GREY}Audit Toolkit{colors.END}
-"""
-)
-
-if not len(sys.argv) > 1:
-    parser.print_help()
-    quit()
-
-# Update XSRFProbe to latest version
-if args.update:
-    updater()
-    quit()
-
-# Print out XSRFProbe version
-if args.version:
-    print(
-        f"{colors.CYAN} [+] {colors.RED}XSRFProbe Version{colors.END} : v" + __version__
+    # Optional Arguments (main stuff and necessary)
+    optional.add_argument(
+        "-c",
+        "--cookie",
+        help="Cookie value to be requested with each successive request. If there are multiple cookies, separate them with commas. For example: `-c PHPSESSID=i837c5n83u4, _gid=jdhfbuysf`.",
+        dest="cookie",
     )
-    print(
-        f"{colors.CYAN} [+] {colors.RED}XSRFProbe License{colors.END} : "
-        + __license__
-        + "\n"
+    optional.add_argument(
+        "-o",
+        "--output",
+        help="Output directory where files to be stored. Default is the output/ folder where all files generated will be stored.",
+        dest="output",
     )
-    quit()
+    optional.add_argument(
+        "-d",
+        "--delay",
+        help="Time delay between requests in seconds. Default is zero.",
+        dest="delay",
+        type=float,
+    )
+    optional.add_argument(
+        "-q",
+        "--quiet",
+        help="Set the DEBUG mode to quiet. Report only when vulnerabilities are found. Minimal output will be printed on screen. ",
+        dest="quiet",
+        action="store_true",
+    )
+    optional.add_argument(
+        "-H",
+        "--headers",
+        help='Comma separated list of custom headers you\'d want to use. For example: ``--headers "Accept=text/php, X-Requested-With=XHR"``.',
+        dest="headers",
+        type=str,
+    )
+    optional.add_argument(
+        "-v",
+        "--verbose",
+        help="Increase the verbosity of the output (e.g., -vv is more than -v). ",
+        dest="verbose",
+        action="store_true",
+    )
+    optional.add_argument(
+        "-t",
+        "--timeout",
+        help="HTTP request timeout value in seconds. The entered value may be either in floating point decimal or an integer. Example: ``--timeout 10.0``",
+        dest="timeout",
+        type=(float or int),
+    )
+    optional.add_argument(
+        "-E",
+        "--exclude",
+        help="Comma-separated paths / file containing paths (separated by newlines) to exclude when crawling and scanning.",
+        dest="exclude",
+        type=str,
+    )
 
-# Now lets update some global config variables
-if args.maxchars:
-    config.TOKEN_GENERATION_LENGTH = args.maxchars
+    # Other Options
+    optional.add_argument(
+        "--user-agent",
+        help="Custom user-agent to be used. Only one user-agent can be specified.",
+        dest="user_agent",
+        type=str,
+    )
+    optional.add_argument(
+        "--max-chars",
+        help="Maximum allowed character length for the custom token value to be generated. For example: `--max-chars 5`. Default value is 6.",
+        dest="maxchars",
+        type=int,
+    )
+    optional.add_argument(
+        "--crawl",
+        help="Crawl the whole site and simultaneously test all discovered endpoints for CSRF.",
+        dest="crawl",
+        action="store_true",
+    )
+    optional.add_argument(
+        "--max-urls",
+        help="Maximum number of URLs to crawl (with --crawl). 0 means unlimited. Default: 200.",
+        dest="max_urls",
+        type=int,
+    )
+    optional.add_argument(
+        "--max-depth",
+        help="Maximum link depth to crawl from the seed URL (with --crawl). 0 means unlimited. Default: 5.",
+        dest="max_depth",
+        type=int,
+    )
+    optional.add_argument(
+        "--crawl-timeout",
+        help="Wall-clock time budget for crawling in seconds (with --crawl). 0 means unlimited. Default: 0.",
+        dest="crawl_timeout",
+        type=int,
+    )
+    optional.add_argument(
+        "--no-analysis",
+        help="Skip the Post-Scan Analysis of Tokens which were gathered during requests",
+        dest="skipal",
+        action="store_true",
+    )
+    optional.add_argument(
+        "--skip-poc",
+        help="Skip the PoC Form Generation of POST-Based Cross Site Request Forgeries.",
+        dest="skippoc",
+        action="store_true",
+    )
+    optional.add_argument(
+        "--no-verify",
+        help="Do not verify SSL certificates with requests.",
+        dest="no_verify",
+        action="store_true",
+    )
+    optional.add_argument(
+        "--debug",
+        help="Print out requests and responses while making requests.",
+        dest="debug",
+        action="store_true",
+    )
+    optional.add_argument(
+        "--random-agent",
+        help="Use random user-agents for making requests.",
+        dest="randagent",
+        action="store_true",
+    )
+    optional.add_argument(
+        "--version",
+        help="Display the version of XSRFProbe and exit.",
+        dest="version",
+        action="store_true",
+    )
+    optional.add_argument(
+        "--json",
+        help="Output the results into a JSON file.",
+        dest="json",
+        action="store_true",
+    )
+    optional.add_argument(
+        "--force-header-tests",
+        help="Run Referer/Origin header tests even when an anti-CSRF token is confirmed enforced. Research/opt-in only: bypass requests still carry a valid token, so results on token-protected endpoints are false positives.",
+        dest="force_header_tests",
+        action="store_true",
+    )
 
-# Setting custom user-agent
-if args.user_agent:
-    config.USER_AGENT = args.user_agent
+    # Browser integration
+    browser_group = parser.add_argument_group("Browser Integration")
+    browser_group.add_argument(
+        "--browser",
+        help="Enable headless Firefox browser for SameSite and browser-dependent tests.",
+        dest="browser",
+        action="store_true",
+    )
+    browser_group.add_argument(
+        "--auto-validate-poc",
+        help="Auto-validate generated PoC files in headless browser (requires --browser).",
+        dest="auto_validate_poc",
+        action="store_true",
+    )
+    browser_group.add_argument(
+        "--geckodriver-path",
+        help="Path to geckodriver binary. Default: assumes geckodriver is in PATH.",
+        dest="geckodriver_path",
+        type=str,
+        default="",
+    )
+    browser_group.add_argument(
+        "--browser-timeout",
+        help="Page load timeout for headless browser in seconds. Default: 30.",
+        dest="browser_timeout",
+        type=int,
+        default=30,
+    )
+    browser_group.add_argument(
+        "--enum-subdomains",
+        help="Enable subdomain enumeration via crt.sh for SameSite=Strict sibling domain bypass tests.",
+        dest="enum_subdomains",
+        action="store_true",
+    )
+    browser_group.add_argument(
+        "--no-form-submit",
+        help="Do not submit forms during scanning. Only perform passive token detection.",
+        dest="no_form_submit",
+        action="store_true",
+    )
 
-# Option to skip analysis
-if args.skipal:
-    config.SCAN_ANALYSIS = False
+    args = parser.parse_args()
 
-# Option to skip poc generation
-if args.skippoc:
-    config.POC_GENERATION = False
+    if not len(sys.argv) > 1:
+        parser.print_help()
+        quit()
 
-# Option to generate malicious form
-if args.malicious:
-    config.GEN_MALICIOUS = True
 
-# Updating main root url
-if not args.version and not args.update:
-    if args.url:  # and not args.help:
-        if "http" in args.url:
-            config.SITE_URL = args.url
-        else:
-            config.SITE_URL = "http://" + args.url
+    # Print out XSRFProbe version
+    if args.version:
+        print("[+] XSRFProbe Version: v%s" % __version__)
+        print("[+] XSRFProbe License: %s\n" % __license__)
+        quit()
+
+    if not args.url:
+        print("[-] You must supply a URL to test.")
+        quit()
     else:
-        print(colors.R + "You must supply a url/endpoint.")
+        config.SITE_URL = args.url
+        parsed_uri = urllib.parse.urlparse(args.url)
 
-# Crawl the site if --crawl supplied.
-if args.crawl:
-    config.CRAWL_SITE = True
-    # Turning off the display header feature due to too much log generation.
-    config.DISPLAY_HEADERS = False
+        if not parsed_uri.scheme:
+            print("[-] Invalid URL format. Please provide a valid URL including a scheme.")
+            quit()
 
-if args.cookie:
-    # Assigning Cookie
-    for cook in args.cookie.split(","):
-        config.COOKIE_VALUE.append(cook)
-        # This is necessary when a cookie value is supplied
-        # Since if the user-agent used to make the request changes
-        # from time to time, the remote site might trigger up
-        # security mechanisms (or worse, perhaps block your ip?)
-        config.USER_AGENT_RANDOM = False
-
-# Set the headers displayer to 1 (actively display headers)
-if args.disphead:
-    config.DISPLAY_HEADERS = True
-
-# Set the requests not to verify SSL certificates
-if args.no_verify:
-    config.VERIFY_CERT = False
-
-# Timeout value
-if args.timeout:
-    config.TIMEOUT_VALUE = args.timeout
-
-# Custom header values if specified
-if args.headers:
-    # NOTE: As a default idea, when the user supplies custom headers, we
-    # simply add the custom headers to a list of existing headers in
-    # files/config.py.
-    # Uncomment the following lines to just reinitialise the headers every time
-    # they make a request.
-    #
-    # config.HEADER_VALUES = {}
-    for m in args.headers.split(","):
-        config.HEADER_VALUES[m.split("=")[0].strip()] = m.split("=")[
-            1
-        ].strip()  # nice hack ;)
-
-if args.exclude:
-    exc = args.exclude
-    # config.EXCLUDE_URLS = [s for s in exc.split(',').strip()]
-    m = exc.split(",").strip()
-    for s in m:
-        config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s))
-
-if args.randagent:
-    # If random-agent argument supplied...
-    config.USER_AGENT_RANDOM = True
-    # Turn off a single User-Agent mechanism...
-    config.USER_AGENT = ""
-
-if config.SITE_URL:
-    try:
+        hostname = parsed_uri.hostname
         if args.output:
+            if not args.output.endswith("/"):
+                args.output = args.output + "/"
             # If output directory is mentioned...
             try:
-                if not os.path.exists(f"{args.output}{tld.get_fld(config.SITE_URL)}"):
-                    os.makedirs(f"{args.output}{tld.get_fld(config.SITE_URL)}")
+                if not os.path.exists(f"{args.output}{hostname}"):
+                    os.makedirs(f"{args.output}{hostname}")
             except FileExistsError:
                 pass
 
-            config.OUTPUT_DIR = f"{args.output}{tld.get_fld(config.SITE_URL)}/"
+            config.OUTPUT_DIR = f"{args.output}{hostname}/"
         else:
             try:
-                os.makedirs(f"xsrfprobe-output/{tld.get_fld(config.SITE_URL)}")
+                os.makedirs(f"xsrfprobe-output/{hostname}")
             except FileExistsError:
                 pass
 
-            config.OUTPUT_DIR = f"xsrfprobe-output/{tld.get_fld(config.SITE_URL)}/"
+            config.OUTPUT_DIR = f"xsrfprobe-output/{hostname}/"
 
-    # When this exception turns out, we know the user has supplied a IP not domain
-    except tld.exceptions.TldDomainNotFound:
-        direc = re.search(IP, config.SITE_URL).group(0)
-        if args.output:
-            # If output directory is mentioned...
-            try:
-                if not os.path.exists(f"{args.output}{direc}"):
-                    os.makedirs(f"{args.output}{direc}")
-            except FileExistsError:
-                pass
+    # Now lets update some global config variables
+    if args.maxchars:
+        config.TOKEN_GENERATION_LENGTH = args.maxchars
 
-            config.OUTPUT_DIR = f"{args.output}{direc}/"
+    # Setting custom user-agent
+    if args.user_agent:
+        config.USER_AGENT = args.user_agent
+
+    # Option to skip analysis
+    if args.skipal:
+        config.SCAN_ANALYSIS = False
+
+    # Option to skip poc generation
+    if args.skippoc:
+        config.POC_GENERATION = False
+
+    # Crawl the site if --crawl supplied.
+    if args.crawl:
+        config.CRAWL_SITE = True
+
+    # Crawl bounds (only meaningful with --crawl). Accept 0 as "unlimited".
+    if args.max_urls is not None:
+        config.CRAWL_MAX_URLS = max(0, args.max_urls)
+    if args.max_depth is not None:
+        config.CRAWL_MAX_DEPTH = max(0, args.max_depth)
+    if args.crawl_timeout is not None:
+        config.CRAWL_TIMEOUT = max(0, args.crawl_timeout)
+
+    if args.cookie:
+        # Assigning Cookie
+        for cook in args.cookie.split(","):
+            config.COOKIE_VALUE.append(cook.strip())
+            # This is necessary when a cookie value is supplied
+            # Since if the user-agent used to make the request changes
+            # from time to time, the remote site might trigger up
+            # security mechanisms (or worse, perhaps block your ip?)
+            config.USER_AGENT_RANDOM = False
+
+    # Set the requests not to verify SSL certificates
+    if args.no_verify:
+        config.VERIFY_CERT = False
+
+    # Timeout value
+    if args.timeout:
+        config.TIMEOUT_VALUE = args.timeout
+
+    # Delay between requests
+    if args.delay:
+        config.DELAY_VALUE = args.delay
+
+    # Custom header values if specified
+    if args.headers:
+        # NOTE: As a default idea, when the user supplies custom headers, we
+        # simply add the custom headers to a list of existing headers in
+        # files/config.py.
+        for head in args.headers.split(","):
+            key, val = head.split("=")
+            config.HEADER_VALUES[key.strip()] = val.strip()
+
+    if args.exclude:
+        # check if the exclude parameter has a file path
+        if os.path.exists(args.exclude):
+            with open(args.exclude, "r") as f:
+                m = f.readlines()
+                for s in m:
+                    if not s.startswith("/"):
+                        s = "/" + s
+                    config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s))
         else:
-            try:
-                os.makedirs(f"xsrfprobe-output/{direc}")
-            except FileExistsError:
-                pass
+            exc = args.exclude
+            m = [s.strip() for s in exc.split(",")]
+            for s in m:
+                if not s.endswith("/"):
+                    s += "/"
 
-            config.OUTPUT_DIR = f"xsrfprobe-output/{direc}/"
+                config.EXCLUDE_DIRS.append(urllib.parse.urljoin(config.SITE_URL, s))
 
-if args.quiet:
-    config.DEBUG = False
+    if args.randagent:
+        # If random-agent argument supplied we override the default user-agent and force override cookies
+        config.USER_AGENT_RANDOM = True
+        print("[*] Random User-Agent mode activated.")
+        # Turn off a single User-Agent mechanism...
+        config.USER_AGENT = ""
 
-if args.json:
-    config.JSON_OUTPUT = True
+    if args.debug:
+        config.DEBUG = True
+
+    if args.json:
+        config.JSON_OUTPUT = True
+
+    if args.force_header_tests:
+        config.FORCE_HEADER_TESTS = True
+
+    # Browser integration config
+    if args.browser:
+        config.BROWSER_ENABLED = True
+
+    if args.auto_validate_poc:
+        config.AUTO_VALIDATE_POC = True
+        if not config.BROWSER_ENABLED:
+            print("[!] --auto-validate-poc requires --browser. Enabling browser mode.")
+            config.BROWSER_ENABLED = True
+
+    if args.geckodriver_path:
+        config.GECKODRIVER_PATH = args.geckodriver_path
+
+    if args.browser_timeout:
+        config.BROWSER_TIMEOUT = args.browser_timeout
+
+    if args.enum_subdomains:
+        config.ENUM_SUBDOMAINS = True
+
+    if args.no_form_submit:
+        config.FORM_SUBMISSION = False
+
+    return args

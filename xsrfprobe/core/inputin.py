@@ -5,80 +5,73 @@
 #    XSRF Probe     #
 # -:-:-:-:-:-:-::-:-:#
 
-# Author: 0xInfection (@_tID)
+# Author: 0xInfection
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-from urllib.parse import urlparse
-import re
-
+import sys
+import logging
 import requests
 
-from xsrfprobe.files.config import TIMEOUT_VALUE
-import xsrfprobe.core.colors
-
-colors = xsrfprobe.core.colors.color()
-
-from xsrfprobe.core.verbout import verbout
-from xsrfprobe.files.dcodelist import IP
-from xsrfprobe.core.logger import ErrorLogger
-from xsrfprobe.files.config import SITE_URL, CRAWL_SITE, VERIFY_CERT
+from xsrfprobe.files import config
+from xsrfprobe.core.logger import PROGRESS
+from urllib.parse import urlparse
+from xsrfprobe.core import request as request_module
+from xsrfprobe.core.request import requestMaker
 
 
-def inputin():
+def inputProcessor() -> tuple[str, str]:
     """
     This module actually parses the url passed by the user.
     """
-    web = ""
-    if SITE_URL:
-        web = SITE_URL  # If already assigned
+    logger = logging.getLogger("inputProcessor")
+    web = config.SITE_URL
 
-    if not web.endswith("/"):
-        web = web + "/"
-
-    if "http" not in web:  # add protocol to site
-        web = "http://" + web
+    if "://" not in web:  # add protocol to site
+        logger.warning("Protocol not provided. Assuming HTTP.")
+        web = "http://" + web  # assume http if not provided
 
     try:
-        web0 = urlparse(web).netloc
+        parsed_uri = urlparse(web)
+        logger.debug("URL seems to be a domain.")
+
     except Exception:
-        web0 = re.search(IP, web).group(0)
+        logger.critical("Invalid URL format. Please provide a valid URL.")
+        sys.exit(1)
 
+    endpoint = '/' if not parsed_uri.path else parsed_uri.path
+    resp = None
     try:
-        print(
-            colors.O + "Testing site " + colors.CYAN + web0 + colors.END + " status..."
-        )
-        requests.get(web, timeout=TIMEOUT_VALUE)  # test whether site is up or not
-        print(colors.GREEN + " [+] Site seems to be up!" + colors.END)
-    except requests.exceptions.RequestException:  # if site is down
-        print(colors.R + "Site seems to be down...")
-        quit()
+        logger.log(PROGRESS, "Testing '%s' endpoint status...", endpoint)
+        resp = requestMaker(web)
+        if resp is None:
+            logger.critical("Endpoint seems to be not reachable.")
+            sys.exit(1)
 
-    # We'll test for endpoint only when the --crawl isn't supplied.
-    if not CRAWL_SITE:
-        try:
-            end_point = web.split("//")[1].split("/", 1)[1]
-            if end_point == "":
-                end_point = "/"
+        logger.log(PROGRESS, "Endpoint is up! (HTTP %d)", resp.status_code)
 
-            print(
-                f"{colors.O}Testing {colors.CYAN}{end_point}{colors.END} endpoint status..."
-            )
-            requests.get(web, timeout=TIMEOUT_VALUE, verify=VERIFY_CERT)
-            print(f" {colors.GREEN}[+] Endpoint seems to be up!{colors.END}")
-        except requests.exceptions.RequestException as e:
-            verbout(colors.R, "Endpoint error: " + end_point)
-            ErrorLogger(web0, e.__str__())
-            quit()
-        except Exception as e:
-            verbout(colors.R, "Exception Caught: " + e.__str__())
-            ErrorLogger(web0, e.__str__())
-            quit()
+        # Canonicalize to the post-redirect URL. If the target redirects (most
+        # commonly http -> https), subsequent POSTs would otherwise be sent to
+        # the pre-redirect URL: a 301/302 converts POST -> GET and drops the
+        # body, so every form submission collapses onto a generic page and
+        # benchmarking/bypass detection produces false results. Using the final
+        # URL as the base makes POSTs hit the real endpoint directly.
+        if resp.url and resp.url != web:
+            logger.warning("Target redirected to %s; using it as the base URL.", resp.url)
+            web = resp.url
+            config.SITE_URL = web
+            parsed_uri = urlparse(web)
+            endpoint = '/' if not parsed_uri.path else parsed_uri.path
+            # Rebuild cached default headers so Origin/Referer match the final
+            # (e.g. https) scheme rather than the original request.
+            request_module._default_headers = None
 
-    if not web0.endswith("/"):
-        web0 = web0 + "/"
+    except requests.exceptions.RequestException:
+        logger.exception("Error reaching the endpoint")
+        sys.exit(1)
 
-    if web.split("//")[1] == web0:
-        return web, ""
+    except Exception:
+        logger.exception("Exception caught")
+        sys.exit(1)
 
-    return (web, web0)
+    return web, endpoint

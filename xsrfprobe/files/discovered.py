@@ -9,29 +9,37 @@
 # This module requires XSRFProbe
 # https://github.com/0xInfection/XSRFProbe
 
-# INFO: This file is for storing the various important parts of
-# requests discovered during making of various requests.
+from collections import defaultdict
+from xsrfprobe.core.schema import DiscoveredToken
 
-# Vulnerabilities which were noticed
-VULN_LIST = []
+# Structured vulnerability records. Each is created as
+# {"url", "vuln", "content", "test_id", "details": {...}}; the handler later
+# adds "poc_paths": [...] for findings that get a PoC. Consumed by the JSON
+# report and the console summary.
+VULN_RECORDS: list[dict] = []
 
-# Strengths or positive sides of the application
-STRENGTH_LIST = []
+# Structured strength records: {"url", "strength", "test_id"}.
+STRENGTH_RECORDS: list[dict] = []
 
-# This is for storing the various tokens which got discovered
-# during making the requests. This will be used for various
-# analysis of token generation prototypes and logic used in
-# generating them.
-REQUEST_TOKENS = []
+# Global accumulator of every anti-CSRF token discovered during the scan. Each
+# TokenAnalyser mirrors the tokens it finds for its form into this pool (deduped
+# by name/value/discovery_part). NOTE: the active token-tamper / bypass tests do
+# NOT read this list — they use the per-form ``TokenAnalyser.tokens`` list to
+# avoid cross-form contamination. This pool instead feeds the end-of-scan
+# predictability analysis (A1), the encoding checks (E1), the PoC generator
+# fallback, and the JSON report's token inventory.
+ANTI_CSRF_TOKENS: list[DiscoveredToken] = []
+
+# Distinct anti-CSRF token *samples* passively harvested from every response
+# that flows through requestMaker. Used ONLY for post-scan predictability
+# analysis (entropy / forgeability), never by the bypass tests.
+TOKEN_SAMPLES: list[DiscoveredToken] = []
 
 # List of all Urls that we found
 INTERNAL_URLS = []
 
-# Files/executables discovered during crawling
-FILES_EXEC = []
-
-# Forms that were tested
-FORMS_TESTED = []
+# Forms that were tested: {url: [form1, form2, ...]}
+FORMS_TESTED = defaultdict(list)
 
 # Errors that were encountered
 SCAN_ERRORS = []
