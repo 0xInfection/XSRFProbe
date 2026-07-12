@@ -262,7 +262,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                     if token_validated is True:
                         logger.log(PROGRESS, "  Forged-token probe: REJECTED (response diverged from baseline)")
                     elif token_validated is False:
-                        logger.log(PROGRESS, "  Forged-token probe: ACCEPTED (response matched baseline — token not enforced)")
+                        logger.log(PROGRESS, "  Forged-token probe: ACCEPTED (response matched baseline - token not enforced)")
                     else:
                         logger.log(PROGRESS, "  Forged-token probe: N/A (no token field to corrupt)")
                     logger.info("[Benchmark] Forged-token probe verdict for %s: token_validated=%s "
@@ -275,7 +275,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                     if neutral is not None:
                         get_matches = diff.benchmarkPassed(base_benchmark, neutral.text, neutral.status_code)
                         get_ratio = diff.performBenchmark(base_benchmark, neutral.text)
-                        logger.log(PROGRESS, "  Plain-GET probe: status=%d body_similarity=%.1f%% → %s baseline",
+                        logger.log(PROGRESS, "  Plain-GET probe: status=%d body_similarity=%.1f%% -> %s baseline",
                                    neutral.status_code, get_ratio,
                                    "matches" if get_matches else "differs from")
                         logger.info("[Benchmark] Plain-GET probe for %s: GET status=%s len=%d | matches baseline=%s",
@@ -291,12 +291,12 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         logger.log(PROGRESS, "  Verdict: DISCRIMINATIVE (forged_rejected=%s, get_differs=%s)",
                                    token_validated is True, not get_matches)
                     else:
-                        logger.log(PROGRESS, "  Verdict: NON-DISCRIMINATIVE (forged_rejected=%s, get_differs=%s) — skipping diff-based tests",
+                        logger.log(PROGRESS, "  Verdict: NON-DISCRIMINATIVE (forged_rejected=%s, get_differs=%s) - skipping diff-based tests",
                                    token_validated is True, not get_matches)
                         logger.warning("[Benchmark] Non-discriminative response for %s: a forged token and a plain GET both match the success baseline, so a successful submission cannot be told apart from a page load. Skipping body-diff-based bypass tests.", action)
 
                     if not t2_reliable and base_benchmark.discriminative:
-                        logger.log(PROGRESS, "  Note: T2 skipped (plain GET ≥ threshold, method-switch indistinguishable)")
+                        logger.log(PROGRESS, "  Note: T2 skipped (plain GET >= threshold, method-switch indistinguishable)")
 
                     bypasses_found = set()
                     token_present = False
