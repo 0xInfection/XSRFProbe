@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://github.com/0xinfection/xsrfprobe"><img src="https://i.ibb.co/rQzpKk6/circle-cropped.png" alt="xsrfprobe"/></a>
+  <a href="https://github.com/0xinfection/xsrfprobe"><img src="https://github.com/user-attachments/assets/c8e9ee87-f60b-4ab3-b3ae-4a79808adc11" alt="xsrfprobe-logo" width="25%" /></a>
   <br>
   <br>
   XSRFProbe
@@ -18,10 +18,11 @@
   </a>
 </p>
 
-### About:
-__XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)) (CSRF/XSRF) Audit and Exploitation Toolkit. Equipped with a powerful crawling engine and numerous systematic checks, it is able to detect most cases of CSRF vulnerabilities, their related bypasses and futher generate (maliciously) exploitable proof of concepts with each found vulnerability. For more info on how XSRFProbe works, see [XSRFProbe Internals](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals) on [wiki](https://github.com/0xInfection/XSRFProbe/wiki/).
+## About
+__XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)) (CSRF/XSRF) Audit and Exploitation Toolkit. Equipped with a powerful crawling engine and numerous systematic checks, it is able to detect most cases of CSRF vulnerabilities, their related bypasses and futher generate exploitable proof of concepts with each found vulnerability. For more info on how XSRFProbe works, see [XSRFProbe Internals](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals) on [wiki](https://github.com/0xInfection/XSRFProbe/wiki/).
 
-<img src="https://i.imgur.com/xTrfWSt.gif" alt="xsrf-logo">
+<img src="https://github.com/user-attachments/assets/11a4d30a-bcf1-4d4e-9ec4-5a4e440f8842" alt="banner-image">
+<br>
 <p align="center">
   <a href="https://github.com/0xinfection/xsrfprobe/wiki">XSRFProbe Wiki</a> •
   <a href="https://github.com/0xinfection/xsrfprobe/wiki/Getting-Started">Getting Started</a> •
@@ -31,7 +32,7 @@ __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/
   <a href="https://github.com/0xinfection/xsrfprobe#gallery">Gallery</a>
 </p>
 
-### Some Features:
+## Some Features
 
 - [x] Runs a full battery of [systematic checks](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#types-of-checks) — backed by a response diffing/benchmark engine — before declaring an endpoint vulnerable.
 - [x] Detects and actively tampers with many Anti-CSRF token implementations: request-method switch, token removal, empty/duplicated values, non-session-bound tokens, double-submit cookies and custom-header tokens.
@@ -45,7 +46,7 @@ __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/
 - [x] The user is in [control of everything](https://github.com/0xInfection/XSRFProbe/wiki/Advanced-Usage#xsrfprobe-configuration-variables) whatever the scanner does.
 - [x] User-friendly interaction environment with full verbose support and detailed logging of errors, vulnerabilities and tokens.
 
-### Vulnerability Tests & IDs:
+## Vulnerability Tests Performed:
 
 Every check XSRFProbe runs has a unique identifier. The ID is shown in the console output (e.g. `[T6] VULNERABLE: ...`) and stored as the `test_id` field of each finding in the JSON report (alongside its `severity` and, where relevant, an `exploitability` note under `details`), so each finding maps back to the exact test that produced it.
 
@@ -81,23 +82,23 @@ Every check XSRFProbe runs has a unique identifier. The ID is shown in the conso
 
 > `S*` checks require the optional headless-browser integration (`--browser`). `T*`/`M*`/`R*`/`O*` are HTTP-level checks gated by the response diffing/benchmark engine.
 
-### Gallery:
+## Gallery
 Lets see some real-world scenarios of XSRFProbe in action:
 
-<img src="https://i.imgur.com/AAE1HrE.gif" width=50% /><img src="https://i.imgur.com/TJt103P.gif" width=50% />
-<img src="https://i.imgur.com/yzyvXHX.gif" />
-<img src="https://i.imgur.com/MhTucgI.gif" width=50% /><img src="https://i.imgur.com/gcfZ9zQ.gif" width=50% />
+<img src="https://github.com/user-attachments/assets/0fc41fb9-d2c3-400f-8b8f-f4f0093457e1" width=50% /><img src="https://github.com/user-attachments/assets/e2beffb1-5cae-4cb6-9740-2a49f6e15bf8" width=50% />
+<img src="https://github.com/user-attachments/assets/47d48c78-bb9a-4eeb-b1ea-ab9ba9ab694c" width=100% />
+<img src="https://github.com/user-attachments/assets/e23acca5-f66b-4349-84b1-09cff64e1320" width=50% /><img src="https://github.com/user-attachments/assets/1fd7fe7e-b3de-41e9-aa9f-24d0f7fb151e" width=50% />
 
-### Usage:
+## Installation & Usage
 > For the full usage info, please take a look at the wiki's &mdash; [General Usage](https://github.com/0xinfection/xsrfprobe/wiki/general-usage) and [Advanced Usage](https://github.com/0xinfection/xsrfprobe/wiki/advanced-usage).
 
-#### Installing via Pypi:
+### Installing via Pypi:
 XSRFProbe can be easily installed via a single command:
 ```
 pip install xsrfprobe
 ```
 
-#### Installing manually:
+### Installing manually:
 - For the basics, the first step is to install the tool:
 ```
 pip install .
@@ -109,10 +110,10 @@ xsrfprobe --help
 - The browser-dependent tests (`--browser`, `--auto-validate-poc`) additionally require [geckodriver](https://github.com/mozilla/geckodriver/releases) to be available in your `PATH` (or pointed to via `--geckodriver-path`).
 - After testing XSRFProbe on a site, an output folder is created in your present working directory as `xsrfprobe-output`. Under this folder you can view the detailed logs and information collected during the scans (pass `--json` for a machine-readable report).
 
-### Version and License:
+## Version and License
 XSRFProbe is currently `v3.0.0` and the work is licensed under the [GNU General Public License (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
-### Warnings:
+### Warnings
 
 Do not use this tool on a live site!
 
@@ -120,10 +121,10 @@ It is because this tool is designed to perform all kinds of form submissions aut
 
 Test on a disposable/dummy setup/site!
 
-### Disclaimer:
-Usage of XSRFProbe for testing websites without prior mutual consistency can be considered as an illegal activity. It is the final user's responsibility to obey all applicable local, state and federal laws. The author assumes no liability and is not exclusively responsible for any misuse or damage caused by this program.
+### Disclaimer
+Usage of XSRFProbe for testing websites without prior mutual consistency can be considered as an illegal activity. It is the final user's responsibility to obey all applicable local, state and federal laws. The author assumes no liability and is not responsible for any misuse or damage caused by this program.
 
-### Author's Words:
-This project is based __entirely upon my own research and my own experience with web applications__ on Cross-Site Request Forgery attacks. You can try going through the source code which is highly documented to help you understand how this toolkit was built. Useful [pull requests](https://github.com/0xInfection/XSRFProbe/wiki/Contributing), [ideas and issues](https://github.com/0xInfection/XSRFProbe/wiki/Reporting-Bugs#before-submitting) are highly welcome. If you wish to see what how XSRFProbe is being developed, check out the [Development Board](https://github.com/0xInfection/XSRFProbe/projects/1).
+## Author's Words
+This project is based __entirely upon my own research and my own experience with web applications__ on Cross-Site Request Forgery attacks. You can try going through the source code to help you understand how this toolkit was built. Useful [pull requests](https://github.com/0xInfection/XSRFProbe/wiki/Contributing), [ideas and issues](https://github.com/0xInfection/XSRFProbe/wiki/Reporting-Bugs#before-submitting) are highly welcome. If you wish to see what how XSRFProbe is being developed, check out the [Development Board](https://github.com/0xInfection/XSRFProbe/projects/1).
 
-> Copyright &copy; [@0xInfection](https://www.twitter.com/0xInfection)
+> Crafted with ♡ by [@0xInfection](https://x.com/0xInfection)
