@@ -15,10 +15,10 @@ import logging
 import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
-from xsrfprobe.core.request import requestMaker, _build_default_headers, SESSION
-from xsrfprobe.core.refresh import refresh_token_pair, _looks_like_token
+from xsrfprobe.core.request import requestMaker, buildDefaultHeaders, SESSION
+from xsrfprobe.core.refresh import refreshTokenPair, looksLikeToken
 from xsrfprobe.core.diff import DiffEngine
-from xsrfprobe.core.logger import NovulLogger, VulnLogger, PROGRESS, phase_header, test_progress
+from xsrfprobe.core.logger import NovulLogger, VulnLogger, PROGRESS, phaseHeader, testProgress
 from xsrfprobe.modules.Origin import OriginAnalyser
 from xsrfprobe.modules.Cookie import CookieAnalyzer
 from xsrfprobe.modules.Referer import RefererAnalyser
@@ -33,9 +33,11 @@ from xsrfprobe.files.discovered import FORMS_TESTED, VULN_RECORDS
 LOGIN_FIELD_PATTERNS = {"username", "user", "login", "email", "password", "passwd", "pass"}
 
 
-def _is_login_form(form) -> bool:
-    """Heuristic: does this form look like a login form (username/email + password)?
-    Used to specialise the no-token finding into login-CSRF (D2)."""
+def isLoginForm(form) -> bool:
+    """
+    Heuristic: does this form look like a login form (username/email + password)?
+    Used to specialise the no-token finding into login-CSRF (D2).
+    """
     field_names = {inp.get("name", "").lower() for inp in form.findAll("input", {"name": True})}
     has_password = any("pass" in f for f in field_names)
     has_user = any(f in LOGIN_FIELD_PATTERNS for f in field_names)
@@ -43,9 +45,13 @@ def _is_login_form(form) -> bool:
 
 
 def _forge_value(value: str) -> str:
-    """Return a same-length-ish random string that differs from ``value``, used
-    to corrupt an anti-CSRF token for the rejection-control probe."""
-    n = max(len(value or ""), 16)
+    """
+    Return a same-length-ish random string that differs from ``value``, used
+    to corrupt an anti-CSRF token for the rejection-control probe.
+    """
+    # Match the real token's length when it's longer, otherwise fall back to the
+    # configured synthetic-token length (--max-chars).
+    n = max(len(value or ""), config.TOKEN_GENERATION_LENGTH)
     forged = "".join(random.choices(string.ascii_letters + string.digits, k=n))
     if forged == value:
         forged = ("A" if not forged.endswith("A") else "B") + forged[1:]
@@ -54,23 +60,17 @@ def _forge_value(value: str) -> str:
 
 def _probe_token_validated(url: str, action: str, method: str, result: dict,
                            diff, base_benchmark):
-    """Submit once with a CORRUPTED anti-CSRF token (but a valid session/cookie)
+    """
+    Submit once with a CORRUPTED anti-CSRF token (but a valid session/cookie)
     and report whether the server rejected it.
-
-    Returns:
-        True  -> forged token rejected (response differs from success baseline):
-                 the token is genuinely validated.
-        False -> forged token accepted (response matches baseline): the token is
-                 not enforced.
-        None  -> there was no token field to forge (cannot calibrate this way).
 
     This is a more reliable discriminator than comparing against a plain GET,
     because the "success" baseline may itself be a re-rendered form (e.g. a login
     that failed on empty credentials) that coincidentally resembles a page load.
     """
     logger = logging.getLogger("ForgedTokenProbe")
-    forged_params, forged_session = refresh_token_pair(url, result)
-    token_field = next((k for k in forged_params if _looks_like_token(k)), None)
+    forged_params, forged_session = refreshTokenPair(url, result)
+    token_field = next((k for k in forged_params if looksLikeToken(k, forged_params[k])), None)
     if not token_field:
         logger.info("[ForgedProbe] No token field in submitted params; cannot calibrate via forging.")
         return None
@@ -96,12 +96,16 @@ def _probe_token_validated(url: str, action: str, method: str, result: dict,
     )
     return rejected
 
+# ----------------------------------------
+# M4: token-bypass via Content-Type
+# ----------------------------------------
 
-def _bypass_content_type(url: str, base_benchmark, method: str, params: dict) -> bool:
-    """M4: token-bypass via Content-Type. Re-submit the form under an alternate
-    Content-Type WITHOUT a valid anti-CSRF token, to test whether the server
-    skips token validation for that Content-Type (a real bypass) rather than
-    merely tolerating the header with a valid token. Returns True if bypassed."""
+def bypassContentType(url: str, base_benchmark, method: str, params: dict) -> bool:
+    """
+    Re-submit the form under an alternate Content-Type WITHOUT a valid anti-CSRF token,
+    to test whether the server skips token validation for that Content-Type (a real bypass)
+    rather than merely tolerating the header with a valid token. Returns True if bypassed.
+    """
     logger = logging.getLogger("ContentTypeBypass")
     differ = DiffEngine()
     found = False
@@ -111,7 +115,7 @@ def _bypass_content_type(url: str, base_benchmark, method: str, params: dict) ->
 
     # Strip the anti-CSRF token: the bypass is only demonstrated if the request
     # is processed despite the token being absent.
-    stripped = {k: v for k, v in params.items() if not _looks_like_token(k)}
+    stripped = {k: v for k, v in params.items() if not looksLikeToken(k, v)}
 
     alt_types = [
         "text/plain",
@@ -120,7 +124,7 @@ def _bypass_content_type(url: str, base_benchmark, method: str, params: dict) ->
     ]
 
     for ct in alt_types:
-        headers = _build_default_headers().copy()
+        headers = buildDefaultHeaders().copy()
         headers["Content-Type"] = ct
 
         if ct == "application/json" or "json" in ct:
@@ -166,11 +170,10 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
 
     logger.info("Retrieving all forms on %s...", url)
 
-    token_analyzer = TokenAnalyser()
     parser = FormParser(soup)
 
     # --- Form Discovery Phase ---
-    phase_header(logger, "Form Discovery")
+    phaseHeader(logger, "Form Discovery")
     all_forms = parser.getAllForms()
     logger.log(PROGRESS, "Found %d form(s) to analyse.", len(all_forms))
 
@@ -199,6 +202,11 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
             if action and action not in action_done:
                 action_done.add(action)
 
+                # Fresh per-form token store: tokens discovered here drive this
+                # form's tamper/bypass/encoding/PoC steps only, so they can't
+                # leak into another form's tests (see TokenAnalyser.tokens).
+                token_analyzer = TokenAnalyser()
+
                 if not FORM_SUBMISSION:
                     logger.warning("Form submission is turned off. Gathering tokens from basic requests / responses...")
                     if response is None:
@@ -211,12 +219,12 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                     result = parser.prepareFormInputs(form)
 
                     # --- Benchmark Phase ---
-                    phase_header(logger, "Benchmark")
+                    phaseHeader(logger, "Benchmark")
                     logger.log(PROGRESS, "Establishing success baseline for %s", action)
 
                     samples = []
                     for _ in range(3):
-                        sample_params, sample_session = refresh_token_pair(url, result)
+                        sample_params, sample_session = refreshTokenPair(url, result)
                         sess = sample_session if sample_session is not None else SESSION
                         if action_method.upper() == "GET":
                             r = requestMaker(action, method=action_method, params=sample_params, session=sess)
@@ -306,7 +314,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
 
                             if base_benchmark.discriminative:
                                 # --- Token Tamper Tests Phase ---
-                                phase_header(logger, "Token Tamper Tests")
+                                phaseHeader(logger, "Token Tamper Tests")
                                 passed_tests = token_analyzer.performTokenTamperTests(
                                     url=action,
                                     method=action_method,
@@ -317,9 +325,9 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                                 bypasses_found.update(passed_tests)
 
                                 # --- Method Override Tests Phase ---
-                                phase_header(logger, "Content-Type Bypass")
-                                with test_progress(logger, "M4", "Content-Type bypass") as tp_result:
-                                    if _bypass_content_type(action, base_benchmark, action_method, result):
+                                phaseHeader(logger, "Content-Type Bypass")
+                                with testProgress(logger, "M4", "Content-Type bypass") as tp_result:
+                                    if bypassContentType(action, base_benchmark, action_method, result):
                                         bypasses_found.add("M4")
                                         tp_result["status"] = "VULNERABLE"
                                     else:
@@ -329,7 +337,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
 
                         else:
                             logger.warning("No Anti-CSRF tokens detected in response.")
-                            if _is_login_form(form):
+                            if isLoginForm(form):
                                 VulnLogger(url, "Login form lacks CSRF token. Attacker can force the victim to authenticate into an attacker-controlled account (login CSRF).", test_id="D2")
                                 bypasses_found.add("D2")
                             else:
@@ -339,7 +347,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
 
                     if COOKIE_BASED:
                         # --- Cookie Tests Phase ---
-                        phase_header(logger, "Cookie Tests")
+                        phaseHeader(logger, "Cookie Tests")
                         cookie_analyzer = CookieAnalyzer()
                         is_vulnerable = cookie_analyzer.performSameSiteTests(url)
 
@@ -362,8 +370,8 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                             reason = "forged-token probe" if token_validated is True else "T-series tamper tests (no bypass found)"
                             logger.warning("Token protection confirmed by %s; header tests forced on. Results carry a valid token, so any Referer/Origin 'VULNERABLE' findings here are likely FALSE POSITIVES.", reason)
                         # --- Referer Tests Phase ---
-                        phase_header(logger, "Referer Tests")
-                        with test_progress(logger, "R0", "Referer validation check") as tp_r0:
+                        phaseHeader(logger, "Referer Tests")
+                        with testProgress(logger, "R0", "Referer validation check") as tp_r0:
                             referer_not_validated = referee.checkRefererValidation(action, base_benchmark, action_method, result)
                             if referer_not_validated:
                                 tp_r0["status"] = "VULNERABLE (not validated)"
@@ -375,18 +383,18 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                         referee.performRefererBypassChecks(action, base_benchmark, action_method, result)
 
                         # --- Origin Tests Phase ---
-                        phase_header(logger, "Origin Tests")
+                        phaseHeader(logger, "Origin Tests")
                         origame.performOriginBypassChecks(action, base_benchmark, action_method, result)
                     elif token_protection_effective:
-                        phase_header(logger, "Referer/Origin Tests")
+                        phaseHeader(logger, "Referer/Origin Tests")
                         reason = "forged-token probe" if token_validated is True else "T-series tamper tests (no bypass found)"
                         logger.log(PROGRESS, "Skipping: token protection confirmed by %s.", reason)
 
                     # --- Encoding Tests Phase ---
-                    phase_header(logger, "Encoding Tests")
+                    phaseHeader(logger, "Encoding Tests")
                     encoding_detector = Encoding()
-                    with test_progress(logger, "E1", "Token encoding analysis") as tp_result:
-                        detected = encoding_detector.performTokenEncodingChecks()
+                    with testProgress(logger, "E1", "Token encoding analysis") as tp_result:
+                        detected = encoding_detector.performTokenEncodingChecks(token_analyzer.tokens)
                         if detected:
                             tp_result["status"] = "WEAK ENCODING"
                             logger.warning("[E1] Token detected as string-encoded / weak hashes and potentially decryptable.")
@@ -397,7 +405,7 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
 
                     # Browser-dependent tests
                     if config.BROWSER_ENABLED:
-                        phase_header(logger, "Browser Tests")
+                        phaseHeader(logger, "Browser Tests")
                         from xsrfprobe.core.main import get_browser_session
                         from xsrfprobe.modules.Browser import BrowserCSRFTests
 
@@ -410,9 +418,9 @@ def noCrawlProcessor(url: str, soup: BeautifulSoup | None = None) -> None:
                     if config.POC_GENERATION and bypasses_found:
                         from xsrfprobe.modules.Generator import PoCGenerator
                         poc_gen = PoCGenerator()
-                        poc_map = poc_gen.generate_all_variants(action, action_method, result, bypasses_found, action_enctype)
+                        poc_map = poc_gen.generate_all_variants(action, action_method, result, bypasses_found, action_enctype, tokens=token_analyzer.tokens)
 
-                        phase_header(logger, "Proof of Concepts")
+                        phaseHeader(logger, "Proof of Concepts")
                         all_poc_paths = []
                         for paths in poc_map.values():
                             for p in paths:

@@ -14,16 +14,14 @@ import logging
 from contextlib import contextmanager
 from xsrfprobe.files.discovered import (
     SCAN_ERRORS,
-    VULN_LIST,
     VULN_RECORDS,
-    STRENGTH_LIST,
     STRENGTH_RECORDS,
 )
 
 PROGRESS = 25
 logging.addLevelName(PROGRESS, "PROGRESS")
 
-# Shared flag: True while a test_progress line is pending on stdout.
+# Shared flag: True while a testProgress line is pending on stdout.
 _inline_active = False
 
 
@@ -103,7 +101,7 @@ class CustomFormatter(logging.Formatter):
         return result
 
 
-def phase_header(logger, title: str):
+def phaseHeader(logger, title: str):
     """Log a phase section header at PROGRESS level."""
     _break_inline()
     tty = _is_tty()
@@ -115,7 +113,7 @@ def phase_header(logger, title: str):
 
 
 @contextmanager
-def test_progress(logger, test_id: str, description: str):
+def testProgress(logger, test_id: str, description: str):
     """Context manager for inline test progress reporting.
 
     Writes an in-progress line, yields, then overwrites with result.
@@ -157,9 +155,6 @@ def ErrorLogger(url, error):
 
 
 def VulnLogger(url, vuln, content="", test_id=""):
-    prefix = f"[{test_id}] " if test_id else ""
-    tent = f"[!] {url} -> {prefix}{vuln}\n\n{content}\n\n"
-    VULN_LIST.append(tent)
     VULN_RECORDS.append({
         "url": url,
         "vuln": vuln,
@@ -170,9 +165,6 @@ def VulnLogger(url, vuln, content="", test_id=""):
 
 
 def NovulLogger(url, strength, test_id=""):
-    prefix = f"[{test_id}] " if test_id else ""
-    tent = f"[+] {url} -> {prefix}{strength}"
-    STRENGTH_LIST.append(tent)
     STRENGTH_RECORDS.append({
         "url": url,
         "strength": strength,

@@ -17,8 +17,12 @@ from typing import Any
 from urllib.parse import urlparse
 
 from xsrfprobe.files import config
+from xsrfprobe.files import discovered
 from xsrfprobe.core.randua import RandomAgent
 from xsrfprobe.core.logger import ErrorLogger
+from xsrfprobe.core.schema import (
+    DiscoveredToken, TokenDiscoveryModeEnum, TokenDiscoveryPartEnum,
+)
 
 SESSION = requests.Session()
 
@@ -35,7 +39,7 @@ _session_cookies_initialized: bool = False
 _PINNED_COOKIES: dict[str, str] = {}
 _PINNED_DOMAIN: str = ""
 
-def _init_session_cookies() -> None:
+def initSessionCookie() -> None:
     """Parse user-supplied cookies once and pin them onto the SESSION jar."""
     global _session_cookies_initialized, _PINNED_DOMAIN
     if _session_cookies_initialized:
@@ -55,10 +59,10 @@ def _init_session_cookies() -> None:
         name, value = raw.split("=", 1)
         _PINNED_COOKIES[name.strip()] = value.strip()
 
-    _pin_user_cookies(SESSION)
+    pinUserCookies(SESSION)
 
 
-def _pin_user_cookies(session: requests.Session) -> None:
+def pinUserCookies(session: requests.Session) -> None:
     """(Re-)assert the user-supplied cookies on the given session jar so they
     always retain the user's value regardless of any server-side rotation."""
     if not _PINNED_COOKIES:
@@ -70,11 +74,11 @@ def _pin_user_cookies(session: requests.Session) -> None:
             pass
 
 
-def _build_default_headers() -> dict:
+def buildDefaultHeaders() -> dict:
     """Build default headers lazily, after CLI has populated config values."""
     global _default_headers
 
-    _init_session_cookies()
+    initSessionCookie()
 
     if _default_headers is not None:
         if config.USER_AGENT_RANDOM:
@@ -111,7 +115,7 @@ def cors_allows_credentialed_header(url: str, method: str, header_name: str) -> 
     """
     logger = logging.getLogger("CORSProbe")
     attacker_origin = "https://xsrfprobe-cors-probe.example"
-    headers = _build_default_headers().copy()
+    headers = buildDefaultHeaders().copy()
     headers["Origin"] = attacker_origin
     headers["Access-Control-Request-Method"] = method.upper()
     headers["Access-Control-Request-Headers"] = header_name.lower()
@@ -160,18 +164,12 @@ def _harvest_tokens_passively(resp: requests.Response) -> None:
     function never issues requests and swallows its own errors."""
     if not getattr(config, "TOKEN_CHECKS", True):
         return
+    # Token imports request (requestMaker/SESSION), so importing it at module
+    # top level would be a circular import; defer it until the function runs.
     try:
-        from xsrfprobe.files import discovered
-        from xsrfprobe.core.schema import (
-            DiscoveredToken, TokenDiscoveryModeEnum, TokenDiscoveryPartEnum,
-        )
-        from xsrfprobe.files.paramlist import COMMON_CSRF_NAMES
-        from xsrfprobe.modules.Token import _is_csrf_name_match
+        from xsrfprobe.modules.Token import isCSRField
     except Exception:
         return
-
-    def _is_token_name(field_name: str) -> bool:
-        return any(_is_csrf_name_match(n, field_name) for n in COMMON_CSRF_NAMES)
 
     def _record(name: str, value: str, part) -> None:
         if not value:
@@ -193,13 +191,13 @@ def _harvest_tokens_passively(resp: requests.Response) -> None:
         for tag in _INPUT_TAG_RE.findall(body):
             nm = _ATTR_NAME_RE.search(tag)
             vm = _ATTR_VALUE_RE.search(tag)
-            if nm and vm and _is_token_name(nm.group(1)):
+            if nm and vm and isCSRField(nm.group(1), vm.group(1)):
                 _record(nm.group(1), vm.group(1), TokenDiscoveryPartEnum.REQUEST_BODY)
 
     # 2) Token-bearing cookies set on this response.
     try:
         for cookie in resp.cookies:
-            if cookie.value and _is_token_name(cookie.name):
+            if cookie.value and isCSRField(cookie.name, cookie.value):
                 _record(cookie.name, cookie.value, TokenDiscoveryPartEnum.COOKIE)
     except Exception:
         pass
@@ -215,11 +213,11 @@ def requestMaker(url: str, method: str="GET", session: requests.Session=SESSION,
 
     # Ensure user-supplied cookies are loaded and re-pinned on this session
     # (any session, including isolated ones) so they persist for the whole scan.
-    _init_session_cookies()
-    _pin_user_cookies(session)
+    initSessionCookie()
+    pinUserCookies(session)
 
     if headers is None:
-        headers = _build_default_headers()
+        headers = buildDefaultHeaders()
 
     try:
         resp = session.request(

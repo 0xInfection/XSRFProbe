@@ -75,3 +75,4 @@ class ScanReport(BaseModel):
     vulnerabilities: list[UrlFindings] = []
     tokens_discovered: list[DiscoveredToken] = []
     strengths: list[UrlStrengths] = []
+    scan_errors: list[str] = []

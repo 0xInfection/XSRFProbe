@@ -43,7 +43,7 @@ def _sanitize_filename(action: str) -> str:
         name = action.split("//", 1)[1]
     else:
         name = action
-    return name.replace("/", "-").replace(":", "").replace("?", "_").strip("-")
+    return name.replace("/", "-").replace(":", "-").replace("?", "_").strip("-")
 
 
 def _hidden_inputs(params: dict) -> str:
@@ -388,14 +388,16 @@ class PoCGenerator:
             global OUTPUT_DIR
             OUTPUT_DIR = output_dir
 
-    def generate_all_variants(self, action: str, method: str, params: dict,
-                              bypasses: set[str] | None = None,
-                              enctype: str = "application/x-www-form-urlencoded") -> dict[str, list[str]]:
-        """Generate PoC variants scoped to the form's method, enctype, and proven bypasses.
-
-        Returns a mapping of ``test_id -> [poc_paths]`` so callers can attach
-        each PoC to the specific finding(s) it demonstrates.
+    def generate_all_variants(
+        self, action: str, method: str, params: dict, bypasses: set[str] | None = None,
+        enctype: str = "application/x-www-form-urlencoded", tokens: list | None = None
+    ) -> dict[str, list[str]]:
         """
+        Generate PoC variants scoped to the form's method, enctype, and proven bypasses.
+        """
+        if tokens is None:
+            from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS as tokens
+
         poc_map: dict[str, list[str]] = {}
 
         def _record(test_ids: set[str], path: str):
@@ -422,8 +424,7 @@ class PoCGenerator:
 
         matched_standard = bypasses & standard_form_bypasses
         if matched_standard:
-            from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
-            token_names = {t.name for t in ANTI_CSRF_TOKENS}
+            token_names = {t.name for t in tokens}
             if bypasses & {"D1", "D2", "T3"}:
                 form_params = {k: v for k, v in params.items() if k not in token_names}
             elif "T7" in bypasses:
@@ -441,15 +442,13 @@ class PoCGenerator:
             _record({"T2"}, gen_get_img(action, params))
 
         if "M1" in bypasses:
-            from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
             stripped_params = {k: v for k, v in params.items()
-                              if not any(t.name == k for t in ANTI_CSRF_TOKENS)}
+                              if not any(t.name == k for t in tokens)}
             _record({"M1"}, gen_method_override(action, stripped_params))
 
         if "M2" in bypasses:
-            from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
             stripped_params = {k: v for k, v in params.items()
-                              if not any(t.name == k for t in ANTI_CSRF_TOKENS)}
+                              if not any(t.name == k for t in tokens)}
             _record({"M2"}, gen_post_xhr_method_override(action, stripped_params))
 
         matched_xhr = bypasses & xhr_bypasses
@@ -458,9 +457,8 @@ class PoCGenerator:
 
         matched_cookie = bypasses & cookie_injection_bypasses
         if matched_cookie:
-            from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
             from xsrfprobe.core.schema import TokenDiscoveryPartEnum
-            cookie_names = [t.name for t in ANTI_CSRF_TOKENS
+            cookie_names = [t.name for t in tokens
                             if t.discovery_part == TokenDiscoveryPartEnum.COOKIE]
             if cookie_names:
                 _record(matched_cookie, gen_double_submit(action, params, cookie_names))
@@ -471,9 +469,8 @@ class PoCGenerator:
 
         matched_ct = bypasses & content_type_bypasses
         if matched_ct:
-            from xsrfprobe.files.discovered import ANTI_CSRF_TOKENS
             stripped_params = {k: v for k, v in params.items()
-                              if not any(t.name == k for t in ANTI_CSRF_TOKENS)}
+                              if not any(t.name == k for t in tokens)}
             _record(matched_ct, gen_content_type_bypass(action, stripped_params))
 
         if not poc_map:

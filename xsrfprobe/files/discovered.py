@@ -12,25 +12,22 @@
 from collections import defaultdict
 from xsrfprobe.core.schema import DiscoveredToken
 
-# Vulnerabilities which were noticed (preformatted strings, legacy/console use)
-VULN_LIST = []
-
-# Structured vulnerability records mirroring VULN_LIST, each a dict:
-# {"url", "vuln", "content", "poc_paths": [...], "details": {...}}.
-# Populated alongside VULN_LIST so the JSON report can carry PoC paths and
-# structured metadata per finding instead of opaque strings.
+# Structured vulnerability records. Each is created as
+# {"url", "vuln", "content", "test_id", "details": {...}}; the handler later
+# adds "poc_paths": [...] for findings that get a PoC. Consumed by the JSON
+# report and the console summary.
 VULN_RECORDS: list[dict] = []
-
-# Strengths or positive sides of the application
-STRENGTH_LIST = []
 
 # Structured strength records: {"url", "strength", "test_id"}.
 STRENGTH_RECORDS: list[dict] = []
 
-# Anti-CSRF tokens discovered during scanning. This list is consumed by the
-# active token-tamper / bypass tests, so it must contain only the tokens that
-# actually belong to the form/endpoint under test (injecting unrelated tokens
-# here would cause false positives in T3/T5/T6).
+# Global accumulator of every anti-CSRF token discovered during the scan. Each
+# TokenAnalyser mirrors the tokens it finds for its form into this pool (deduped
+# by name/value/discovery_part). NOTE: the active token-tamper / bypass tests do
+# NOT read this list — they use the per-form ``TokenAnalyser.tokens`` list to
+# avoid cross-form contamination. This pool instead feeds the end-of-scan
+# predictability analysis (A1), the encoding checks (E1), the PoC generator
+# fallback, and the JSON report's token inventory.
 ANTI_CSRF_TOKENS: list[DiscoveredToken] = []
 
 # Distinct anti-CSRF token *samples* passively harvested from every response

@@ -114,6 +114,24 @@ def options() -> argparse.Namespace:
         action="store_true",
     )
     optional.add_argument(
+        "--max-urls",
+        help="Maximum number of URLs to crawl (with --crawl). 0 means unlimited. Default: 200.",
+        dest="max_urls",
+        type=int,
+    )
+    optional.add_argument(
+        "--max-depth",
+        help="Maximum link depth to crawl from the seed URL (with --crawl). 0 means unlimited. Default: 5.",
+        dest="max_depth",
+        type=int,
+    )
+    optional.add_argument(
+        "--crawl-timeout",
+        help="Wall-clock time budget for crawling in seconds (with --crawl). 0 means unlimited. Default: 0.",
+        dest="crawl_timeout",
+        type=int,
+    )
+    optional.add_argument(
         "--no-analysis",
         help="Skip the Post-Scan Analysis of Tokens which were gathered during requests",
         dest="skipal",
@@ -135,12 +153,6 @@ def options() -> argparse.Namespace:
         "--debug",
         help="Print out requests and responses while making requests.",
         dest="debug",
-        action="store_true",
-    )
-    optional.add_argument(
-        "--update",
-        help="Update XSRFProbe to latest version on GitHub via git.",
-        dest="update",
         action="store_true",
     )
     optional.add_argument(
@@ -272,6 +284,14 @@ def options() -> argparse.Namespace:
     # Crawl the site if --crawl supplied.
     if args.crawl:
         config.CRAWL_SITE = True
+
+    # Crawl bounds (only meaningful with --crawl). Accept 0 as "unlimited".
+    if args.max_urls is not None:
+        config.CRAWL_MAX_URLS = max(0, args.max_urls)
+    if args.max_depth is not None:
+        config.CRAWL_MAX_DEPTH = max(0, args.max_depth)
+    if args.crawl_timeout is not None:
+        config.CRAWL_TIMEOUT = max(0, args.crawl_timeout)
 
     if args.cookie:
         # Assigning Cookie

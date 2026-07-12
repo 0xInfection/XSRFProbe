@@ -52,12 +52,17 @@ class Encoding:
             return True
         return False
 
-    def performTokenEncodingChecks(self) -> bool:
+    def performTokenEncodingChecks(self, tokens=None) -> bool:
         """
         This function performs the token encoding checks.
+
+        tokens: is the per-form token list gathered by the current form's
+        TokenAnalyser: (so E1 only inspects tokens that belong to the
+        endpoint under test). It falls back to the global pool when omitted.
         """
         self.logger.info("Performing Anti-CSRF token encoding checks...")
-        for token in ANTI_CSRF_TOKENS:
+        token_list = tokens if tokens is not None else ANTI_CSRF_TOKENS
+        for token in token_list:
             encoding = self.detectEncoding(token.token)
             if encoding:
                 self.logger.warning("Detected structured hash format: %s on token: %s" % (encoding, token.token))

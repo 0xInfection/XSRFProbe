@@ -36,8 +36,19 @@ setup(
     url="https://github.com/0xInfection/XSRFProbe",
     download_url="https://github.com/0xInfection/XSRFProbe/archive/v%s.zip" % _version,
     packages=find_packages(),
-    scripts=["xsrfprobe/bin/xsrfprobe"],
-    install_requires=["requests", "bs4", "rapidfuzz", "tld", "yattag", "pydantic", "selenium"],
+    entry_points={
+        "console_scripts": [
+            "xsrfprobe = xsrfprobe.xsrfprobe:startEngine",
+        ],
+    },
+    python_requires=">=3.10",
+    install_requires=[
+        "requests>=2.25",
+        "beautifulsoup4>=4.9",
+        "rapidfuzz>=2.0",
+        "pydantic>=2.0",
+        "selenium>=4.0",
+    ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: System Administrators",
@@ -48,6 +59,11 @@ setup(
         "Topic :: Security",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
     keywords=["csrf", "xsrf", "appsec", "vulnerability scanner", "webapps", "hacking"],
 )

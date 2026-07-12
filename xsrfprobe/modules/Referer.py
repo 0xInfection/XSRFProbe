@@ -11,12 +11,12 @@
 
 import logging
 import requests
-from xsrfprobe.core.request import requestMaker, SESSION
-from xsrfprobe.core.refresh import refresh_token_pair
+from xsrfprobe.core.request import requestMaker, SESSION, buildDefaultHeaders
+from xsrfprobe.core.refresh import refreshTokenPair
 from xsrfprobe.core.diff import DiffEngine
 from urllib.parse import urlparse
-from xsrfprobe.files.config import HEADER_VALUES, REFERER_URL
-from xsrfprobe.core.logger import VulnLogger, NovulLogger, test_progress
+from xsrfprobe.files.config import REFERER_URL
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, testProgress
 from xsrfprobe.core.schema import BenchmarkResult
 
 
@@ -26,15 +26,17 @@ class RefererAnalyser:
         self.diff = DiffEngine()
 
     def checkRefererValidation(self, url: str, benchmark: BenchmarkResult, method: str, params: dict) -> bool:
-        """Check if the Referer header is validated in form submissions."""
+        """
+        Check if the Referer header is validated in form submissions.
+        """
         logger = logging.getLogger("RefererValidationCheck")
         logger.info("Checking Referer header validation in form submissions...")
 
         method = method.upper()
-        headers = HEADER_VALUES.copy()
+        headers = buildDefaultHeaders().copy()
         headers["Referer"] = self.referer_value
 
-        params, session = refresh_token_pair(url, params)
+        params, session = refreshTokenPair(url, params)
         r = requestMaker(
             url=url, headers=headers, method=method,
             params=params if method == "GET" else None,
@@ -55,15 +57,16 @@ class RefererAnalyser:
 
     # ----------------------------------------------------------------
     # R1: Referer validation depends on header being present
-    # (PortSwigger Lab 11)
     # ----------------------------------------------------------------
     def bypassRefererPresenceCheck(self, url: str, benchmark: BenchmarkResult, method: str, params: dict, session: requests.Session | None = None) -> bool:
-        """Remove Referer and Origin headers entirely. Server may skip validation when absent."""
+        """
+        Remove Referer and Origin headers entirely. Server may skip validation when absent.
+        """
         logger = logging.getLogger("RefererPresenceBypass")
         logger.info("[R1] Trying Referer presence bypass (remove Referer + Origin)...")
 
         method = method.upper()
-        headers = HEADER_VALUES.copy()
+        headers = buildDefaultHeaders().copy()
         headers.pop("Referer", None)
         headers.pop("Origin", None)
 
@@ -87,7 +90,6 @@ class RefererAnalyser:
 
     # ----------------------------------------------------------------
     # R2 variant 1: Referer regex bypass -- target as subdomain
-    # (PortSwigger Lab 12)
     # ----------------------------------------------------------------
     def bypassRefererRegexSubdomain(self, url: str, benchmark: BenchmarkResult, method: str, params: dict, session: requests.Session | None = None) -> bool:
         """
@@ -99,11 +101,11 @@ class RefererAnalyser:
 
         method = method.upper()
         parsed = urlparse(url)
-        target_domain = parsed.netloc
+        target_domain = parsed.hostname
 
         attacker_referer = f"{parsed.scheme}://{target_domain}.evil-attacker.com/csrf"
 
-        headers = HEADER_VALUES.copy()
+        headers = buildDefaultHeaders().copy()
         headers["Referer"] = attacker_referer
 
         r = requestMaker(
@@ -125,7 +127,6 @@ class RefererAnalyser:
 
     # ----------------------------------------------------------------
     # R2 variant 2: Referer regex bypass -- target in query string
-    # (PortSwigger Lab 12)
     # ----------------------------------------------------------------
     def bypassRefererRegexQueryParam(self, url: str, benchmark: BenchmarkResult, method: str, params: dict, session: requests.Session | None = None) -> bool:
         """
@@ -138,11 +139,11 @@ class RefererAnalyser:
 
         method = method.upper()
         parsed = urlparse(url)
-        target_domain = parsed.netloc
+        target_domain = parsed.hostname
 
         attacker_referer = f"http://evil-attacker.com/csrf?{target_domain}"
 
-        headers = HEADER_VALUES.copy()
+        headers = buildDefaultHeaders().copy()
         headers["Referer"] = attacker_referer
         headers["Referrer-Policy"] = "unsafe-url"
 
@@ -173,11 +174,11 @@ class RefererAnalyser:
 
         method = method.upper()
         parsed = urlparse(url)
-        target_domain = parsed.netloc
+        target_domain = parsed.hostname
 
         attacker_referer = f"http://evil-attacker.com/{target_domain}/csrf"
 
-        headers = HEADER_VALUES.copy()
+        headers = buildDefaultHeaders().copy()
         headers["Referer"] = attacker_referer
 
         r = requestMaker(
@@ -203,27 +204,27 @@ class RefererAnalyser:
     def performRefererBypassChecks(self, url: str, benchmark: BenchmarkResult, method: str, params: dict) -> None:
         """Run all Referer bypass checks."""
         logger = logging.getLogger("RefererBypass")
-        params, session = refresh_token_pair(url, params)
+        params, session = refreshTokenPair(url, params)
 
-        with test_progress(logger, "R1", "Referer presence bypass") as tp:
+        with testProgress(logger, "R1", "Referer presence bypass") as tp:
             if self.bypassRefererPresenceCheck(url, benchmark, method, params, session):
                 tp["status"] = "VULNERABLE"
             else:
                 tp["status"] = "failed"
 
-        with test_progress(logger, "R2a", "Referer subdomain bypass") as tp:
+        with testProgress(logger, "R2a", "Referer subdomain bypass") as tp:
             if self.bypassRefererRegexSubdomain(url, benchmark, method, params, session):
                 tp["status"] = "VULNERABLE"
             else:
                 tp["status"] = "failed"
 
-        with test_progress(logger, "R2b", "Referer query-param bypass") as tp:
+        with testProgress(logger, "R2b", "Referer query-param bypass") as tp:
             if self.bypassRefererRegexQueryParam(url, benchmark, method, params, session):
                 tp["status"] = "VULNERABLE"
             else:
                 tp["status"] = "failed"
 
-        with test_progress(logger, "R2c", "Referer path bypass") as tp:
+        with testProgress(logger, "R2c", "Referer path bypass") as tp:
             if self.bypassRefererRegexPath(url, benchmark, method, params, session):
                 tp["status"] = "VULNERABLE"
             else:

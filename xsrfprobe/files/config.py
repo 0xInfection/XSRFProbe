@@ -18,6 +18,15 @@ SITE_URL = ""
 # Switch for whether to crawl the site or not
 CRAWL_SITE = False
 
+# Crawl bounds (only relevant when CRAWL_SITE is True). These keep the crawl
+# bounded and deterministic instead of running until the queue drains.
+#   CRAWL_MAX_URLS    : hard cap on the number of URLs fetched (0 = unlimited)
+#   CRAWL_MAX_DEPTH   : maximum link depth from the seed URL (0 = unlimited)
+#   CRAWL_TIMEOUT     : wall-clock budget for crawling, in seconds (0 = unlimited)
+CRAWL_MAX_URLS = 200
+CRAWL_MAX_DEPTH = 5
+CRAWL_TIMEOUT = 0
+
 # Print out verbose (turn it off for only brief outputs).
 # Turning off is Highly Discouraged, since you will miss what the tool is doing.
 DEBUG = False
@@ -30,12 +39,12 @@ USER_AGENT_RANDOM = False
 
 # User-Agent to be used (If COOKIE_VALUE supplied).
 #
-# This is standard User-Agent emulating Chrome 68 on Windows 10
+# This is a standard User-Agent emulating Chrome on Windows 10.
 #
 # NOTE: This is a precaution in case the cookie value is supplied,
 # if the user-agent gets changed from time to time, the remote
 # application might trigger up some protection agents
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
 # Cookie value to be sent alongwith the requests. This option is particularly
 # needed for a wholesome check on CSRFs. Since for a basic successful CSRF attack
@@ -59,7 +68,7 @@ HEADER_VALUES = {
     "Accept-Language": "en-US,en;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
     "Sec-Fetch-Mode": "navigate",
-    "DNT": "1",  # Do Not Track Request Header :D
+    "DNT": "1",  # Do Not Track Request Header
     "Connection": "close",
 }
 
@@ -120,20 +129,19 @@ VERIFY_CERT = True
 
 # Referer Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-REFERER_URL = "http://not-a-valid-referer.xsrfprobe-csrftesting.0xinfection.xyz/csrf.html"
+REFERER_URL = "http://not-a-valid-referer.github.com/0xinfection/xsrfprobe"
 
 # Origin Url (Change It Accordingly)
 # eg. Use one of your Subdomains (Same Origin Policy))
-ORIGIN_URL = "http://not-a-valid-origin.xsrfprobe-csrftesting.0xinfection.xyz"
+ORIGIN_URL = "http://not-a-valid-origin.xsrfprobe.0xinfection.xyz"
 
-# The length of the custom token to be generated for params
+# Length of the random alphanumeric value XSRFProbe generates for the
+# synthetic/forged token values used during the tamper tests: the corrupted
+# token in the forged-token probe, the arbitrary header-token value (T8), and
+# the fabricated double-submit token (T6). When the real token is longer, that
+# real length is used instead so the forged value stays plausible.
 #
-# The recommended value I prefer is 6. Greater value might
-# result in database problems. since every form on the server
-# will be submitted 5+ times for various methods of CSRF attacks.
-#
-# Lower value wll not harm but it will make it difficult
-# identifying request parameters and token values in a.
+# 6 is a sensible default; a larger value is harmless. Overridable via --max-chars.
 TOKEN_GENERATION_LENGTH = 6
 
 # List of Urls that are not to be scanned (excluded).
@@ -163,7 +171,7 @@ BROWSER_TIMEOUT = 30
 ENUM_SUBDOMAINS = False
 
 # Input types defaults
-INPUT_TYPES_DEAULTS = {
+INPUT_TYPES_DEFAULTS = {
     "text": TEXT_VALUE,
     "email": EMAIL_VALUE,
     "password": TEXT_VALUE,

@@ -17,7 +17,7 @@ from urllib.parse import urlparse, urlencode
 from xsrfprobe.core.browser import BrowserSession
 from xsrfprobe.core.request import requestMaker, SESSION
 from xsrfprobe.core.diff import DiffEngine
-from xsrfprobe.core.logger import VulnLogger, NovulLogger, test_progress
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, testProgress
 from xsrfprobe.core.schema import BenchmarkResult
 from xsrfprobe.modules.Generator import gen_post_autosubmit, gen_get_img
 from xsrfprobe.files import config
@@ -26,15 +26,12 @@ logger = logging.getLogger("Browser")
 
 
 class BrowserCSRFTests:
-    """Browser-dependent CSRF tests: SameSite bypasses, PoC auto-validation."""
-
     def __init__(self, browser: BrowserSession):
         self.browser = browser
         self.diff = DiffEngine()
 
     # SameSite=Strict bypass via client-side redirect gadget
-    def testSameSiteStrictClientRedirect(self, url: str, _benchmark: BenchmarkResult,
-                                          method: str, params: dict) -> bool:
+    def testSameSiteStrictClientRedirect(self, url: str, _benchmark: BenchmarkResult, method: str, params: dict) -> bool:
         """
         Discover open-redirect / client-redirect gadgets on target, then use them
         to navigate the browser from within the target origin, bypassing SameSite=Strict.
@@ -109,8 +106,9 @@ class BrowserCSRFTests:
         return False
 
     # SameSite=Strict bypass via sibling subdomain XSS
-    def testSameSiteStrictSiblingDomain(self, url: str, _benchmark: BenchmarkResult,
-                                        method: str, params: dict) -> bool:
+    # this is a basic scaffold, we do not test for XSS and this is a purely synthetic test for the sake of completeness
+    # TODO: inform the user about this limitation in a future iteration
+    def testSameSiteStrictSiblingDomain(self, url: str, _benchmark: BenchmarkResult, method: str, params: dict) -> bool:
         """
         Enumerate sibling subdomains via crt.sh, probe for reflected XSS,
         and use it to forge requests from the target origin.
@@ -129,7 +127,7 @@ class BrowserCSRFTests:
         else:
             base_domain = domain
 
-        subdomains = self._enumerate_subdomains(base_domain)
+        subdomains = self.enumerateSubdomains(base_domain)
         subdomains = [s for s in subdomains if s != domain]
 
         if not subdomains:
@@ -153,7 +151,7 @@ class BrowserCSRFTests:
         logger.info("[S3] No reflected XSS on sibling subdomains.")
         return False
 
-    def _enumerate_subdomains(self, domain: str) -> list[str]:
+    def enumerateSubdomains(self, domain: str) -> list[str]:
         """Enumerate subdomains using crt.sh certificate transparency."""
         logger.info("Enumerating subdomains for %s via crt.sh...", domain)
         subdomains = set()
@@ -178,8 +176,7 @@ class BrowserCSRFTests:
         return list(subdomains)
 
     # SameSite=Lax cookie refresh bypass
-    def testSameSiteLaxCookieRefresh(self, url: str, _benchmark: BenchmarkResult,
-                                      _method: str, _params: dict) -> bool:
+    def testSameSiteLaxCookieRefresh(self, url: str, _benchmark: BenchmarkResult, _method: str, _params: dict) -> bool:
         """
         Detect cookies set without explicit SameSite attribute (browser defaults to Lax).
         If the app has an OAuth/SSO flow that refreshes cookies, a cross-site POST
@@ -279,7 +276,7 @@ class BrowserCSRFTests:
 
         for test_id, description, test_fn in tests:
             try:
-                with test_progress(logger, test_id, description) as tp:
+                with testProgress(logger, test_id, description) as tp:
                     result = test_fn(url, benchmark, method, params)
                     results[test_id] = result
                     if result:

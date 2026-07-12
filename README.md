@@ -6,23 +6,20 @@
   XSRFProbe
 </h1>
 <h4 align="center">The Prime Cross Site Request Forgery Audit & Exploitation Toolkit.</h4>
-<p align="center">  
+<p align="center">
   <a href="https://docs.python.org/3/download.html">
-    <img src="https://img.shields.io/badge/Python-3.x-green.svg">
+    <img src="https://img.shields.io/badge/Python-3.11+-green.svg">
   </a>
   <a href="https://github.com/0xinfection/XSRFProbe/releases">
     <img src="https://img.shields.io/badge/Version-v3.0.0%20(stable)-blue.svg">
   </a>
   <a href="https://github.com/0xinfection/XSRFProbe/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-GPLv3-orange.svg">
-  </a> 
-  <a href="https://travis-ci.org/0xInfection/XSRFProbe">
-    <img src="https://img.shields.io/badge/Build-Passing-brightgreen.svg?logo=travis">
   </a>
 </p>
 
 ### About:
-__XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)) (CSRF/XSRF) Audit and Exploitation Toolkit. Equipped with a powerful crawling engine and numerous systematic checks, it is able to detect most cases of CSRF vulnerabilities, their related bypasses and futher generate (maliciously) exploitable proof of concepts with each found vulnerability. For more info on how XSRFProbe works, see [XSRFProbe Internals](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals) on [wiki](https://github.com/0xInfection/XSRFProbe/wiki/). 
+__XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)) (CSRF/XSRF) Audit and Exploitation Toolkit. Equipped with a powerful crawling engine and numerous systematic checks, it is able to detect most cases of CSRF vulnerabilities, their related bypasses and futher generate (maliciously) exploitable proof of concepts with each found vulnerability. For more info on how XSRFProbe works, see [XSRFProbe Internals](https://github.com/0xInfection/XSRFProbe/wiki#xsrfprobe-internals) on [wiki](https://github.com/0xInfection/XSRFProbe/wiki/).
 
 <img src="https://i.imgur.com/xTrfWSt.gif" alt="xsrf-logo">
 <p align="center">
@@ -40,17 +37,17 @@ __XSRFProbe__ is an advanced [Cross Site Request Forgery](https://www.owasp.org/
 - [x] Detects and actively tampers with many Anti-CSRF token implementations: request-method switch, token removal, empty/duplicated values, non-session-bound tokens, double-submit cookies and custom-header tokens.
 - [x] Probes Referer and Origin validation with real-world bypasses (header removal, regex/subdomain tricks, `Origin: null`) as well as method-override and Content-Type bypasses.
 - [x] Analyses SameSite cookie protections, with optional subdomain enumeration (via crt.sh) for sibling-domain bypass testing.
-- [x] Works with a powerful crawler which features continuous crawling and scanning.
+- [x] Works with a powerful crawler featuring deterministic, bounded crawling and scanning (configurable via `--max-urls`, `--max-depth` and `--crawl-timeout`).
 - [x] Optional headless Firefox (Selenium) integration for browser-dependent tests and auto-validation of generated PoCs.
 - [x] Accurate [Token-Strength Detection](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#token-randomness-calculation) and [Analysis](https://github.com/0xInfection/XSRFProbe/wiki/XSRFProbe-Internals#post-scan-token-analysis) using entropy and encoding checks.
 - [x] Can generate both normal as well as maliciously exploitable CSRF proof of concepts.
-- [x] Out of the box support for custom cookie values, generic headers and JSON report output.
+- [x] Out of the box support for custom cookie values, generic headers and a JSON report — each finding carries a severity rating and an exploitability precondition.
 - [x] The user is in [control of everything](https://github.com/0xInfection/XSRFProbe/wiki/Advanced-Usage#xsrfprobe-configuration-variables) whatever the scanner does.
 - [x] User-friendly interaction environment with full verbose support and detailed logging of errors, vulnerabilities and tokens.
 
 ### Vulnerability Tests & IDs:
 
-Every check XSRFProbe runs has a unique identifier. The ID is shown in the console output (e.g. `[T6] VULNERABLE: ...`) and stored under `details.test_id` in the JSON report, so each finding maps back to the exact test that produced it.
+Every check XSRFProbe runs has a unique identifier. The ID is shown in the console output (e.g. `[T6] VULNERABLE: ...`) and stored as the `test_id` field of each finding in the JSON report (alongside its `severity` and, where relevant, an `exploitability` note under `details`), so each finding maps back to the exact test that produced it.
 
 | ID | Category | Check |
 |----|----------|-------|
@@ -113,7 +110,7 @@ xsrfprobe --help
 - After testing XSRFProbe on a site, an output folder is created in your present working directory as `xsrfprobe-output`. Under this folder you can view the detailed logs and information collected during the scans (pass `--json` for a machine-readable report).
 
 ### Version and License:
-XSRFProbe `v3.0.0` release is a `Stage 5 Production-Ready (Stable)` release and the work is licensed under the [GNU General Public License (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html).
+XSRFProbe is currently `v3.0.0` and the work is licensed under the [GNU General Public License (GPLv3)](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 ### Warnings:
 

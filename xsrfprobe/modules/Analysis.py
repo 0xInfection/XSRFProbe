@@ -16,7 +16,7 @@ import logging
 from xsrfprobe.modules.Entropy import calcEntropy
 from xsrfprobe.core.utils import sameSequence
 from xsrfprobe.files import discovered
-from xsrfprobe.core.logger import VulnLogger, NovulLogger, PROGRESS, phase_header, test_progress
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, PROGRESS, phaseHeader, testProgress
 
 logger = logging.getLogger("Analysis")
 
@@ -30,16 +30,21 @@ def Analysis():
         return
 
     by_name: dict[str, list[str]] = {}
+    # Remember a representative endpoint per token field so the finding is
+    # attributed to a real URL instead of a synthetic "Analysis" placeholder.
+    url_by_name: dict[str, str] = {}
     for tk in all_tokens:
         if not tk.token:
             continue
         values = by_name.setdefault(tk.name, [])
         if tk.token not in values:
             values.append(tk.token)
+        if tk.url and tk.name not in url_by_name:
+            url_by_name[tk.name] = tk.url
 
     comparable = {name: vals for name, vals in by_name.items() if len(vals) >= 2}
 
-    phase_header(logger, "Analysis")
+    phaseHeader(logger, "Analysis")
     logger.log(PROGRESS, "A total of %s token record(s) across %s distinct value(s) were discovered",
                len(all_tokens), sum(len(v) for v in by_name.values()))
 
@@ -51,6 +56,7 @@ def Analysis():
         return
 
     for name, values in comparable.items():
+        finding_url = url_by_name.get(name, "Analysis")
         n_samples = len(values)
         lengths = {len(v) for v in values}
         entropies = [calcEntropy(v) for v in values]
@@ -84,7 +90,7 @@ def Analysis():
             f"[i] Avg dynamic length: {dynamic_len:.1f} chars"
         )
 
-        with test_progress(logger, "A1", f"Analysing token field: '{name}'") as tp:
+        with testProgress(logger, "A1", f"Analysing token field: '{name}'") as tp:
             # Verbose per-sample breakdown (visible at -v / INFO).
             for i, (val, ent) in enumerate(zip(values, entropies), 1):
                 logger.info("    #%d  value=%s", i, val)
@@ -110,7 +116,7 @@ def Analysis():
             logger.warning("[Analysis] Token field '%s' looks predictable/forgeable: %s.",
                            name, "; ".join(reasons))
             VulnLogger(
-                "Analysis",
+                finding_url,
                 f"Anti-CSRF token field '{name}' appears weak/forgeable: low inter-token "
                 f"variance (min normalised edit distance {min_dist:.2f}) or small dynamic "
                 f"component (~{dynamic_len:.0f} chars).",
@@ -122,7 +128,7 @@ def Analysis():
                         "%.2f >= 0.50 and dynamic component ~%.0f chars > 6.",
                         name, min_dist, dynamic_len)
             NovulLogger(
-                "Analysis",
+                finding_url,
                 f"Anti-CSRF token field '{name}' appears strong: {n_samples} distinct "
                 f"samples, avg entropy {avg_entropy:.2f} bits/char, min normalised edit "
                 f"distance {min_dist:.2f}, dynamic component ~{dynamic_len:.0f} chars.",

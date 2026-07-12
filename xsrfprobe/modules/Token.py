@@ -15,46 +15,130 @@ import random
 import requests
 import logging
 from urllib.parse import urlparse, unquote
+from bs4 import BeautifulSoup
 
 from xsrfprobe.files import config
 from xsrfprobe.files import discovered
-from xsrfprobe.core.request import requestMaker, SESSION, _build_default_headers, cors_allows_credentialed_header
+from xsrfprobe.core.request import requestMaker, SESSION, buildDefaultHeaders, cors_allows_credentialed_header
 from xsrfprobe.core.diff import DiffEngine
 from xsrfprobe.core.schema import DiscoveredToken, TokenDiscoveryPartEnum, TokenDiscoveryModeEnum, BenchmarkResult
-from xsrfprobe.files.paramlist import COMMON_CSRF_NAMES, COMMON_CSRF_HEADERS
-from xsrfprobe.core.logger import VulnLogger, NovulLogger, PROGRESS, test_progress, phase_header
+from xsrfprobe.files.paramlist import (
+    COMMON_CSRF_HEADERS,
+    HIGH_CONFIDENCE_CSRF_NAMES, LOW_CONFIDENCE_CSRF_NAMES,
+)
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, PROGRESS, testProgress, phaseHeader
 
 
 def _is_csrf_name_match(csrf_name: str, param_name: str) -> bool:
-    """Check if csrf_name appears as a word-boundary segment in param_name.
-    e.g. 'auth' matches 'auth_token' or 'csrf-auth' but NOT 'webauthn'."""
+    """
+    Check if csrf_name appears as a word-boundary segment in param_name.
+    e.g. 'auth' matches 'auth_token' or 'csrf-auth' but NOT 'webauthn'.
+    """
     pattern = r'(?:^|[\-_\[\].])' + re.escape(csrf_name) + r'(?:$|[\-_\[\].])'
     return bool(re.search(pattern, param_name, re.I))
 
 
-def _norm_token(value: str) -> str:
-    """Normalise a token value for comparison across cookie/body encodings.
+# Minimum length for a generic-named field's value to be considered a real
+# anti-CSRF token; below this it's almost certainly a flag or a short id.
+_TOKEN_VALUE_MIN_LENGTH = 16
+
+
+def looksLikeToken_value(value) -> bool:
+    """
+    Heuristic: does *value* look like a genuine anti-CSRF token rather than a
+    flag ("on"/"1"), a short id, or a dictionary word? Used only to gate the
+    generic field names (token/auth/hash/secret/verify) so they are not
+    misclassified as CSRF tokens on the strength of the name alone.
+    """
+    if value is None:
+        return False
+    v = str(value).strip()
+    if len(v) < _TOKEN_VALUE_MIN_LENGTH:
+        return False
+    has_digit = any(c.isdigit() for c in v)
+    has_alpha = any(c.isalpha() for c in v)
+    distinct = len(set(v))
+    # A real token is long AND either mixes letters+digits or has high character
+    # variety (hex/base64/random) — unlike a long sentence or padded placeholder.
+    return (has_digit and has_alpha) or distinct >= 12
+
+
+def isCSRField(name: str, value=None) -> bool:
+    """
+    Decide whether a (name, value) pair is an anti-CSRF token field.
+    """
+    if any(_is_csrf_name_match(n, name) for n in HIGH_CONFIDENCE_CSRF_NAMES):
+        return True
+    if any(_is_csrf_name_match(n, name) for n in LOW_CONFIDENCE_CSRF_NAMES):
+        return looksLikeToken_value(value)
+    return False
+
+
+def nomaliseToken(value: str) -> str:
+    """
+    Normalise a token value for comparison across cookie/body encodings.
 
     Real-world frameworks frequently URL-encode the cookie copy of a token
-    while sending it raw in the body (or vice versa), so a naive ``==`` would
+    while sending it raw in the body (or vice versa), so a naive == would
     miss a genuine double-submit pair. Unquoting + stripping makes the two
-    halves comparable."""
+    halves comparable.
+    """
     return unquote(value or "").strip()
+
+
+def attrToStr(value) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, list):
+        return " ".join(str(v) for v in value)
+    return str(value)
+
+
+def extractInputValue(html: str, name: str) -> str | None:
+    """Return the value of ``<input name="<name>" value="...">`` from *html*.
+
+    Uses an HTML parser instead of a single-ordering regex, so both attribute
+    orderings (name-before-value AND value-before-name, the latter common with
+    server-side templating) are handled. Returns ``None`` when the field is
+    absent or carries no value.
+    """
+    try:
+        soup = BeautifulSoup(html or "", "html.parser")
+    except Exception:
+        return None
+    tag = soup.find("input", attrs={"name": name})
+    if tag is None:
+        return None
+    return attrToStr(tag.get("value"))
 
 
 class TokenAnalyser:
     def __init__(self) -> None:
-        self.postfix_regex = r'<input.*?name=[\'"]%s[\'"].*?value=[\'"](.+?)[\'"]'
+        # Per-form store of anti-CSRF tokens discovered for the endpoint that is
+        # CURRENTLY under test. Every tamper/bypass test reads ONLY from this
+        # list, so tokens from other forms or URLs can never contaminate them —
+        # the invariant the shared global pool could not guarantee (a fresh
+        # TokenAnalyser is created per form). ``detectTokens`` also mirrors each
+        # token into the global ``discovered.ANTI_CSRF_TOKENS`` pool, which the
+        # end-of-scan predictability analysis (A1) consumes across all forms.
+        self.tokens: list[DiscoveredToken] = []
+
+    def recordToken(self, token: DiscoveredToken) -> None:
+        """Store *token* in the per-form list (consumed by the bypass tests) and
+        mirror it into the global analysis pool. Deduped by (name, value, part)
+        in both, so repeated detection across baseline samples doesn't inflate
+        either list."""
+        key = (token.name, token.token, token.discovery_part)
+        if not any((t.name, t.token, t.discovery_part) == key for t in self.tokens):
+            self.tokens.append(token)
+        if not any((t.name, t.token, t.discovery_part) == key
+                   for t in discovered.ANTI_CSRF_TOKENS):
+            discovered.ANTI_CSRF_TOKENS.append(token)
 
     def detectTokens(self, response: requests.Response, passive: bool = False,
                      sent_params: dict | None = None, sent_method: str = "POST") -> bool:
         """
         Checks whether Anti-CSRF Tokens are present in the request/response.
-
-        When ``sent_params`` is provided, request-side detection inspects the
-        parameters WE actually submitted (authoritative and redirect-proof),
-        instead of reverse-parsing ``response.request`` — which a 3xx replaces
-        with the final, body-less request.
         """
         logger = logging.getLogger("TokenDetector")
         found = False
@@ -66,20 +150,26 @@ class TokenAnalyser:
 
         if passive:
             logger.info("Passive mode enabled. Trying to detect tokens in response...")
-            for name in COMMON_CSRF_NAMES:
-                name_regex = self.postfix_regex % name
-                value = re.search(name_regex, response.text, re.I)
-                if value:
-                    value = value.group(1)
-                    logger.info(f"Anti-CSRF token detected in response: {name}={value}")
-                    discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
-                        name=name,
-                        token=value,
-                        url=response.url,
-                        mode=TokenDiscoveryModeEnum.PASSIVE,
-                        discovery_part=TokenDiscoveryPartEnum.RESPONSE_BODY
-                    ))
-                    found = True
+            try:
+                soup = BeautifulSoup(response.text or "", "html.parser")
+            except Exception:
+                soup = None
+            if soup is not None:
+                for tag in soup.find_all("input", attrs={"name": True}):
+                    field_name = attrToStr(tag.get("name")) or ""
+                    value = attrToStr(tag.get("value"))
+                    if value is None:
+                        continue
+                    if isCSRField(field_name, value):
+                        logger.info(f"Anti-CSRF token detected in response: {field_name}={value}")
+                        self.recordToken(DiscoveredToken(
+                            name=field_name,
+                            token=value,
+                            url=response.url,
+                            mode=TokenDiscoveryModeEnum.PASSIVE,
+                            discovery_part=TokenDiscoveryPartEnum.RESPONSE_BODY,
+                        ))
+                        found = True
             return found
 
         try:
@@ -92,19 +182,16 @@ class TokenAnalyser:
                         else TokenDiscoveryPartEnum.REQUEST_BODY)
                 logger.info("Searching for Anti-CSRF Token in the submitted parameters...")
                 for param_name, param_value in sent_params.items():
-                    for name in COMMON_CSRF_NAMES:
-                        if _is_csrf_name_match(name, param_name):
-                            logger.info(f"Anti-CSRF Parameter ({part.value}): {param_name}={param_value}")
-                            discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
-                                name=param_name,
-                                token=str(param_value),
-                                url=response.url,
-                                mode=TokenDiscoveryModeEnum.ACTIVE,
-                                discovery_part=part,
-                            ))
-                            found = True
-                            break
-                    if found:
+                    if isCSRField(param_name, param_value):
+                        logger.info(f"Anti-CSRF Parameter ({part.value}): {param_name}={param_value}")
+                        self.recordToken(DiscoveredToken(
+                            name=param_name,
+                            token=str(param_value),
+                            url=response.url,
+                            mode=TokenDiscoveryModeEnum.ACTIVE,
+                            discovery_part=part,
+                        ))
+                        found = True
                         break
             else:
                 # Fallback: reverse-parse the (redirect-aware, same-origin)
@@ -124,19 +211,16 @@ class TokenAnalyser:
                         if "=" not in c:
                             continue
                         param_name, param_value = c.split("=", 1)
-                        for name in COMMON_CSRF_NAMES:
-                            if _is_csrf_name_match(name, param_name):
-                                logger.info(f"Anti-CSRF Query Parameter: {param_name}={param_value}")
-                                discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
-                                    name=param_name,
-                                    token=param_value,
-                                    url=req_url,
-                                    mode=TokenDiscoveryModeEnum.ACTIVE,
-                                    discovery_part=TokenDiscoveryPartEnum.REQUEST_QUERY
-                                ))
-                                found = True
-                                break
-                        if found:
+                        if isCSRField(param_name, unquote(param_value)):
+                            logger.info(f"Anti-CSRF Query Parameter: {param_name}={param_value}")
+                            self.recordToken(DiscoveredToken(
+                                name=param_name,
+                                token=param_value,
+                                url=req_url,
+                                mode=TokenDiscoveryModeEnum.ACTIVE,
+                                discovery_part=TokenDiscoveryPartEnum.REQUEST_QUERY
+                            ))
+                            found = True
                             break
                     if found:
                         break
@@ -152,19 +236,16 @@ class TokenAnalyser:
                             if "=" not in param:
                                 continue
                             param_name, param_value = param.split("=", 1)
-                            for name in COMMON_CSRF_NAMES:
-                                if _is_csrf_name_match(name, param_name):
-                                    logger.info(f"Anti-CSRF Request Body Parameter: {param_name}={param_value}")
-                                    discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
-                                        name=param_name,
-                                        token=param_value,
-                                        url=req_url,
-                                        mode=TokenDiscoveryModeEnum.ACTIVE,
-                                        discovery_part=TokenDiscoveryPartEnum.REQUEST_BODY
-                                    ))
-                                    found = True
-                                    break
-                            if found:
+                            if isCSRField(param_name, unquote(param_value)):
+                                logger.info(f"Anti-CSRF Request Body Parameter: {param_name}={param_value}")
+                                self.recordToken(DiscoveredToken(
+                                    name=param_name,
+                                    token=param_value,
+                                    url=req_url,
+                                    mode=TokenDiscoveryModeEnum.ACTIVE,
+                                    discovery_part=TokenDiscoveryPartEnum.REQUEST_BODY
+                                ))
+                                found = True
                                 break
                         if found:
                             break
@@ -178,7 +259,7 @@ class TokenAnalyser:
                         if name.lower() in key.lower():
                             logger.info(f"Anti-CSRF Token Header: {key}={value}")
                             found = True
-                            discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
+                            self.recordToken(DiscoveredToken(
                                 name=key,
                                 token=value,
                                 url=response.url,
@@ -209,7 +290,8 @@ class TokenAnalyser:
         return False
 
     def _detect_cookie_tokens(self, response: requests.Response) -> bool:
-        """Record anti-CSRF tokens carried in cookies.
+        """
+        Record anti-CSRF tokens carried in cookies.
 
         Reads from proper cookie jars (the response's own jar plus the
         persistent session jar) rather than string-splitting the Set-Cookie
@@ -245,8 +327,8 @@ class TokenAnalyser:
             return False
 
         body_values = {
-            _norm_token(t.token)
-            for t in discovered.ANTI_CSRF_TOKENS
+            nomaliseToken(t.token)
+            for t in self.tokens
             if t.token and t.discovery_part in (
                 TokenDiscoveryPartEnum.REQUEST_BODY,
                 TokenDiscoveryPartEnum.REQUEST_QUERY,
@@ -254,22 +336,15 @@ class TokenAnalyser:
         }
 
         for cookie_name, cookie_value in candidates.items():
-            name_match = any(_is_csrf_name_match(name, cookie_name) for name in COMMON_CSRF_NAMES)
-            value_match = bool(body_values) and _norm_token(cookie_value) in body_values
+            name_match = isCSRField(cookie_name, cookie_value)
+            value_match = bool(body_values) and nomaliseToken(cookie_value) in body_values
             if not (name_match or value_match):
                 continue
 
-            already = any(
-                t.discovery_part == TokenDiscoveryPartEnum.COOKIE
-                and t.name == cookie_name
-                and t.token == cookie_value
-                for t in discovered.ANTI_CSRF_TOKENS
-            )
-            if already:
-                continue
-
+            # recordToken dedupes by (name, value, part), so re-observing the
+            # same cookie across baseline samples won't create duplicates.
             logger.info(f"Anti-CSRF Token Cookie: {cookie_name}={cookie_value}")
-            discovered.ANTI_CSRF_TOKENS.append(DiscoveredToken(
+            self.recordToken(DiscoveredToken(
                 name=cookie_name,
                 token=cookie_value,
                 url=response.url,
@@ -281,10 +356,12 @@ class TokenAnalyser:
         return found
 
     # ----------------------------------------------------------------
-    # T2: Validation depends on request method (PortSwigger Lab 2)
+    # T2: Validation depends on request method
     # ----------------------------------------------------------------
     def bypassTokenValidationRequestMethod(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
-        """Switch GET<->POST to bypass method-conditioned CSRF validation."""
+        """
+        Switch GET <-> POST to bypass method-conditioned CSRF validation.
+        """
         logger = logging.getLogger("RequestMethodBypass")
         logger.info("[T2] Trying request method switch bypass...")
         differ = DiffEngine()
@@ -310,18 +387,20 @@ class TokenAnalyser:
         return False
 
     # ----------------------------------------------------------------
-    # T3: Validation depends on token being present (PortSwigger Lab 3)
+    # T3: Validation depends on token being present
     # ----------------------------------------------------------------
     def bypassTokenValidationPresence(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
-        """Remove the CSRF token parameter entirely to test presence-based validation."""
+        """
+        Remove the CSRF token parameter entirely to test presence-based validation.
+        """
         logger = logging.getLogger("TokenPresenceBypass")
         logger.info("[T3] Trying token removal bypass...")
         differ = DiffEngine()
 
-        cookie_token_names = {t.name.lower() for t in discovered.ANTI_CSRF_TOKENS
+        cookie_token_names = {t.name.lower() for t in self.tokens
                               if t.discovery_part == TokenDiscoveryPartEnum.COOKIE}
 
-        for token in discovered.ANTI_CSRF_TOKENS:
+        for token in self.tokens:
             test_params = params.copy()
 
             if token.discovery_part in (TokenDiscoveryPartEnum.REQUEST_QUERY, TokenDiscoveryPartEnum.REQUEST_BODY):
@@ -338,7 +417,7 @@ class TokenAnalyser:
                     try:
                         r = requests.request(
                             method=method.upper(), url=url,
-                            headers=_build_default_headers(),
+                            headers=buildDefaultHeaders(),
                             cookies=cookies_without,
                             data=test_params if method.lower() == "post" else None,
                             params=test_params if method.lower() == "get" else None,
@@ -367,7 +446,7 @@ class TokenAnalyser:
                 try:
                     r = requests.request(
                         method=method.upper(), url=url,
-                        headers=_build_default_headers(),
+                        headers=buildDefaultHeaders(),
                         cookies=cookie,
                         data=test_params if method.lower() == "post" else None,
                         params=test_params if method.lower() == "get" else None,
@@ -387,18 +466,20 @@ class TokenAnalyser:
         return False
 
     # ----------------------------------------------------------------
-    # T7: Empty token value accepted (PortSwigger Lab 3 variant)
+    # T7: Empty token value accepted
     # ----------------------------------------------------------------
     def bypassEmptyTokenValue(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
-        """Submit the request with the token parameter present but set to an empty string."""
+        """
+        Submit the request with the token parameter present but set to an empty string.
+        """
         logger = logging.getLogger("EmptyTokenBypass")
         logger.info("[T7] Trying empty token value bypass...")
         differ = DiffEngine()
 
-        cookie_token_names = {t.name.lower() for t in discovered.ANTI_CSRF_TOKENS
+        cookie_token_names = {t.name.lower() for t in self.tokens
                               if t.discovery_part == TokenDiscoveryPartEnum.COOKIE}
 
-        for token in discovered.ANTI_CSRF_TOKENS:
+        for token in self.tokens:
             if token.discovery_part not in (TokenDiscoveryPartEnum.REQUEST_QUERY, TokenDiscoveryPartEnum.REQUEST_BODY):
                 continue
 
@@ -415,7 +496,7 @@ class TokenAnalyser:
                 try:
                     r = requests.request(
                         method=method.upper(), url=url,
-                        headers=_build_default_headers(),
+                        headers=buildDefaultHeaders(),
                         cookies=cookies_emptied,
                         data=test_params if method.lower() == "post" else None,
                         params=test_params if method.lower() == "get" else None,
@@ -442,11 +523,12 @@ class TokenAnalyser:
 
     # ----------------------------------------------------------------
     # M1/M2/S1: Method override bypass (_method param + override headers)
-    # (PortSwigger SameSite Lax Lab 7 + HackTricks)
     # ----------------------------------------------------------------
     def bypassMethodOverride(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> set[str]:
-        """Test HTTP method override via _method param and X-HTTP-Method-Override headers.
-        Returns set of bypass IDs that passed: 'M1' for _method param, 'M2' for override headers."""
+        """
+        Test HTTP method override via _method param and X-HTTP-Method-Override headers.
+        Returns set of bypass IDs that passed: 'M1' for _method param, 'M2' for override headers.
+        """
         logger = logging.getLogger("MethodOverrideBypass")
         logger.info("[M1/M2] Trying method override bypass...")
         differ = DiffEngine()
@@ -456,7 +538,7 @@ class TokenAnalyser:
             return passed
 
         override_params = params.copy()
-        for token in discovered.ANTI_CSRF_TOKENS:
+        for token in self.tokens:
             override_params.pop(token.name, None)
 
         # Test 1: GET request with _method=POST in query string.
@@ -482,7 +564,7 @@ class TokenAnalyser:
                            differ.benchmarkPassed(base_benchmark, baseline_no_token.text, baseline_no_token.status_code))
 
         if not baseline_passes:
-            override_headers = _build_default_headers().copy()
+            override_headers = buildDefaultHeaders().copy()
             for header_name in ("X-HTTP-Method-Override", "X-HTTP-Method", "X-Method-Override"):
                 override_headers[header_name] = "GET"
                 r = requestMaker(url, method="POST", data=override_params, headers=override_headers)
@@ -508,13 +590,15 @@ class TokenAnalyser:
     # T8: Custom header token bypass (HackTricks)
     # ----------------------------------------------------------------
     def bypassCustomHeaderToken(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
-        """Strip or replace anti-CSRF tokens sent via custom HTTP headers."""
+        """
+        Strip or replace anti-CSRF tokens sent via custom HTTP headers.
+        """
         logger = logging.getLogger("CustomHeaderBypass")
         logger.info("[T8] Trying custom header token bypass...")
         differ = DiffEngine()
         bypassed = False
 
-        header_tokens = [t for t in discovered.ANTI_CSRF_TOKENS
+        header_tokens = [t for t in self.tokens
                          if t.discovery_part == TokenDiscoveryPartEnum.RESPONSE_HEADERS]
 
         if not header_tokens:
@@ -523,33 +607,48 @@ class TokenAnalyser:
 
         for token in header_tokens:
             # First verify: does including the header in requests actually work?
-            verify_headers = _build_default_headers().copy()
+            verify_headers = buildDefaultHeaders().copy()
             verify_headers[token.name] = token.token
-            r_with = requestMaker(url, method=method.upper(),
-                                  data=params if method.lower() == "post" else None,
-                                  params=params if method.lower() == "get" else None,
-                                  headers=verify_headers)
+            r_with = requestMaker(
+                url=url,
+                method=method.upper(),
+                data=params if method.lower() == "post" else None,
+                params=params if method.lower() == "get" else None,
+                headers=verify_headers
+            )
             if not r_with or not differ.benchmarkPassed(base_benchmark, r_with.text, r_with.status_code):
                 logger.info(f"[T8] Request with '{token.name}' header doesn't match benchmark. Skipping.")
                 continue
 
             # Test 1: Remove the header entirely
-            test_headers = _build_default_headers().copy()
+            test_headers = buildDefaultHeaders().copy()
 
-            r = requestMaker(url, method=method.upper(), data=params if method.lower() == "post" else None,
-                             params=params if method.lower() == "get" else None, headers=test_headers)
+            r = requestMaker(
+                url=url,
+                method=method.upper(),
+                data=params if method.lower() == "post" else None,
+                params=params if method.lower() == "get" else None,
+                headers=test_headers
+            )
             if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
                 logger.warning(f"[T8] VULNERABLE: Server accepted request without '{token.name}' header.")
                 VulnLogger(url, f"CSRF header token '{token.name}' can be omitted.", test_id="T8")
                 bypassed = True
 
-            # Test 2: Replace with same-length random string
-            test_headers = _build_default_headers().copy()
-            fake_token = "".join(random.choices(string.ascii_letters + string.digits, k=len(token.token)))
+            # Test 2: Replace with same-length random string (falling back to the
+            # configured synthetic-token length when the real token is shorter).
+            test_headers = buildDefaultHeaders().copy()
+            fake_len = max(len(token.token), config.TOKEN_GENERATION_LENGTH)
+            fake_token = "".join(random.choices(string.ascii_letters + string.digits, k=fake_len))
             test_headers[token.name] = fake_token
 
-            r = requestMaker(url, method=method.upper(), data=params if method.lower() == "post" else None,
-                             params=params if method.lower() == "get" else None, headers=test_headers)
+            r = requestMaker(
+                url=url,
+                method=method.upper(),
+                data=params if method.lower() == "post" else None,
+                params=params if method.lower() == "get" else None,
+                headers=test_headers
+            )
             if r and differ.benchmarkPassed(base_benchmark, r.text, r.status_code):
                 logger.warning(f"[T8] VULNERABLE: Server accepted forged '{token.name}' header value.")
                 VulnLogger(url, f"CSRF header token '{token.name}' accepts arbitrary values.", test_id="T8")
@@ -561,15 +660,17 @@ class TokenAnalyser:
         return bypassed
 
     # ----------------------------------------------------------------
-    # T4: Token not tied to user session (PortSwigger Lab 4)
+    # T4: Token not tied to user session
     # ----------------------------------------------------------------
     def bypassTokenNotTiedToSession(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
-        """Obtain a token from a fresh (unauthenticated) session and replay it."""
+        """
+        Obtain a token from a fresh (unauthenticated) session and replay it.
+        """
         logger = logging.getLogger("SessionBindingBypass")
         logger.info("[T4] Trying cross-session token replay bypass...")
         differ = DiffEngine()
 
-        body_tokens = [t for t in discovered.ANTI_CSRF_TOKENS
+        body_tokens = [t for t in self.tokens
                        if t.discovery_part in (TokenDiscoveryPartEnum.REQUEST_BODY, TokenDiscoveryPartEnum.REQUEST_QUERY)]
         if not body_tokens:
             return False
@@ -582,17 +683,16 @@ class TokenAnalyser:
             return False
 
         for token in body_tokens:
-            fresh_match = re.search(self.postfix_regex % token.name, fresh_resp.text, re.I)
-            if not fresh_match:
+            fresh_token_value = extractInputValue(fresh_resp.text, token.name)
+            if not fresh_token_value:
                 continue
-
-            fresh_token_value = fresh_match.group(1)
 
             test_params = params.copy()
             test_params[token.name] = fresh_token_value
 
             r = requestMaker(
-                url, method=method.upper(),
+                url=url,
+                method=method.upper(),
                 data=test_params if method.lower() == "post" else None,
                 params=test_params if method.lower() == "get" else None
             )
@@ -607,7 +707,7 @@ class TokenAnalyser:
         return False
 
     # ----------------------------------------------------------------
-    # T6: Token duplicated in cookie / double submit bypass (PortSwigger Lab 6)
+    # T6: Token duplicated in cookie / double submit bypass
     # ----------------------------------------------------------------
     def bypassDoubleSubmitCookie(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
         """
@@ -618,17 +718,17 @@ class TokenAnalyser:
         logger.info("[T6] Trying double-submit cookie bypass...")
         differ = DiffEngine()
 
-        body_tokens = [t for t in discovered.ANTI_CSRF_TOKENS
+        body_tokens = [t for t in self.tokens
                        if t.discovery_part in (TokenDiscoveryPartEnum.REQUEST_BODY, TokenDiscoveryPartEnum.REQUEST_QUERY)]
-        cookie_tokens = [t for t in discovered.ANTI_CSRF_TOKENS
+        cookie_tokens = [t for t in self.tokens
                          if t.discovery_part == TokenDiscoveryPartEnum.COOKIE]
 
         for bt in body_tokens:
             for ct in cookie_tokens:
-                if _norm_token(bt.token) == _norm_token(ct.token) or bt.name.lower() == ct.name.lower():
+                if nomaliseToken(bt.token) == nomaliseToken(ct.token) or bt.name.lower() == ct.name.lower():
                     logger.info(f"[T6] Double-submit pattern detected: body='{bt.name}', cookie='{ct.name}'")
 
-                    forged_value = "xsrfprobe_" + "".join(random.choices(string.ascii_lowercase, k=16))
+                    forged_value = "xsrfprobe_" + "".join(random.choices(string.ascii_lowercase, k=config.TOKEN_GENERATION_LENGTH))
 
                     test_params = params.copy()
                     test_params[bt.name] = forged_value
@@ -639,7 +739,7 @@ class TokenAnalyser:
                     try:
                         r = requests.request(
                             method=method.upper(), url=url,
-                            headers=_build_default_headers(),
+                            headers=buildDefaultHeaders(),
                             cookies=forged_cookies,
                             data=test_params if method.lower() == "post" else None,
                             params=test_params if method.lower() == "get" else None,
@@ -658,7 +758,7 @@ class TokenAnalyser:
         return False
 
     # ----------------------------------------------------------------
-    # T5: Token tied to non-session cookie (PortSwigger Lab 5)
+    # T5: Token tied to non-session cookie
     # ----------------------------------------------------------------
     def bypassTokenTiedToNonSessionCookie(self, url: str, base_benchmark: BenchmarkResult, method: str, params: dict) -> bool:
         """
@@ -688,15 +788,13 @@ class TokenAnalyser:
             return False
 
         fresh_cookies = fresh_session.cookies.get_dict()
-        body_tokens = [t for t in discovered.ANTI_CSRF_TOKENS
+        body_tokens = [t for t in self.tokens
                        if t.discovery_part in (TokenDiscoveryPartEnum.REQUEST_BODY, TokenDiscoveryPartEnum.REQUEST_QUERY)]
 
         for token in body_tokens:
-            fresh_match = re.search(self.postfix_regex % token.name, fresh_resp.text, re.I)
-            if not fresh_match:
+            fresh_token_value = extractInputValue(fresh_resp.text, token.name)
+            if not fresh_token_value:
                 continue
-
-            fresh_token_value = fresh_match.group(1)
 
             combined_cookies = session_cookies.copy()
             for ck_name in csrf_cookies:
@@ -709,7 +807,7 @@ class TokenAnalyser:
             try:
                 r = requests.request(
                     method=method.upper(), url=url,
-                    headers=_build_default_headers(),
+                    headers=buildDefaultHeaders(),
                     cookies=combined_cookies,
                     data=test_params if method.lower() == "post" else None,
                     params=test_params if method.lower() == "get" else None,
@@ -730,18 +828,21 @@ class TokenAnalyser:
     # ----------------------------------------------------------------
     # Orchestrator: run all token tamper tests
     # ----------------------------------------------------------------
-    def performTokenTamperTests(self, url: str, method: str, params: dict, base_benchmark: BenchmarkResult,
-                                run_method_switch: bool = True) -> set[str]:
-        """Run all token bypass tests in sequence. Returns set of passed test IDs.
-
-        ``run_method_switch`` gates only T2 (the GET<->POST method switch): it
-        keeps the token and merely changes the method, so its GET trivially
-        matches the baseline when a plain page load already looks like success
-        (e.g. a login we can't complete). The other tests tamper with the token
-        and produce a distinct rejection, so they remain reliable regardless.
+    def performTokenTamperTests(
+        self, url: str, method: str, params: dict,
+        base_benchmark: BenchmarkResult, run_method_switch: bool = True
+    ) -> set[str]:
+        """
+        Run all token bypass tests in sequence.
         """
         logger = logging.getLogger("TokenTamperTests")
         passed = set()
+
+        # run_method_switch() gates only T2 (the GET<->POST method switch): it
+        # keeps the token and merely changes the method, so its GET trivially
+        # matches the baseline when a plain page load already looks like success
+        # (e.g. a login we can't complete). The other tests tamper with the token
+        # and produce a distinct rejection, so they remain reliable regardless.
 
         tests = []
         if run_method_switch:
@@ -759,7 +860,7 @@ class TokenAnalyser:
 
         for test_id, description, test_fn in tests:
             try:
-                with test_progress(logger, test_id, description) as tp_result:
+                with testProgress(logger, test_id, description) as tp_result:
                     result = test_fn(url, base_benchmark, method, params.copy())
                     if result:
                         passed.add(test_id)
@@ -775,10 +876,10 @@ class TokenAnalyser:
             logger.warning("%d token tamper test(s) succeeded. Endpoint is VULNERABLE.", len(passed))
 
         # --- Method Override Tests ---
-        phase_header(logger, "Method Override Tests")
+        phaseHeader(logger, "Method Override Tests")
         m_results = set()
         try:
-            with test_progress(logger, "M1/M2", "Method override bypass") as tp_result:
+            with testProgress(logger, "M1/M2", "Method override bypass") as tp_result:
                 m_results = self.bypassMethodOverride(url, base_benchmark, method, params.copy())
                 passed.update(m_results)
                 if m_results:

@@ -8,8 +8,9 @@ from xsrfprobe.core.options import options
 from xsrfprobe.core.inputin import inputProcessor
 from xsrfprobe.core.utils import calcLogLevel
 from xsrfprobe.core.handler import noCrawlProcessor
-from xsrfprobe.core.logger import CustomFormatter, CustomLogger, ProgressAwareHandler, PROGRESS, phase_header
+from xsrfprobe.core.logger import CustomFormatter, CustomLogger, ProgressAwareHandler, PROGRESS, phaseHeader
 from xsrfprobe.core.schema import ScanReport, Finding, UrlFindings, Strength, UrlStrengths
+from xsrfprobe.files.severity import get_severity, get_severity_enum, get_exploitability
 from xsrfprobe.files import config
 from xsrfprobe.files import discovered
 
@@ -57,23 +58,6 @@ def get_browser_session():
     return _browser_session
 
 
-def _handle_update():
-    """Pull the latest version from git."""
-    logger = logging.getLogger("Engine")
-    logger.info("Checking for updates...")
-    try:
-        import subprocess
-        result = subprocess.run(
-            ["git", "pull", "origin", "master"],
-            capture_output=True, text=True, cwd=os.path.dirname(os.path.dirname(__file__))
-        )
-        logger.info(result.stdout.strip())
-        if result.returncode != 0:
-            logger.error("Update failed: %s", result.stderr.strip())
-    except Exception as e:
-        logger.error("Update error: %s", e)
-
-
 def _generate_json_report(target_url: str, duration: float):
     """Generate a JSON report from discovered data."""
     logger = logging.getLogger("Engine")
@@ -90,15 +74,20 @@ def _generate_json_report(target_url: str, duration: float):
             continue
         _seen_vulns.add(key)
 
+        test_id = rec.get("test_id", "")
         details = dict(rec.get("details") or {})
         details.pop("test_id", None)
         content = (rec.get("content") or "").strip()
         if content:
             details.setdefault("evidence", content)
+        exploitability = get_exploitability(test_id)
+        if exploitability:
+            details.setdefault("exploitability", exploitability)
 
         vuln_groups.setdefault(rec_url, []).append(Finding(
-            test_id=rec.get("test_id", ""),
+            test_id=test_id,
             description=description,
+            severity=get_severity_enum(test_id),
             details=details,
             poc_paths=list(rec.get("poc_paths") or []),
         ))
@@ -140,6 +129,7 @@ def _generate_json_report(target_url: str, duration: float):
         vulnerabilities=vulns,
         tokens_discovered=tokens_discovered,
         strengths=strengths,
+        scan_errors=list(dict.fromkeys(discovered.SCAN_ERRORS)),
     )
 
     report_path = os.path.join(config.OUTPUT_DIR, "report.json")
@@ -215,9 +205,28 @@ def _print_strength_tables(logger, s_rows: list[dict], budget: int):
     sys.stdout.write("\n")
 
 
+def _print_scan_errors():
+    """Print any errors collected during the scan (request failures, etc.),
+    deduped and order-preserving. No-op when there were none."""
+    seen = set()
+    unique = []
+    for e in discovered.SCAN_ERRORS:
+        if e not in seen:
+            seen.add(e)
+            unique.append(e)
+    if not unique:
+        return
+    w = sys.stdout.write
+    w("\n")
+    w(f"  Scan errors ({len(unique)}):\n")
+    for e in unique:
+        w(f"    - {e}\n")
+    w("\n")
+
+
 def _print_summary(logger, duration: float):
     """Print a final summary table of findings and PoCs."""
-    phase_header(logger, "Summary")
+    phaseHeader(logger, "Summary")
 
     forms_tested = sum(len(v) for v in discovered.FORMS_TESTED.values())
     urls_scanned = len(discovered.INTERNAL_URLS) or 1
@@ -254,6 +263,7 @@ def _print_summary(logger, duration: float):
         w("  No vulnerabilities discovered.\n")
         if s_rows:
             _print_strength_tables(logger, s_rows, budget)
+        _print_scan_errors()
         return
 
     # Group findings by endpoint URL
@@ -264,14 +274,17 @@ def _print_summary(logger, duration: float):
     w("\n")
     w(f"  Vulnerabilities ({len(vulns)}):\n")
 
-    headers = ("ID", "Vulnerability", "PoC")
-    id_w = max(len(headers[0]), max(
+    headers = ("Sev", "ID", "Vulnerability", "PoC")
+    # 4-col table chrome = 5 pipes + 4*2 padding = 13
+    vuln_budget = table_max - 2 - 13
+    sev_w = max(len(headers[0]), max(
+        (len(get_severity(r.get("test_id", ""))) for r in vulns), default=3))
+    id_w = max(len(headers[1]), max(
         (len(r.get("test_id", "")) for r in vulns), default=2))
-    # PoC and Vuln split the remainder 35/65
-    remaining = budget - id_w
-    poc_w = max(len(headers[2]), min(remaining * 35 // 100, 42))
-    vuln_w = max(len(headers[1]), remaining - poc_w)
-    col_w = [id_w, vuln_w, poc_w]
+    remaining = vuln_budget - sev_w - id_w
+    poc_w = max(len(headers[3]), len("Generated"))
+    vuln_w = max(len(headers[2]), remaining - poc_w)
+    col_w = [sev_w, id_w, vuln_w, poc_w]
 
     def _sep(left, mid, right, fill="─"):
         return left + mid.join(fill * (w + 2) for w in col_w) + right
@@ -296,10 +309,11 @@ def _print_summary(logger, duration: float):
         w(f"  {_sep('├', '┼', '┤', '═')}\n")
         for idx, f in enumerate(findings):
             tid = f.get("test_id", "")
+            sev = get_severity(tid)
             desc = f.get("vuln", "")
             pocs = f.get("poc_paths") or []
-            poc_str = "\n".join(pocs) if pocs else "-"
-            for line in _row((tid, desc, poc_str)).split("\n"):
+            poc_str = "Generated" if pocs else "-"
+            for line in _row((sev, tid, desc, poc_str)).split("\n"):
                 w(f"  {line}\n")
             if idx < len(findings) - 1:
                 w(f"  {_sep('├', '┼', '┤')}\n")
@@ -322,6 +336,8 @@ def _print_summary(logger, duration: float):
             w(f"    - {poc}\n")
         w("\n")
 
+    _print_scan_errors()
+
 
 def Engine():
     args = options()
@@ -341,10 +357,6 @@ def Engine():
     logging.root.addHandler(error_handler)
 
     logger = logging.getLogger("Engine")
-
-    if args.update:
-        _handle_update()
-        return
 
     logger.log(PROGRESS, "Booting up XSRFProbe engine...")
 

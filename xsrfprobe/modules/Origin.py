@@ -12,12 +12,12 @@
 import logging
 import requests
 from urllib.parse import urlparse
-from xsrfprobe.core.request import requestMaker, SESSION
-from xsrfprobe.core.refresh import refresh_token_pair
+from xsrfprobe.core.request import requestMaker, SESSION, buildDefaultHeaders
+from xsrfprobe.core.refresh import refreshTokenPair
 from xsrfprobe.core.diff import DiffEngine
 from xsrfprobe.core.schema import BenchmarkResult
-from xsrfprobe.files.config import HEADER_VALUES, ORIGIN_URL
-from xsrfprobe.core.logger import VulnLogger, NovulLogger, test_progress
+from xsrfprobe.files.config import ORIGIN_URL
+from xsrfprobe.core.logger import VulnLogger, NovulLogger, testProgress
 
 
 class OriginAnalyser:
@@ -36,7 +36,7 @@ class OriginAnalyser:
         logger.info("[O1] Trying Origin: null bypass...")
 
         method = method.upper()
-        headers = HEADER_VALUES.copy()
+        headers = buildDefaultHeaders().copy()
         headers["Origin"] = "null"
 
         r = requestMaker(
@@ -62,7 +62,9 @@ class OriginAnalyser:
     # O2: Origin subdomain bypass (HackTricks)
     # ----------------------------------------------------------------
     def bypassOriginSubdomain(self, url: str, benchmark: BenchmarkResult, method: str, params: dict, session: requests.Session | None = None) -> bool:
-        """Send Origin: http://target.com.evil.com to bypass regex-based checks."""
+        """
+        Send Origin: http://target.com.evil.com to bypass regex-based checks.
+        """
         logger = logging.getLogger("OriginSubdomainBypass")
         logger.info("[O2] Trying Origin subdomain bypass...")
 
@@ -72,7 +74,7 @@ class OriginAnalyser:
 
         attacker_origin = f"{parsed.scheme}://{target_host}.evil-attacker.com"
 
-        headers = HEADER_VALUES.copy()
+        headers = buildDefaultHeaders().copy()
         headers["Origin"] = attacker_origin
 
         r = requestMaker(
@@ -97,12 +99,14 @@ class OriginAnalyser:
     # O3: Origin absent bypass
     # ----------------------------------------------------------------
     def bypassOriginAbsent(self, url: str, benchmark: BenchmarkResult, method: str, params: dict, session: requests.Session | None = None) -> bool:
-        """Remove Origin header entirely."""
+        """
+        Remove Origin header entirely.
+        """
         logger = logging.getLogger("OriginAbsentBypass")
         logger.info("[O3] Trying Origin absent bypass...")
 
         method = method.upper()
-        headers = HEADER_VALUES.copy()
+        headers = buildDefaultHeaders().copy()
         headers.pop("Origin", None)
 
         r = requestMaker(
@@ -125,23 +129,25 @@ class OriginAnalyser:
         return False
 
     def performOriginBypassChecks(self, url: str, benchmark: BenchmarkResult, method: str, params: dict) -> None:
-        """Run all Origin bypass checks."""
+        """
+        Run all Origin bypass checks.
+        """
         logger = logging.getLogger("OriginBypass")
-        params, session = refresh_token_pair(url, params)
+        params, session = refreshTokenPair(url, params)
 
-        with test_progress(logger, "O1", "Origin: null bypass") as tp:
+        with testProgress(logger, "O1", "Origin: null bypass") as tp:
             if self.bypassOriginNull(url, benchmark, method, params, session):
                 tp["status"] = "VULNERABLE"
             else:
                 tp["status"] = "failed"
 
-        with test_progress(logger, "O2", "Origin subdomain bypass") as tp:
+        with testProgress(logger, "O2", "Origin subdomain bypass") as tp:
             if self.bypassOriginSubdomain(url, benchmark, method, params, session):
                 tp["status"] = "VULNERABLE"
             else:
                 tp["status"] = "failed"
 
-        with test_progress(logger, "O3", "Origin absent bypass") as tp:
+        with testProgress(logger, "O3", "Origin absent bypass") as tp:
             if self.bypassOriginAbsent(url, benchmark, method, params, session):
                 tp["status"] = "VULNERABLE"
             else:

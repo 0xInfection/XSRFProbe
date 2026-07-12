@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup, Tag
 
 from xsrfprobe.files.dcodelist import PROTOCOLS
 from xsrfprobe.files.paramlist import EXCLUSIONS_LIST
-from xsrfprobe.files.config import INPUT_TYPES_DEAULTS, TEXT_VALUE
+from xsrfprobe.files.config import INPUT_TYPES_DEFAULTS, TEXT_VALUE
 
 
 class FormParser:
@@ -110,7 +110,7 @@ class FormParser:
         # Note: .get("value", default) only uses the default when the attribute
         # is absent; many real forms ship an empty value="" (e.g. change-email),
         # which we treat as "no value" so the PoC carries a meaningful payload.
-        value = input_tag.get("value") or INPUT_TYPES_DEAULTS.get(input_type, TEXT_VALUE)
+        value = input_tag.get("value") or INPUT_TYPES_DEFAULTS.get(input_type, TEXT_VALUE)
         self.logger.info(f"Using value for input type '{input_type}': {value}")
         self.crafted_inputs[input_tag["name"]] = value
 
@@ -148,13 +148,6 @@ class FormParser:
         Build a proper URL based on the provided base URL and action_uri.
 
         Excludes URLs that match the EXCLUSIONS_LIST to prevent detecting self-CSRF (e.g., Logout-CSRF).
-
-        Args:
-            base_url (str): The base URL to build upon.
-            action_uri (str): The action_uri to resolve against the base URL.
-
-        Returns:
-            str or None: A fully resolved URL or None if excluded or invalid.
         """
         # Exclude self-CSRF/Logout-CSRF URLs
         if action_uri == "http://localhost" or any(re.search(pattern, action_uri, re.IGNORECASE) for pattern in EXCLUSIONS_LIST):
@@ -198,13 +191,6 @@ class FormParser:
     def buildAction(self, base_url: str, action: str) -> str | None:
         """
         Create an action URL based on the current location and destination action.
-
-        Args:
-            base_url (str): The base URL to build upon.
-            action (str): The action (e.g., a form action or link destination).
-
-        Returns:
-            str: The fully resolved action URL or the base URL if no valid action is found.
         """
         self.logger.info("Parsing URL parameters...")
         if action and not action.startswith("#"):

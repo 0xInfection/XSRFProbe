@@ -17,7 +17,9 @@ logger = logging.getLogger("BrowserSession")
 
 
 class BrowserSession:
-    """Wraps a headless Firefox instance via Selenium for browser-dependent CSRF tests."""
+    """
+    Wraps a headless Firefox instance via Selenium for browser-dependent CSRF tests.
+    """
 
     def __init__(self, headless: bool = True, geckodriver_path: str = "", timeout: int = 30):
         self.headless = headless
@@ -26,7 +28,6 @@ class BrowserSession:
         self.driver = None
 
     def start(self) -> bool:
-        """Launch headless Firefox. Returns True on success."""
         try:
             from selenium import webdriver
             from selenium.webdriver.firefox.options import Options
@@ -62,7 +63,9 @@ class BrowserSession:
             return False
 
     def set_cookies(self, url: str, cookies: list[dict]) -> None:
-        """Inject cookies into the browser. Must navigate to the domain first."""
+        """
+        Inject cookies into the browser. Must navigate to the domain first.
+        """
         if not self.driver:
             return
 
@@ -110,7 +113,9 @@ class BrowserSession:
             self.set_cookies(url, cookies)
 
     def sync_cookies_from_requests(self, session: requests.Session, url: str) -> None:
-        """Copy cookies from a requests.Session cookie jar into the browser."""
+        """
+        Copy cookies from a requests.Session cookie jar into the browser.
+        """
         cookies = []
         for cookie in session.cookies:
             cookies.append({
@@ -125,7 +130,9 @@ class BrowserSession:
             self.set_cookies(url, cookies)
 
     def sync_all_cookies(self, session: requests.Session, url: str) -> None:
-        """Sync both user-supplied and session-accumulated cookies into the browser."""
+        """
+        Sync both user-supplied and session-accumulated cookies into the browser.
+        """
         self.sync_cookies_from_config(url)
         self.sync_cookies_from_requests(session, url)
 
@@ -160,7 +167,9 @@ class BrowserSession:
             return {"error": str(e)}
 
     def get_iframe_source(self) -> str | None:
-        """Switch to the first iframe and return its page source, then switch back."""
+        """
+        Switch to the first iframe and return its page source, then switch back.
+        """
         if not self.driver:
             return None
         try:
@@ -179,7 +188,6 @@ class BrowserSession:
             return None
 
     def quit(self) -> None:
-        """Close the browser and clean up."""
         if self.driver:
             try:
                 self.driver.quit()

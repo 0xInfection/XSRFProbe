@@ -45,7 +45,6 @@ def calcLogLevel(args):
     '''
     Calculate logging level based on verbose options
     '''
-    from xsrfprobe.core.logger import PROGRESS
     baseloglevel = config.DEBUG_LEVEL  # 25 = PROGRESS
 
     if args.verbose:

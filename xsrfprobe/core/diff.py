@@ -52,12 +52,6 @@ class DiffEngine:
     def prepareBenchmarkResponse(self, response_bodies: list[str], statuses: list[int], headers: list[dict]) -> BenchmarkResult:
         """
         Build a benchmark from N baseline samples of the same request.
-
-        The static template is the set of tokens that are stable across *all*
-        samples (a volatility mask): anything that varies between otherwise
-        identical requests — tokens, timestamps, nonces, counters — is dropped.
-        Using >=3 samples makes the mask far less likely to retain a value that
-        only coincidentally matched between two responses.
         """
         contents = [self.getCleanedResponse(b) for b in response_bodies]
 
