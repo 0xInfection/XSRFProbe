@@ -321,7 +321,7 @@ def options() -> argparse.Namespace:
         # simply add the custom headers to a list of existing headers in
         # files/config.py.
         for head in args.headers.split(","):
-            key, val = head.split("=")
+            key, val = head.split("=", 1)
             config.HEADER_VALUES[key.strip()] = val.strip()
 
     if args.exclude:
