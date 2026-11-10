@@ -15,8 +15,8 @@ def test_headers_value_with_equals_sign(monkeypatch):
     saved = dict(config.HEADER_VALUES)
     try:
         args = options_mod.options()
+        assert args.headers == "X-Token=aGVsbG8="
+        assert config.HEADER_VALUES.get("X-Token") == "aGVsbG8="
     finally:
         config.HEADER_VALUES.clear()
         config.HEADER_VALUES.update(saved)
-    assert args.headers == "X-Token=aGVsbG8="
-    assert config.HEADER_VALUES.get("X-Token") == "aGVsbG8="
